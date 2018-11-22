@@ -1,0 +1,20 @@
+=head1 NAME
+
+Protocol::HTTP::XS - XXX
+
+=cut
+
+=head1 DESCRIPTION
+
+
+=head1 SYNOPSIS
+
+=head1 AUTHOR
+
+Andrew Selivanov <andrew.selivanov@gmail.com>, Crazy Panda, CP Decision LTD
+
+=head1 LICENSE
+
+You may distribute this code under the same terms as Perl itself.
+
+=cut

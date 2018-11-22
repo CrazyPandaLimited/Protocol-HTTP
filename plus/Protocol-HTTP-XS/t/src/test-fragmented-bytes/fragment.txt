@@ -1,0 +1,5 @@
+GET /uri HTTP/1.0
+Header1: header1
+Header2: header2
+Header3: header3
+
