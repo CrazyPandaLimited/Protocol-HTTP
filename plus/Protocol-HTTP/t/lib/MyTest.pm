@@ -2,7 +2,7 @@ package MyTest;
 use 5.012;
 use warnings;
 use UniEvent;
-use Protocol::HTTP::XS;
+use Protocol::HTTP;
 use Test::More;
 use Test::Deep;
 use Test2::IPC;
