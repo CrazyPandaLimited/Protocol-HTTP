@@ -48,7 +48,6 @@ struct Message : virtual Refcnt {
 
     virtual std::ostream& print(std::ostream& os) const; 
 
-
 protected:
     bool is_valid_;
     HeaderSP header_;
