@@ -11,7 +11,7 @@
 
 namespace panda { namespace protocol { namespace http {
 
-struct RequestFactory : virtual Refcnt {
+class RequestFactory : virtual Refcnt {
     virtual RequestSP create() const { return make_iptr<Request>(); }
 };
 
