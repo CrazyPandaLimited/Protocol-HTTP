@@ -22,6 +22,8 @@ struct Body : virtual Refcnt {
     
     size_t length() const { return content_length(); }
 
+    bool empty() { return length() == 0; }
+
     std::vector<string> parts;
 };
 
