@@ -23,11 +23,11 @@ namespace {
     #include "RequestParserGenerated.cc"
 }
 
-RequestParser::~RequestParser() { 
+RequestParser::~RequestParser() {
     _PDEBUG("dtor");
 }
 
-RequestParser::RequestParser(RequestFactorySP request_factory) : 
+RequestParser::RequestParser(RequestFactorySP request_factory) :
     MessageParser<RequestParser, Request>(request_factory->create(), http_request_parser_start),
     request_factory_(request_factory) {
     _PDEBUG("ctor");
@@ -53,7 +53,7 @@ RequestParser::ResultIterator RequestParser::parse(const string& buffer) {
 RequestParser::Result RequestParser::parse_first(const string& buffer) {
     _PDEBUG("parsing [" << buffer << "]");
 
-    // pointer to current buffer, used by LEN, PTR_TO defines above 
+    // pointer to current buffer, used by LEN, PTR_TO defines above
     const char *buffer_ptr = buffer.data();
 
     // start parsing from the beginning pointer
@@ -77,7 +77,7 @@ RequestParser::Result RequestParser::parse_first(const string& buffer) {
     // generated parser logic
     #define MACHINE_EXEC
     #include "RequestParserGenerated.cc"
-    
+
     size_t position = p - buffer_ptr;
     if(cs == http_request_parser_first_final) {
         if(state_ == State::in_body) {
@@ -100,7 +100,7 @@ RequestParser::Result RequestParser::parse_first(const string& buffer) {
             _PDEBUG("not completed");
         }
         return {current_message_, position, state_};
-    }    
+    }
 }
 
 }}} // namespace panda::protocol::http

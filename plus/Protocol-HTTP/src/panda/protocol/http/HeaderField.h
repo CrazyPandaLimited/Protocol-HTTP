@@ -10,7 +10,7 @@ namespace panda { namespace protocol { namespace http {
 
 struct HeaderField {
     friend std::ostream& operator<<(std::ostream& os, const HeaderField& hf);
-    
+
     HeaderField(const string& name, const string& value);
     bool operator==(const HeaderField& rhs) const;
     bool operator!=(const HeaderField& rhs) const;
@@ -22,7 +22,7 @@ struct HeaderField {
 inline
 std::ostream& operator<<(std::ostream& os, const HeaderField& hf) {
     os << hf.name << ": " << hf.value;
-    return os;  
+    return os;
 }
 
 }}} // namespace panda::protocol::http

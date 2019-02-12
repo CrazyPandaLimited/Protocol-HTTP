@@ -19,8 +19,8 @@ string Body::as_buffer() const {
 }
 
 size_t Body::content_length() const {
-    return std::accumulate(std::next(parts.begin()), 
-	parts.end(), 
+    return std::accumulate(std::next(parts.begin()),
+	parts.end(),
 	parts.begin()->length(), // first element
 	[](int a, std::string b) { return a + b.length(); });
 }

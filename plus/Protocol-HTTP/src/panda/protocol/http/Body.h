@@ -17,9 +17,9 @@ struct Body : virtual Refcnt {
     Body(const string& body);
 
     string as_buffer() const;
-    
+
     size_t content_length() const;
-    
+
     size_t length() const { return content_length(); }
 
     std::vector<string> parts;
@@ -30,8 +30,8 @@ std::ostream& operator<<(std::ostream& os, const Body& b) {
     for(auto part : b.parts) {
         os << part;
     }
-    return os;  
-} 
+    return os;
+}
 
 inline
 std::ostream& operator<<(std::ostream& os, const BodySP& ptr) {

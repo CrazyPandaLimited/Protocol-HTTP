@@ -1,17 +1,17 @@
 %%{
-    
+
     machine http_response_parser;
-    
+
     include http_message_parser "MessageParser.rl";
-    
-    action begin { 
+
+    action begin {
         _PDEBUG("begin");
         if(!current_message_) {
             create_message();
         }
     }
 
-    action reason_phrase { 
+    action reason_phrase {
         _PDEBUG("reason");
         if(marked_buffer_.empty()) {
             current_message_->reason(string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc)));
@@ -20,8 +20,8 @@
             current_message_->reason(marked_buffer_);
         }
     }
-    
-    action status_code { 
+
+    action status_code {
         _PDEBUG("status code");
         if(marked_buffer_.empty()) {
             current_message_->code(std::stol(_HTTP_PARSER_PTR_TO(mark), 0));
@@ -30,7 +30,7 @@
             current_message_->code(std::stol(marked_buffer_, 0));
         }
     }
-    
+
     action done {
         _PDEBUG("done");
         state_ = State::got_header;
@@ -38,7 +38,7 @@
 
         // Response to HEAD is the same as response to GET, but without body
         if(requests_.empty()) {
-            throw ParserError("Cannot create response as there are no corresponding request"); 
+            throw ParserError("Cannot create response as there are no corresponding request");
         }
 
         if(requests_.back()->method() == Request::Method::HEAD) {
@@ -57,7 +57,7 @@
                 // set state and wait for the body in next calls
                 state_ = State::in_body;
             } else {
-                // we have more buffer to process, 
+                // we have more buffer to process,
                 // set position on the next character and proceed
                 process_body(buffer, ++fpc, pe);
             }
@@ -68,7 +68,7 @@
     reason_phrase = (any -- crlf)+ >mark %reason_phrase;
     status_code = digit+ >mark %status_code;
     status_line = http_version " " status_code " " reason_phrase :> crlf;
- 
+
     main := status_line >begin message_header* :> crlf @done;
 
 }%%

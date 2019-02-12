@@ -19,13 +19,13 @@ class RequestParser : public MessageParser<RequestParser, Request> {
 public:
     virtual ~RequestParser();
     RequestParser(RequestFactorySP request_factory = make_iptr<RequestFactory>());
-    
+
     struct Result {
         RequestSP request;
         size_t position;
         State state;
     };
-    
+
     using ResultSP = iptr<Result>;
     using ResultIterator = MessageIterator<RequestParser, Result>;
 

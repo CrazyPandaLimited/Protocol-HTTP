@@ -15,7 +15,7 @@
 
 // do copy headers or to substr them while parsing
 #define ENABLE_HTTP_COPYING_HEADERS 1
-#ifdef ENABLE_HTTP_COPYING_HEADERS 
+#ifdef ENABLE_HTTP_COPYING_HEADERS
 #define HTTP_COPYING_HEADERS true
 #else
 #define HTTP_COPYING_HEADERS false
@@ -36,14 +36,14 @@ namespace panda { namespace protocol { namespace http {
 template <class I, class T>
 class MessageParser : public virtual Refcnt {
 public:
-    using MessageSP = iptr<T>;    
+    using MessageSP = iptr<T>;
 
-    MessageParser(MessageSP message, int cs_initial_state) : 
+    MessageParser(MessageSP message, int cs_initial_state) :
         current_message_(message),
         cs_initial_state_(cs_initial_state) {
         init();
     }
-    
+
     enum class State {
         not_yet,
         got_header,
@@ -70,8 +70,8 @@ public:
         trailing_header = false;
         marked = false;
         mark = 0;
-       
-        // we don't want extra virtual call, so set machine state by hand 
+
+        // we don't want extra virtual call, so set machine state by hand
         cs = cs_initial_state_;
         top = 0;
     }
@@ -85,7 +85,7 @@ protected:
             marked_buffer_.clear();
     }
 
-    // append buffer starting with 'mark', use substr if 'want_copy' is false 
+    // append buffer starting with 'mark', use substr if 'want_copy' is false
     inline string advance_buffer(const string& buffer, const char* fpc, bool want_copy=true) {
         if(marked_buffer_.empty()) {
             if(want_copy) {
@@ -98,7 +98,7 @@ protected:
         }
         return marked_buffer_;
     }
-    
+
     // returns true if it is the last body part, false if more parts needed
     inline bool process_body(const string& buffer, const char*& fpc, const char* pe) {
         _PDEBUG("processing body");
@@ -123,12 +123,12 @@ protected:
             return false;
         } else {
             _PDEBUG("processing body, last part");
-            fpc += (content_len - body_so_far); 
+            fpc += (content_len - body_so_far);
             body_so_far = content_len;
-            
+
             current_message_->add_body_part( advance_buffer(buffer, fpc, false) );
             unmark();
-            
+
             // there was the last body part
             state_ = State::got_body;
             current_message_->set_body();
@@ -142,7 +142,7 @@ protected:
     // for more details see Ragel guide 5.9 "Maintaining Pointers to Input Data"
     string marked_buffer_;
     string current_field_buffer_;
-    MessageSP current_message_; 
+    MessageSP current_message_;
 
     // more general parser state, not used by Ragel
     State state_;
@@ -156,7 +156,7 @@ protected:
     bool trailing_header;
     bool marked;
     size_t mark;
- 
+
     // initial state, set by specific parser implementation
     int cs_initial_state_;
 
@@ -164,7 +164,7 @@ protected:
     int cs;  // current state
     int top, stack[1]; // to call subparsers with fcall/fret
 };
-    
+
 inline
 string rtrim(string const& str) {
     static char const* whitespaceChars = " ";

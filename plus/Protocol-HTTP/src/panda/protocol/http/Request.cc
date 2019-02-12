@@ -11,10 +11,10 @@ Request::~Request() {
 Request::Request() {
 }
 
-Request::Request(Method method, URISP uri, HeaderSP header, BodySP body, const string& http_version) : 
+Request::Request(Method method, URISP uri, HeaderSP header, BodySP body, const string& http_version) :
     Message(header, body, http_version),
-    method_(method), 
-    uri_(uri) 
+    method_(method),
+    uri_(uri)
 {
 }
 
@@ -29,7 +29,7 @@ ResponseSP Request::create_response() const {
 std::ostream& Request::print(std::ostream& os) const {
     os << to_string(method_) << " " << uri_->to_string() << " " << "HTTP/" << http_version_ << "\r\n";
     Message::print(os);
-    return os;  
+    return os;
 }
 
 }}} // namespace panda::protocol::http

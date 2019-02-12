@@ -7,7 +7,7 @@
 namespace panda { namespace protocol { namespace http {
 
 template <class P, class R>
-class MessageIterator 
+class MessageIterator
 {
     friend P;
 

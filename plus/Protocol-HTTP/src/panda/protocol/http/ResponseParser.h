@@ -14,20 +14,20 @@
 namespace panda { namespace protocol { namespace http {
 
 class ResponseParser : public MessageParser<ResponseParser, Response> {
-public: 
+public:
     virtual ~ResponseParser();
     ResponseParser();
-    
+
     struct Result {
         RequestSP request;
         ResponseSP response;
         size_t position;
         MessageParser<ResponseParser, Response>::State state;
     };
-    
-    using ResultSP = iptr<Result>;    
+
+    using ResultSP = iptr<Result>;
     using ResultIterator = MessageIterator<ResponseParser, Result>;
-    
+
     Result parse_first(const string& buffer);
     ResultIterator parse(const string& buffer);
 
@@ -35,9 +35,9 @@ public:
     Result reset_and_build_result(bool is_valid, size_t position, State state);
 
     void append_request(RequestSP request);
-    
+
     ResponseSP message() override;
-    
+
     bool no_pending_requests() const { return requests_.empty(); }
 
 private:

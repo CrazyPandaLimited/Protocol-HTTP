@@ -26,27 +26,27 @@ struct Header : virtual Refcnt {
             fields.emplace_back("Connection", "close");
             return *this;
         }
-        
+
         Builder& date(const string& date) {
             fields.emplace_back("Date", date);
             return *this;
         }
-        
+
         Builder& host(const string& host) {
             fields.emplace_back("Host", host);
             return *this;
         }
-        
+
         Builder& location(const string& location) {
             fields.emplace_back("Location", location);
             return *this;
         }
-        
+
         Builder& chunked() {
             fields.emplace_back("Transfer-Encoding", "chunked");
             return *this;
         }
-        
+
         Builder& add_field(const string& name, const string& value) {
             fields.emplace_back(name, value);
             return *this;
@@ -59,13 +59,13 @@ struct Header : virtual Refcnt {
     protected:
         std::vector<HeaderField> fields;
     };
-    
+
     bool has_field(const string& key) const;
 
     string get_field(const string& key) const;
-    
+
     void add_field(const string& key, const string& value);
-    
+
     void set_field(const string& key, const string& value);
 
     bool empty() const {
@@ -80,8 +80,8 @@ std::ostream& operator<<(std::ostream& os, const Header& h) {
     for(auto field : h.fields) {
         os << field << "\r\n";
     }
-    return os;  
-} 
+    return os;
+}
 
 inline
 std::ostream& operator<<(std::ostream& os, const HeaderSP& ptr) {
