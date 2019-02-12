@@ -19,10 +19,7 @@ string Body::as_buffer() const {
 }
 
 size_t Body::content_length() const {
-    return std::accumulate(std::next(parts.begin()), 
-	parts.end(), 
-	parts.begin()->length(), // first element
-	[](int a, std::string b) { return a + b.length(); });
+    return std::accumulate(parts.begin(), parts.end(), 0, [](size_t a, const string& b) { return a + b.length(); });
 }
 
 }}} // namespace panda::protocol::http
