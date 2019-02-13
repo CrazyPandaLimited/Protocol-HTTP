@@ -2,11 +2,17 @@
 
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 #include <panda/refcnt.h>
 #include <panda/string.h>
 
 namespace panda { namespace protocol { namespace http {
+
+inline
+bool iequals(const string& a, const string& b) {
+    return std::equal(a.begin(), a.end(), b.begin(), b.end(), [](char a, char b) { return a == b || tolower(a) == tolower(b); });
+}
 
 struct HeaderField {
     friend std::ostream& operator<<(std::ostream& os, const HeaderField& hf);
