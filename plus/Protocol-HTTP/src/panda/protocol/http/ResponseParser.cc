@@ -21,11 +21,11 @@ namespace {
     #include "ResponseParserGenerated.cc"
 }
 
-ResponseParser::~ResponseParser() { 
+ResponseParser::~ResponseParser() {
     _PDEBUG("dtor");
 }
 
-ResponseParser::ResponseParser() : 
+ResponseParser::ResponseParser() :
     MessageParser<ResponseParser, Response>(nullptr, http_response_parser_start) {
     _PDEBUG("ctor");
 }
@@ -39,7 +39,7 @@ ResponseParser::Result ResponseParser::reset_and_build_result(bool is_valid, siz
     }
 
     RequestSP request = requests_.back();
-    
+
     requests_.pop_back();
 
     current_message_ = nullptr;
@@ -47,16 +47,16 @@ ResponseParser::Result ResponseParser::reset_and_build_result(bool is_valid, siz
     return {request, message, position, state};
 }
 
-ResponseSP ResponseParser::create_message() { 
+ResponseSP ResponseParser::create_message() {
     _PDEBUG("create_message");
     // we need requests to parse some responses correctly (for example HEAD response)
     // so something is terribly wrong if we have no corresponding request
     if(requests_.empty()) {
-        throw ParserError("Cannot create response as there are no corresponding request"); 
+        throw ParserError("Cannot create response as there are no corresponding request");
     }
 
     if(current_message_ && current_message_->code()) {
-        throw ParserError("Programming error, there is incomplete message in the parser"); 
+        throw ParserError("Programming error, there is incomplete message in the parser");
     }
 
     current_message_ = requests_.back()->response();
@@ -71,7 +71,7 @@ void ResponseParser::append_request(iptr<Request> request) {
 ResponseSP ResponseParser::message() {
     if(!current_message_) {
         if(requests_.empty()) {
-            throw ParserError("Cannot get response as there are no corresponding request"); 
+            throw ParserError("Cannot get response as there are no corresponding request");
         }
         current_message_ = requests_.back()->response();
     }
@@ -91,11 +91,11 @@ ResponseParser::Result ResponseParser::parse_first(const string& buffer) {
             // stop iteration
             return { nullptr, nullptr, 0, State::not_yet };
         } else {
-            throw ParserError("Cannot parse message as there are no corresponding request"); 
+            throw ParserError("Cannot parse message as there are no corresponding request");
         }
     }
 
-    // pointer to current buffer, used by LEN, PTR_TO defines above 
+    // pointer to current buffer, used by LEN, PTR_TO defines above
     const char *buffer_ptr = buffer.data();
 
     // start parsing from the beginning pointer
@@ -119,9 +119,9 @@ ResponseParser::Result ResponseParser::parse_first(const string& buffer) {
     // generated parser logic
     #define MACHINE_EXEC
     #include "ResponseParserGenerated.cc"
-    
+
     size_t position = p - buffer_ptr;
-    
+
     if(cs == http_response_parser_first_final) {
         if(state_ == State::in_body) {
             _PDEBUG("body not completed, mark: " << mark << " buffer: "<< marked_buffer_);
@@ -144,7 +144,7 @@ ResponseParser::Result ResponseParser::parse_first(const string& buffer) {
         }
         //_PDEBUG("not completed, mark: " << mark << " buffer: "<< marked_buffer_);
         return {requests_.back(), current_message_, position, state_};
-    }    
+    }
 }
 
 }}} // namespace panda::protocol::http

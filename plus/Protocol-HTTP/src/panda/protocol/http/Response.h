@@ -13,26 +13,26 @@ namespace panda { namespace protocol { namespace http {
 class Response : public Message {
 public:
     Response();
-    
+
     Response(int code, const string& reason, HeaderSP header, BodySP body, const string& http_version);
 
     int code() const {
         return code_;
     }
-    
+
     void code(int code) {
         code_ = code;
     }
-    
+
     string reason() const {
         return reason_;
     }
-    
+
     void reason(string reason) {
         reason_ = reason;
     }
 
-    std::ostream& print(std::ostream& os) const override; 
+    std::ostream& print(std::ostream& os) const override;
 
 protected:
     // restrict stack allocation

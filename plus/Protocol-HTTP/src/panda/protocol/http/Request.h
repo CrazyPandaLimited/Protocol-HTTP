@@ -32,13 +32,13 @@ public:
     };
 
     Request();
-    
+
     Request(Method method, URISP uri, HeaderSP header, BodySP body, const string& http_version);
 
     Method method() const {
         return method_;
     }
-    
+
     void method(Method method) {
         method_ = method;
     }
@@ -46,26 +46,26 @@ public:
     URISP uri() const {
         return uri_;
     }
-    
+
     void uri(URISP uri) {
         uri_ = uri;
     }
 
-    std::ostream& print(std::ostream& os) const override; 
-    
+    std::ostream& print(std::ostream& os) const override;
+
     ResponseSP response() const;
-    
+
 protected:
     // restrict stack allocation
     virtual ~Request();
-    
-    virtual ResponseSP create_response() const; 
+
+    virtual ResponseSP create_response() const;
 
 private:
     // disable copying as we disabled stack usage
     Request(const Request&) = delete;
     Request& operator=(const Request&) = delete;
-    
+
 protected:
     Method method_;
     URISP uri_;

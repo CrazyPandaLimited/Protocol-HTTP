@@ -14,22 +14,22 @@ namespace panda { namespace protocol { namespace http {
 struct Message : virtual Refcnt {
     friend std::ostream& operator<<(std::ostream& os, const Message& message);
 
-    Message(); 
-    
-    Message(HeaderSP header, BodySP body, const string& http_version); 
-    
+    Message();
+
+    Message(HeaderSP header, BodySP body, const string& http_version);
+
     HeaderSP header() const;
 
     BodySP body() const;
 
-    void add_header_field(const string& key, const string& value); 
+    void add_header_field(const string& key, const string& value);
 
     void add_body_part(const string& body_part);
-    
+
     bool is_valid() const;
-    
+
     void set_valid();
-    
+
     bool has_header() const;
 
     void set_header();
@@ -41,12 +41,12 @@ struct Message : virtual Refcnt {
     string http_version() const {
         return http_version_;
     }
-    
+
     void http_version(const string& http_version) {
         http_version_ = http_version;
     }
 
-    virtual std::ostream& print(std::ostream& os) const; 
+    virtual std::ostream& print(std::ostream& os) const;
 
 protected:
     bool is_valid_;

@@ -5,8 +5,8 @@
 
 namespace panda { namespace protocol { namespace http {
 
-Message::Message() : 
-    is_valid_(false), 
+Message::Message() :
+    is_valid_(false),
     header_(make_iptr<Header>()),
     body_(make_iptr<Body>()),
     has_header_(false),
@@ -15,18 +15,18 @@ Message::Message() :
 
 Message::Message(
         HeaderSP header,
-        BodySP body, 
+        BodySP body,
         const string& http_version
-        ) : 
+        ) :
     is_valid_(true),
     header_(header),
-    body_(body), 
-    http_version_(http_version), 
+    body_(body),
+    http_version_(http_version),
     has_header_(!header->fields.empty()),
     has_body_(!body->parts.empty())
 {
 }
-    
+
 HeaderSP Message::header() const {
     return header_;
 }
@@ -79,8 +79,8 @@ std::ostream& Message::print(std::ostream& os) const {
     for(auto part : body_->parts) {
         os << part;
     }
-    
-    return os;  
+
+    return os;
 }
 
 }}} // namespace panda::protocol::http
