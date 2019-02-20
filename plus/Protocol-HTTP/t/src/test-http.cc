@@ -317,3 +317,9 @@ TEST_CASE("case insensitive content-length", "http-unusual") {
     REQUIRE(request->header()->fields.size() == 1);
     REQUIRE(request->body()->as_buffer() == "1");
 }
+
+TEST_CASE("case insensitive headers", "[parser]") {
+    http::Header h;
+    h.add_field("Aa", "value");
+    CHECK(h.get_field("AA") == "value");
+}

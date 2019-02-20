@@ -14,6 +14,7 @@ static int const DEFAULT_FIELDS_RESERVE = 20;
 
 struct Header : virtual Refcnt {
     friend std::ostream& operator<<(std::ostream& os, const HeaderField& hf);
+    using Container = std::vector<HeaderField>;
 
     virtual ~Header();
 
@@ -72,7 +73,10 @@ struct Header : virtual Refcnt {
         return fields.empty();
     }
 
-    std::vector<HeaderField> fields;
+    Container::const_reverse_iterator find(const string &key) const;
+
+    Container fields;
+
 };
 
 inline
