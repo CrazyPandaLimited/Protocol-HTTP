@@ -11,8 +11,8 @@ Request::~Request() {
 Request::Request() {
 }
 
-Request::Request(Method method, URISP uri, HeaderSP header, BodySP body, const string& http_version) :
-    Message(header, body, http_version),
+Request::Request(Method method, URISP uri, Header&& header, BodySP body, const string& http_version) :
+    Message(std::move(header), body, http_version),
     method_(method),
     uri_(uri)
 {

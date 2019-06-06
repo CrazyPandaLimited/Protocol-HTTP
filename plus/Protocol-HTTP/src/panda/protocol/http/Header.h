@@ -15,7 +15,7 @@ namespace panda { namespace protocol { namespace http {
 
 static int const DEFAULT_FIELDS_RESERVE = 20;
 
-struct Header : virtual Refcnt {
+struct Header {
     friend std::ostream& operator<<(std::ostream& os, const HeaderField& hf);
     using Container = std::vector<HeaderField>;
 
@@ -56,8 +56,8 @@ struct Header : virtual Refcnt {
             return *this;
         }
 
-        HeaderSP build() {
-            return make_iptr<Header>(fields);
+        Header build() {
+            return Header(std::move(fields));
         }
 
     protected:
@@ -113,14 +113,6 @@ inline
 std::ostream& operator<<(std::ostream& os, const Header& h) {
     for(auto field : h.fields) {
         os << field << "\r\n";
-    }
-    return os;
-}
-
-inline
-std::ostream& operator<<(std::ostream& os, const HeaderSP& ptr) {
-    if(ptr) {
-        os << *ptr;
     }
     return os;
 }

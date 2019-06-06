@@ -23,7 +23,7 @@ class RequestParser;
 using RequestParserSP = iptr<RequestParser>;
 
 struct Header;
-using HeaderSP = iptr<Header>;
+//using HeaderSP = iptr<Header>;
 
 struct Body;
 using BodySP = iptr<Body>;

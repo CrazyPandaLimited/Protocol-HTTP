@@ -9,8 +9,8 @@ Response::Response() :
     code_(0) {
 }
 
-Response::Response(int code, const string& reason, HeaderSP header, BodySP body, const string& http_version) :
-    Message(header, body, http_version),
+Response::Response(int code, const string& reason, Header&& header, BodySP body, const string& http_version) :
+    Message(std::move(header), body, http_version),
     code_(code),
     reason_(reason)
 {

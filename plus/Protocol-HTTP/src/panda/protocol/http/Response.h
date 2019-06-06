@@ -14,7 +14,7 @@ class Response : public Message {
 public:
     Response();
 
-    Response(int code, const string& reason, HeaderSP header, BodySP body, const string& http_version);
+    Response(int code, const string& reason, Header&& header, BodySP body, const string& http_version);
 
     int code() const {
         return code_;

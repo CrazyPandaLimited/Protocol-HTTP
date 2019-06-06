@@ -22,7 +22,7 @@ TEST_CASE("parsing message with fragmented chunks", "[fragmented]") {
             << " uri: " << request->uri()
     );
     
-    for(auto field : request->header()->fields) {
+    for(auto field : request->header().fields) {
         _DBG("header: "<< field.name << ":" << field.value);
     }
 
@@ -30,12 +30,12 @@ TEST_CASE("parsing message with fragmented chunks", "[fragmented]") {
         _DBG("body part: [" << part << "]");
     }
 
-    _DBG(request->header()->get_field("Header1"));
+    _DBG(request->header().get_field("Header1"));
 
     REQUIRE(request->is_valid());
     REQUIRE(request->method() == Method::POST);
     REQUIRE(request->http_version() == "1.1");
-    REQUIRE(request->header()->get_field("Transfer-Encoding") == "chunked");
-    REQUIRE(request->header()->get_field("Trailer") == "Expires");
+    REQUIRE(request->header().get_field("Transfer-Encoding") == "chunked");
+    REQUIRE(request->header().get_field("Trailer") == "Expires");
     REQUIRE(request->body()->as_buffer() == "Wikipedia in\r\n\r\nchunks.");
 }

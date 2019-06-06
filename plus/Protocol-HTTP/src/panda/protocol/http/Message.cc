@@ -7,27 +7,31 @@ namespace panda { namespace protocol { namespace http {
 
 Message::Message() :
     is_valid_(false),
-    header_(make_iptr<Header>()),
+    header_(),
     body_(make_iptr<Body>()),
     has_header_(false),
     has_body_(false) {
 }
 
 Message::Message(
-        HeaderSP header,
+        Header&& header,
         BodySP body,
         const string& http_version
         ) :
     is_valid_(true),
-    header_(header),
+    header_(std::move(header)),
     body_(body),
     http_version_(http_version),
-    has_header_(!header->fields.empty()),
+    has_header_(!header.fields.empty()),
     has_body_(!body->parts.empty())
 {
 }
 
-HeaderSP Message::header() const {
+const Header& Message::header() const {
+    return header_;
+}
+
+Header& Message::header() {
     return header_;
 }
 
@@ -36,7 +40,7 @@ BodySP Message::body() const {
 }
 
 void Message::add_header_field(const string& key, const string& value) {
-    header_->fields.emplace_back(key, value);
+    header_.fields.emplace_back(key, value);
 }
 
 void Message::add_body_part(const string& body_part) {

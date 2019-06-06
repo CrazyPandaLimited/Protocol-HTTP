@@ -33,7 +33,7 @@ public:
 
     Request();
 
-    Request(Method method, URISP uri, HeaderSP header, BodySP body, const string& http_version);
+    Request(Method method, URISP uri, Header&& header, BodySP body, const string& http_version);
 
     Method method() const {
         return method_;

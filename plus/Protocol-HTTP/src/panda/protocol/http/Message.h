@@ -16,9 +16,10 @@ struct Message : virtual Refcnt {
 
     Message();
 
-    Message(HeaderSP header, BodySP body, const string& http_version);
+    Message(Header&& header, BodySP body, const string& http_version);
 
-    HeaderSP header() const;
+    const Header& header() const;
+    Header& header();
 
     BodySP body() const;
 
@@ -50,7 +51,7 @@ struct Message : virtual Refcnt {
 
 protected:
     bool is_valid_;
-    HeaderSP header_;
+    Header header_;
     BodySP body_;
     string http_version_;
     bool has_header_;

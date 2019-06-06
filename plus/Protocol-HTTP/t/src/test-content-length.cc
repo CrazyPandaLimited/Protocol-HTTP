@@ -19,8 +19,8 @@ TEST_CASE("post with content-length content as single buffer", "[content-length]
     REQUIRE(request->is_valid());
     REQUIRE(request->method() == Method::POST);
     REQUIRE(request->http_version() == "1.1");
-    REQUIRE(request->header()->fields.size() == 1);
-    REQUIRE(request->header()->get_field("Content-Length") == "23");
+    REQUIRE(request->header().fields.size() == 1);
+    REQUIRE(request->header().get_field("Content-Length") == "23");
     REQUIRE(request->body()->as_buffer() == "Wikipedia in\r\n\r\nchunks.");
 }
 
@@ -63,8 +63,8 @@ TEST_CASE("post with content-length content in parts", "[content-length]") {
 
     REQUIRE(request->method() == Method::POST);
     REQUIRE(request->http_version() == "1.1");
-    REQUIRE(request->header()->fields.size() == 1);
-    REQUIRE(request->header()->get_field("Content-Length") == "23");
+    REQUIRE(request->header().fields.size() == 1);
+    REQUIRE(request->header().get_field("Content-Length") == "23");
     REQUIRE(request->body()->as_buffer() == "Wikipedia in\r\n\r\nchunks.");
 }
 
@@ -86,8 +86,8 @@ TEST_CASE("post with null content-length", "[content-length]") {
     REQUIRE(request->is_valid());
     REQUIRE(request->method() == Method::POST);
     REQUIRE(request->http_version() == "1.1");
-    REQUIRE(request->header()->fields.size() == 1);
-    REQUIRE(request->header()->get_field("Content-Length") == "0");
+    REQUIRE(request->header().fields.size() == 1);
+    REQUIRE(request->header().get_field("Content-Length") == "0");
     REQUIRE(request->body()->as_buffer() == "");
 }
 
@@ -120,8 +120,8 @@ TEST_CASE("post iterator single request", "[content-length]") {
     REQUIRE(request->is_valid());
     REQUIRE(request->method() == Method::POST);
     REQUIRE(request->http_version() == "1.1");
-    REQUIRE(request->header()->fields.size() == 1);
-    REQUIRE(request->header()->get_field("Content-Length") == "2");
+    REQUIRE(request->header().fields.size() == 1);
+    REQUIRE(request->header().get_field("Content-Length") == "2");
     REQUIRE(request->body()->as_buffer() == "XX");
 }
 
@@ -154,8 +154,8 @@ TEST_CASE("post iterator multiple messages", "[content-length]") {
     REQUIRE(request1->is_valid());
     REQUIRE(request1->method() == Method::POST);
     REQUIRE(request1->http_version() == "1.1");
-    REQUIRE(request1->header()->fields.size() == 1);
-    REQUIRE(request1->header()->get_field("Content-Length") == "2");
+    REQUIRE(request1->header().fields.size() == 1);
+    REQUIRE(request1->header().get_field("Content-Length") == "2");
     REQUIRE(request1->body()->as_buffer() == "XX");
 
     // parse nto the second result with the same iterator
@@ -175,8 +175,8 @@ TEST_CASE("post iterator multiple messages", "[content-length]") {
     REQUIRE(request2->is_valid());
     REQUIRE(request2->method() == Method::POST);
     REQUIRE(request2->http_version() == "1.1");
-    REQUIRE(request2->header()->fields.size() == 1);
-    REQUIRE(request2->header()->get_field("Content-Length") == "2");
+    REQUIRE(request2->header().fields.size() == 1);
+    REQUIRE(request2->header().get_field("Content-Length") == "2");
     REQUIRE(request2->body()->as_buffer() == "YY");
    
     // ensure that the first request is not modified 
