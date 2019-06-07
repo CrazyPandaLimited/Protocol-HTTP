@@ -21,9 +21,9 @@ TEST_CASE("parsing pipelined messages", "[parser]") {
     REQUIRE(request->method() == Method::GET);
     REQUIRE(request->http_version() == "1.0");
     REQUIRE(request->uri()->to_string() == "/r1");
-    REQUIRE(request->header().get_field("Header1") == "header1");
-    REQUIRE(request->header().get_field("Header2") == "header2");
-    REQUIRE(request->header().get_field("Header3") == "header3");
+    REQUIRE(request->headers.get_field("Header1") == "header1");
+    REQUIRE(request->headers.get_field("Header2") == "header2");
+    REQUIRE(request->headers.get_field("Header3") == "header3");
     
     string buffer2(buffer1.substr(position));
     result = request_parser.parse_first(buffer2); 
@@ -36,9 +36,9 @@ TEST_CASE("parsing pipelined messages", "[parser]") {
     REQUIRE(request->method() == Method::GET);
     REQUIRE(request->uri()->to_string() == "/r2");
     REQUIRE(request->http_version() == "1.0");
-    REQUIRE(request->header().get_field("Header4") == "header4");
-    REQUIRE(request->header().get_field("Header5") == "header5");
-    REQUIRE(request->header().get_field("Header6") == "header6");
+    REQUIRE(request->headers.get_field("Header4") == "header4");
+    REQUIRE(request->headers.get_field("Header5") == "header5");
+    REQUIRE(request->headers.get_field("Header6") == "header6");
     
     string buffer3(buffer2.substr(position));
     result = request_parser.parse_first(buffer3); 
@@ -51,7 +51,7 @@ TEST_CASE("parsing pipelined messages", "[parser]") {
     REQUIRE(request->method() == Method::GET);
     REQUIRE(request->http_version() == "1.0");
     REQUIRE(request->uri()->to_string() == "/r3");
-    REQUIRE(request->header().get_field("Header7") == "header7");
-    REQUIRE(request->header().get_field("Header8") == "header8");
-    REQUIRE(request->header().get_field("Header9") == "header9");
+    REQUIRE(request->headers.get_field("Header7") == "header7");
+    REQUIRE(request->headers.get_field("Header8") == "header8");
+    REQUIRE(request->headers.get_field("Header9") == "header9");
 }

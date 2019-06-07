@@ -14,14 +14,14 @@ TEST_CASE("post with content-length content as single buffer", "[content-length]
     
     http::RequestSP request = result.request;
 
-    _DBG("["<< request->body()->as_buffer() << "]");
+    _DBG("["<< request->body->as_buffer() << "]");
     
     REQUIRE(request->is_valid());
     REQUIRE(request->method() == Method::POST);
     REQUIRE(request->http_version() == "1.1");
-    REQUIRE(request->header().fields.size() == 1);
-    REQUIRE(request->header().get_field("Content-Length") == "23");
-    REQUIRE(request->body()->as_buffer() == "Wikipedia in\r\n\r\nchunks.");
+    REQUIRE(request->headers.fields.size() == 1);
+    REQUIRE(request->headers.get_field("Content-Length") == "23");
+    REQUIRE(request->body->as_buffer() == "Wikipedia in\r\n\r\nchunks.");
 }
 
 TEST_CASE("post with content-length content in parts", "[content-length]") {
@@ -59,13 +59,13 @@ TEST_CASE("post with content-length content in parts", "[content-length]") {
 
     http::RequestSP request = result.request;
 
-    _DBG("["<< request->body()->as_buffer() << "]");
+    _DBG("["<< request->body->as_buffer() << "]");
 
     REQUIRE(request->method() == Method::POST);
     REQUIRE(request->http_version() == "1.1");
-    REQUIRE(request->header().fields.size() == 1);
-    REQUIRE(request->header().get_field("Content-Length") == "23");
-    REQUIRE(request->body()->as_buffer() == "Wikipedia in\r\n\r\nchunks.");
+    REQUIRE(request->headers.fields.size() == 1);
+    REQUIRE(request->headers.get_field("Content-Length") == "23");
+    REQUIRE(request->body->as_buffer() == "Wikipedia in\r\n\r\nchunks.");
 }
 
 TEST_CASE("post with null content-length", "[content-length]") {
@@ -81,14 +81,14 @@ TEST_CASE("post with null content-length", "[content-length]") {
     
     http::RequestSP request = result.request;
 
-    _DBG("["<< request->body()->as_buffer() << "]");
+    _DBG("["<< request->body->as_buffer() << "]");
     
     REQUIRE(request->is_valid());
     REQUIRE(request->method() == Method::POST);
     REQUIRE(request->http_version() == "1.1");
-    REQUIRE(request->header().fields.size() == 1);
-    REQUIRE(request->header().get_field("Content-Length") == "0");
-    REQUIRE(request->body()->as_buffer() == "");
+    REQUIRE(request->headers.fields.size() == 1);
+    REQUIRE(request->headers.get_field("Content-Length") == "0");
+    REQUIRE(request->body->as_buffer() == "");
 }
 
 TEST_CASE("post iterator single request", "[content-length]") {
@@ -108,21 +108,21 @@ TEST_CASE("post iterator single request", "[content-length]") {
     
     REQUIRE(result.state == State::in_body);
 
-    _DBG("["<< result.request->body()->as_buffer() << "]");
+    _DBG("["<< result.request->body->as_buffer() << "]");
     
     result = request_parser.parse_first("X");
     
     REQUIRE(result.state == State::got_body);
 
-    _DBG("["<< result.request->body()->as_buffer() << "]");
+    _DBG("["<< result.request->body->as_buffer() << "]");
 
     http::RequestSP request = result.request;
     REQUIRE(request->is_valid());
     REQUIRE(request->method() == Method::POST);
     REQUIRE(request->http_version() == "1.1");
-    REQUIRE(request->header().fields.size() == 1);
-    REQUIRE(request->header().get_field("Content-Length") == "2");
-    REQUIRE(request->body()->as_buffer() == "XX");
+    REQUIRE(request->headers.fields.size() == 1);
+    REQUIRE(request->headers.get_field("Content-Length") == "2");
+    REQUIRE(request->body->as_buffer() == "XX");
 }
 
 TEST_CASE("post iterator multiple messages", "[content-length]") {
@@ -142,43 +142,43 @@ TEST_CASE("post iterator multiple messages", "[content-length]") {
     
     REQUIRE(result1.state == State::in_body);
 
-    _DBG("["<< result1.request->body()->as_buffer() << "]");
+    _DBG("["<< result1.request->body->as_buffer() << "]");
     
     result1 = request_parser.parse_first("X" + raw);
     
     REQUIRE(result1.state == State::got_body);
 
-    _DBG("["<< result1.request->body()->as_buffer() << "]");
+    _DBG("["<< result1.request->body->as_buffer() << "]");
 
     http::RequestSP request1 = result1.request;
     REQUIRE(request1->is_valid());
     REQUIRE(request1->method() == Method::POST);
     REQUIRE(request1->http_version() == "1.1");
-    REQUIRE(request1->header().fields.size() == 1);
-    REQUIRE(request1->header().get_field("Content-Length") == "2");
-    REQUIRE(request1->body()->as_buffer() == "XX");
+    REQUIRE(request1->headers.fields.size() == 1);
+    REQUIRE(request1->headers.get_field("Content-Length") == "2");
+    REQUIRE(request1->body->as_buffer() == "XX");
 
     // parse nto the second result with the same iterator
     pos = request_parser.parse(raw);
     http::RequestParser::Result result2 = *pos; 
     
     _DBG("state: " << (int)result2.state);
-    _DBG("["<< result2.request->body()->as_buffer() << "]");
+    _DBG("["<< result2.request->body->as_buffer() << "]");
    
     REQUIRE(result2.state == State::in_body);
 
     result2 = request_parser.parse_first("YY");
     
-    _DBG("["<< result2.request->body()->as_buffer() << "]");
+    _DBG("["<< result2.request->body->as_buffer() << "]");
     
     http::RequestSP request2 = result2.request;
     REQUIRE(request2->is_valid());
     REQUIRE(request2->method() == Method::POST);
     REQUIRE(request2->http_version() == "1.1");
-    REQUIRE(request2->header().fields.size() == 1);
-    REQUIRE(request2->header().get_field("Content-Length") == "2");
-    REQUIRE(request2->body()->as_buffer() == "YY");
+    REQUIRE(request2->headers.fields.size() == 1);
+    REQUIRE(request2->headers.get_field("Content-Length") == "2");
+    REQUIRE(request2->body->as_buffer() == "YY");
    
     // ensure that the first request is not modified 
-    REQUIRE(request1->body()->as_buffer() == "XX");
+    REQUIRE(request1->body->as_buffer() == "XX");
 }

@@ -6,9 +6,9 @@
 namespace panda { namespace protocol { namespace http {
 
 Message::Message() :
+    headers(),
+    body(make_iptr<Body>()),
     is_valid_(false),
-    header_(),
-    body_(make_iptr<Body>()),
     has_header_(false),
     has_body_(false) {
 }
@@ -18,33 +18,21 @@ Message::Message(
         BodySP body,
         const string& http_version
         ) :
+    headers(std::move(header)),
+    body(body),
     is_valid_(true),
-    header_(std::move(header)),
-    body_(body),
     http_version_(http_version),
     has_header_(!header.fields.empty()),
     has_body_(!body->parts.empty())
 {
 }
 
-const Header& Message::header() const {
-    return header_;
-}
-
-Header& Message::header() {
-    return header_;
-}
-
-BodySP Message::body() const {
-    return body_;
-}
-
 void Message::add_header_field(const string& key, const string& value) {
-    header_.fields.emplace_back(key, value);
+    headers.fields.emplace_back(key, value);
 }
 
-void Message::add_body_part(const string& body_part) {
-    body_->parts.emplace_back(body_part);
+void Message::add_body_part(const string& bodypart) {
+    body->parts.emplace_back(bodypart);
 }
 
 bool Message::is_valid() const {
@@ -76,11 +64,11 @@ std::ostream& operator<<(std::ostream& os, const Message& message) {
 }
 
 std::ostream& Message::print(std::ostream& os) const {
-    os << header_;
+    os << headers;
 
     os << "\r\n";
 
-    for(auto part : body_->parts) {
+    for(auto part : body->parts) {
         os << part;
     }
 

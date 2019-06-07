@@ -20,9 +20,9 @@ TEST_CASE("parsing request with iterator", "[iterator]") {
     REQUIRE(request->method() == Method::GET);
     REQUIRE(request->http_version() == "1.0");
     REQUIRE(request->uri()->to_string() == "/r1");
-    REQUIRE(request->header().get_field("Header1") == "header1");
-    REQUIRE(request->header().get_field("Header2") == "header2");
-    REQUIRE(request->header().get_field("Header3") == "header3");
+    REQUIRE(request->headers.get_field("Header1") == "header1");
+    REQUIRE(request->headers.get_field("Header2") == "header2");
+    REQUIRE(request->headers.get_field("Header3") == "header3");
     
     result = *(pos++);
     request = result.request;
@@ -33,9 +33,9 @@ TEST_CASE("parsing request with iterator", "[iterator]") {
     REQUIRE(request->method() == Method::GET);
     REQUIRE(request->uri()->to_string() == "/r2");
     REQUIRE(request->http_version() == "1.0");
-    REQUIRE(request->header().get_field("Header4") == "header4");
-    REQUIRE(request->header().get_field("Header5") == "header5");
-    REQUIRE(request->header().get_field("Header6") == "header6");
+    REQUIRE(request->headers.get_field("Header4") == "header4");
+    REQUIRE(request->headers.get_field("Header5") == "header5");
+    REQUIRE(request->headers.get_field("Header6") == "header6");
     
     result = *(pos++);
     request = result.request;
@@ -46,9 +46,9 @@ TEST_CASE("parsing request with iterator", "[iterator]") {
     REQUIRE(request->method() == Method::GET);
     REQUIRE(request->http_version() == "1.0");
     REQUIRE(request->uri()->to_string() == "/r3");
-    REQUIRE(request->header().get_field("Header7") == "header7");
-    REQUIRE(request->header().get_field("Header8") == "header8");
-    REQUIRE(request->header().get_field("Header9") == "header9");
+    REQUIRE(request->headers.get_field("Header7") == "header7");
+    REQUIRE(request->headers.get_field("Header8") == "header8");
+    REQUIRE(request->headers.get_field("Header9") == "header9");
     
     result = *(pos++);
     
@@ -88,9 +88,9 @@ TEST_CASE("parsing response with iterator", "[iterator]") {
     REQUIRE(response->is_valid());
     REQUIRE(response->code() == 200);
     REQUIRE(response->http_version() == "1.0");
-    REQUIRE(response->header().get_field("Header1") == "header1");
-    REQUIRE(response->header().get_field("Header2") == "header2");
-    REQUIRE(response->header().get_field("Header3") == "header3");
+    REQUIRE(response->headers.get_field("Header1") == "header1");
+    REQUIRE(response->headers.get_field("Header2") == "header2");
+    REQUIRE(response->headers.get_field("Header3") == "header3");
     
     result = *(pos++);
     response = result.response;
@@ -100,9 +100,9 @@ TEST_CASE("parsing response with iterator", "[iterator]") {
     REQUIRE(response->is_valid());
     REQUIRE(response->code() == 200);
     REQUIRE(response->http_version() == "1.0");
-    REQUIRE(response->header().get_field("Header4") == "header4");
-    REQUIRE(response->header().get_field("Header5") == "header5");
-    REQUIRE(response->header().get_field("Header6") == "header6");
+    REQUIRE(response->headers.get_field("Header4") == "header4");
+    REQUIRE(response->headers.get_field("Header5") == "header5");
+    REQUIRE(response->headers.get_field("Header6") == "header6");
     
     result = *(pos++);
     response = result.response;
@@ -112,9 +112,9 @@ TEST_CASE("parsing response with iterator", "[iterator]") {
     REQUIRE(response->is_valid());
     REQUIRE(response->code() == 200);
     REQUIRE(response->http_version() == "1.0");
-    REQUIRE(response->header().get_field("Header7") == "header7");
-    REQUIRE(response->header().get_field("Header8") == "header8");
-    REQUIRE(response->header().get_field("Header9") == "header9");
+    REQUIRE(response->headers.get_field("Header7") == "header7");
+    REQUIRE(response->headers.get_field("Header8") == "header8");
+    REQUIRE(response->headers.get_field("Header9") == "header9");
     
     result = *(pos++);
     

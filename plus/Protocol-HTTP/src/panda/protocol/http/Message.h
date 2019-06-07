@@ -18,10 +18,8 @@ struct Message : virtual Refcnt {
 
     Message(Header&& header, BodySP body, const string& http_version);
 
-    const Header& header() const;
-    Header& header();
-
-    BodySP body() const;
+    Header headers;
+    BodySP body;
 
     void add_header_field(const string& key, const string& value);
 
@@ -51,8 +49,6 @@ struct Message : virtual Refcnt {
 
 protected:
     bool is_valid_;
-    Header header_;
-    BodySP body_;
     string http_version_;
     bool has_header_;
     bool has_body_;
