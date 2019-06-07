@@ -14,20 +14,20 @@
     action reason_phrase {
         _PDEBUG("reason");
         if(marked_buffer_.empty()) {
-            current_message_->reason(string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc)));
+            current_message_->message = string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc));
         } else {
             marked_buffer_.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, fpc)));
-            current_message_->reason(marked_buffer_);
+            current_message_->message = marked_buffer_;
         }
     }
 
     action status_code {
         _PDEBUG("status code");
         if(marked_buffer_.empty()) {
-            current_message_->code(std::stol(_HTTP_PARSER_PTR_TO(mark), 0));
+            current_message_->code = std::stol(_HTTP_PARSER_PTR_TO(mark), 0);
         } else {
             marked_buffer_.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, fpc)));
-            current_message_->code(std::stol(marked_buffer_, 0));
+            current_message_->code = std::stol(marked_buffer_, 0);
         }
     }
 
@@ -41,7 +41,7 @@
             throw ParserError("Cannot create response as there are no corresponding request");
         }
 
-        if(requests_.back()->method() == Request::Method::HEAD) {
+        if(requests_.back()->method == Request::Method::HEAD) {
             fbreak;
         }
 

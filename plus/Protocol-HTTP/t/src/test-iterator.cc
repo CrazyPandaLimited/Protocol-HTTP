@@ -17,9 +17,9 @@ TEST_CASE("parsing request with iterator", "[iterator]") {
     request = result.request;
 
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::GET);
+    REQUIRE(request->method == Method::GET);
     REQUIRE(request->http_version() == "1.0");
-    REQUIRE(request->uri()->to_string() == "/r1");
+    REQUIRE(request->uri->to_string() == "/r1");
     REQUIRE(request->headers.get_field("Header1") == "header1");
     REQUIRE(request->headers.get_field("Header2") == "header2");
     REQUIRE(request->headers.get_field("Header3") == "header3");
@@ -30,8 +30,8 @@ TEST_CASE("parsing request with iterator", "[iterator]") {
     _DBG("position: " << result.position);
 
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::GET);
-    REQUIRE(request->uri()->to_string() == "/r2");
+    REQUIRE(request->method == Method::GET);
+    REQUIRE(request->uri->to_string() == "/r2");
     REQUIRE(request->http_version() == "1.0");
     REQUIRE(request->headers.get_field("Header4") == "header4");
     REQUIRE(request->headers.get_field("Header5") == "header5");
@@ -43,9 +43,9 @@ TEST_CASE("parsing request with iterator", "[iterator]") {
     _DBG("position: " << result.position);
     
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::GET);
+    REQUIRE(request->method == Method::GET);
     REQUIRE(request->http_version() == "1.0");
-    REQUIRE(request->uri()->to_string() == "/r3");
+    REQUIRE(request->uri->to_string() == "/r3");
     REQUIRE(request->headers.get_field("Header7") == "header7");
     REQUIRE(request->headers.get_field("Header8") == "header8");
     REQUIRE(request->headers.get_field("Header9") == "header9");
@@ -67,7 +67,7 @@ TEST_CASE("parsing response with iterator", "[iterator]") {
     REQUIRE_THROWS_AS([&]{response_parser.message();}(), http::ParserError);
     
     http::RequestSP request = make_iptr<http::Request>();
-    request->method(Method::GET);
+    request->method = Method::GET;
     response_parser.append_request(request);
     response_parser.append_request(request);
     response_parser.append_request(request);
@@ -86,7 +86,7 @@ TEST_CASE("parsing response with iterator", "[iterator]") {
     response = result.response;
     
     REQUIRE(response->is_valid());
-    REQUIRE(response->code() == 200);
+    REQUIRE(response->code == 200);
     REQUIRE(response->http_version() == "1.0");
     REQUIRE(response->headers.get_field("Header1") == "header1");
     REQUIRE(response->headers.get_field("Header2") == "header2");
@@ -98,7 +98,7 @@ TEST_CASE("parsing response with iterator", "[iterator]") {
     _DBG("position 1: " << result.position);
 
     REQUIRE(response->is_valid());
-    REQUIRE(response->code() == 200);
+    REQUIRE(response->code == 200);
     REQUIRE(response->http_version() == "1.0");
     REQUIRE(response->headers.get_field("Header4") == "header4");
     REQUIRE(response->headers.get_field("Header5") == "header5");
@@ -110,7 +110,7 @@ TEST_CASE("parsing response with iterator", "[iterator]") {
     _DBG("position 2: " << result.position);
     
     REQUIRE(response->is_valid());
-    REQUIRE(response->code() == 200);
+    REQUIRE(response->code == 200);
     REQUIRE(response->http_version() == "1.0");
     REQUIRE(response->headers.get_field("Header7") == "header7");
     REQUIRE(response->headers.get_field("Header8") == "header8");

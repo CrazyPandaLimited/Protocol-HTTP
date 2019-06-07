@@ -13,8 +13,8 @@ Request::Request() {
 
 Request::Request(Method method, URISP uri, Header&& header, BodySP body, const string& http_version) :
     Message(std::move(header), body, http_version),
-    method_(method),
-    uri_(uri)
+    method(method),
+    uri(uri)
 {
 }
 
@@ -27,7 +27,7 @@ ResponseSP Request::create_response() const {
 }
 
 std::ostream& Request::print(std::ostream& os) const {
-    os << to_string(method_) << " " << uri_->to_string() << " " << "HTTP/" << http_version_ << "\r\n";
+    os << to_string(method) << " " << uri->to_string() << " " << "HTTP/" << http_version_ << "\r\n";
     Message::print(os);
     return os;
 }

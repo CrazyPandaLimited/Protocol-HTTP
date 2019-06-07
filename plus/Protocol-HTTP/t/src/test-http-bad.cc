@@ -10,7 +10,7 @@ TEST_CASE("double first line", "[bad]") {
     http::RequestSP request = request_parser.parse_first(raw).request;
     
     REQUIRE(!request->is_valid());
-    REQUIRE(request->method() == Method::GET);
+    REQUIRE(request->method == Method::GET);
     REQUIRE(request->http_version() == "1.0");
 }
 

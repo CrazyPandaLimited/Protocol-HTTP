@@ -16,21 +16,8 @@ public:
 
     Response(int code, const string& reason, Header&& header, BodySP body, const string& http_version);
 
-    int code() const {
-        return code_;
-    }
-
-    void code(int code) {
-        code_ = code;
-    }
-
-    string reason() const {
-        return reason_;
-    }
-
-    void reason(string reason) {
-        reason_ = reason;
-    }
+    int code;
+    string message;
 
     std::ostream& print(std::ostream& os) const override;
 
@@ -43,9 +30,6 @@ private:
     Response(const Response&) = delete;
     Response& operator=(const Response&) = delete;
 
-private:
-    int code_;
-    string reason_;
 };
 
 inline

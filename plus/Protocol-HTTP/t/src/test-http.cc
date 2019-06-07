@@ -11,7 +11,7 @@ TEST_CASE("trivial get request", "[parser]") {
     _DBG("request [" << request << "]");
 
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::GET);
+    REQUIRE(request->method == Method::GET);
     REQUIRE(request->http_version() == "1.0");
     REQUIRE(request->headers.get_field("Host") == "host1");
 }
@@ -19,7 +19,7 @@ TEST_CASE("trivial get request", "[parser]") {
 TEST_CASE("trivial get response", "[parser]") {
     http::ResponseParser response_parser;
     http::RequestSP request = make_iptr<http::Request>();
-    request->method(Method::GET);
+    request->method = Method::GET;
     response_parser.append_request(request);
     string raw =
         "HTTP/1.0 200 OK\r\n"
@@ -37,7 +37,7 @@ TEST_CASE("trivial get response", "[parser]") {
 TEST_CASE("trivial head response", "[parser]") {
     http::ResponseParser response_parser;
     http::RequestSP request = make_iptr<http::Request>();
-    request->method(Method::HEAD);
+    request->method = Method::HEAD;
     response_parser.append_request(request);
     string raw =
         "HTTP/1.0 200 OK\r\n"
@@ -56,7 +56,7 @@ TEST_CASE("trivial head response", "[parser]") {
 TEST_CASE("redirect response", "[parser]") {
     http::ResponseParser response_parser;
     http::RequestSP request = make_iptr<http::Request>();
-    request->method(Method::GET);
+    request->method = Method::GET;
     response_parser.append_request(request);
     string raw =
 	"HTTP/1.1 301 Moved Permanently\r\n"
@@ -90,7 +90,7 @@ TEST_CASE("trivial post request", "[parser]") {
     _DBG("["<< request->body->as_buffer() << "]");
 
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::POST);
+    REQUIRE(request->method == Method::POST);
     REQUIRE(request->http_version() == "1.1");
     REQUIRE(request->headers.fields.size() == 1);
     REQUIRE(request->headers.get_field("Content-Length") == "23");
@@ -117,7 +117,7 @@ TEST_CASE("trivial chunked post request", "[parser]") {
     http::RequestSP request = request_parser.parse_first(raw).request;
 
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::POST);
+    REQUIRE(request->method == Method::POST);
     REQUIRE(request->http_version() == "1.1");
     REQUIRE(request->headers.fields.size() == 1);
     REQUIRE(request->headers.get_field("Transfer-Encoding") == "chunked");
@@ -145,7 +145,7 @@ TEST_CASE("chunked post request with extension", "[parser]") {
     http::RequestSP request = request_parser.parse_first(raw).request;
 
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::POST);
+    REQUIRE(request->method == Method::POST);
     REQUIRE(request->http_version() == "1.1");
     REQUIRE(request->headers.fields.size() == 1);
     REQUIRE(request->headers.get_field("Transfer-Encoding") == "chunked");
@@ -175,7 +175,7 @@ TEST_CASE("chunked post request with trailer header", "[parser]") {
     http::RequestSP request = request_parser.parse_first(raw).request;
 
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::POST);
+    REQUIRE(request->method == Method::POST);
     REQUIRE(request->http_version() == "1.1");
     REQUIRE(request->headers.fields.size() == 2);
     REQUIRE(request->headers.get_field("Transfer-Encoding") == "chunked");
@@ -191,7 +191,7 @@ TEST_CASE("trimming spaces from header value", "http-unusual") {
         "\r\n";
     http::RequestSP request = request_parser.parse_first(raw).request;
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::GET);
+    REQUIRE(request->method == Method::GET);
     REQUIRE(request->http_version() == "1.0");
     REQUIRE(request->headers.fields.size() == 1);
     REQUIRE(request->headers.get_field("Host") == "host");
@@ -207,7 +207,7 @@ TEST_CASE("no space after header field", "http-unusual") {
     http::RequestSP request = request_parser.parse_first(raw).request;
 
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::GET);
+    REQUIRE(request->method == Method::GET);
     REQUIRE(request->http_version() == "1.0");
     REQUIRE(request->headers.get_field("Host") == "host");
     REQUIRE(request->headers.fields.size() == 1);
@@ -221,7 +221,7 @@ TEST_CASE("no header at all", "http-unusual") {
     http::RequestSP request = request_parser.parse_first(raw).request;
 
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::GET);
+    REQUIRE(request->method == Method::GET);
     REQUIRE(request->http_version() == "1.0");
     REQUIRE(request->headers.fields.size() == 0);
 }
@@ -235,7 +235,7 @@ TEST_CASE("space in header value", "http-unusual") {
     http::RequestSP request = request_parser.parse_first(raw).request;
 
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::GET);
+    REQUIRE(request->method == Method::GET);
     REQUIRE(request->http_version() == "1.0");
     REQUIRE(request->headers.get_field("Host") == "ho  st");
     REQUIRE(request->headers.fields.size() == 1);
@@ -250,7 +250,7 @@ TEST_CASE("colon 1", "http-unusual") {
     http::RequestSP request = request_parser.parse_first(raw).request;
 
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::GET);
+    REQUIRE(request->method == Method::GET);
     REQUIRE(request->http_version() == "1.0");
     REQUIRE(request->headers.get_field("Host") == ": host");
     REQUIRE(request->headers.fields.size() == 1);
@@ -265,7 +265,7 @@ TEST_CASE("colon 2", "http-unusual") {
     http::RequestSP request = request_parser.parse_first(raw).request;
 
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::GET);
+    REQUIRE(request->method == Method::GET);
     REQUIRE(request->http_version() == "1.0");
     REQUIRE(request->headers.get_field("Host") == "h:ost");
     REQUIRE(request->headers.fields.size() == 1);
@@ -280,7 +280,7 @@ TEST_CASE("multiple spaces", "http-unusual") {
     http::RequestSP request = request_parser.parse_first(raw).request;
 
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::GET);
+    REQUIRE(request->method == Method::GET);
     REQUIRE(request->http_version() == "1.0");
     REQUIRE(request->headers.get_field("Host") == "hh oo ss tt");
     REQUIRE(request->headers.fields.size() == 1);
@@ -296,7 +296,7 @@ TEST_CASE("duplicated header field", "http-unusual") {
     http::RequestSP request = request_parser.parse_first(raw).request;
 
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::GET);
+    REQUIRE(request->method == Method::GET);
     REQUIRE(request->http_version() == "1.0");
     REQUIRE(request->headers.get_field("Host") == "host2");
     REQUIRE(request->headers.fields.size() == 2);
@@ -312,7 +312,7 @@ TEST_CASE("case insensitive content-length", "http-unusual") {
     http::RequestSP request = request_parser.parse_first(raw).request;
 
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::GET);
+    REQUIRE(request->method == Method::GET);
     REQUIRE(request->http_version() == "1.0");
     REQUIRE(request->headers.fields.size() == 1);
     REQUIRE(request->body->as_buffer() == "1");

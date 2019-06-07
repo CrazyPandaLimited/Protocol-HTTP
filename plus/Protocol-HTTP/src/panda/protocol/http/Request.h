@@ -35,21 +35,8 @@ public:
 
     Request(Method method, URISP uri, Header&& header, BodySP body, const string& http_version);
 
-    Method method() const {
-        return method_;
-    }
-
-    void method(Method method) {
-        method_ = method;
-    }
-
-    URISP uri() const {
-        return uri_;
-    }
-
-    void uri(URISP uri) {
-        uri_ = uri;
-    }
+    Method method;
+    URISP uri;
 
     std::ostream& print(std::ostream& os) const override;
 
@@ -66,9 +53,6 @@ private:
     Request(const Request&) = delete;
     Request& operator=(const Request&) = delete;
 
-protected:
-    Method method_;
-    URISP uri_;
 };
 
 inline

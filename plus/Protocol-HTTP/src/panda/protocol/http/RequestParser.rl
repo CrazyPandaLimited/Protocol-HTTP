@@ -6,10 +6,10 @@
     action request_uri {
         _PDEBUG("uri");
         if(marked_buffer_.empty()) {
-            current_message_->uri(make_iptr<uri::URI>(string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc))));
+            current_message_->uri = make_iptr<uri::URI>(string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc)));
         } else {
             marked_buffer_.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, fpc)));
-            current_message_->uri(make_iptr<uri::URI>(marked_buffer_));
+            current_message_->uri = make_iptr<uri::URI>(marked_buffer_);
         }
     }
 
@@ -37,14 +37,14 @@
         fbreak;
     }
 
-    method = ( "OPTIONS" @{current_message_->method(Request::Method::OPTIONS); }
-             | "GET" @{current_message_->method(Request::Method::GET); }
-             | "HEAD" @{current_message_->method(Request::Method::HEAD); }
-             | "POST" @{current_message_->method(Request::Method::POST); }
-             | "PUT" @{current_message_->method(Request::Method::PUT); }
-             | "DELETE" @{current_message_->method(Request::Method::DELETE); }
-             | "TRACE" @{current_message_->method(Request::Method::TRACE); }
-             | "CONNECT" @{current_message_->method(Request::Method::CONNECT); }
+    method = ( "OPTIONS" @{current_message_->method = Request::Method::OPTIONS; }
+             | "GET" @{current_message_->method = Request::Method::GET; }
+             | "HEAD" @{current_message_->method = Request::Method::HEAD; }
+             | "POST" @{current_message_->method = Request::Method::POST; }
+             | "PUT" @{current_message_->method = Request::Method::PUT; }
+             | "DELETE" @{current_message_->method = Request::Method::DELETE; }
+             | "TRACE" @{current_message_->method = Request::Method::TRACE; }
+             | "CONNECT" @{current_message_->method = Request::Method::CONNECT; }
              ) ;
 
     uri_reference = vchar+ >mark %request_uri %unmark;

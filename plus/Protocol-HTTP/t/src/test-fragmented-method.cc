@@ -17,7 +17,7 @@ TEST_CASE("parsing message with fragmented method", "[fragmented]") {
     }
 
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::GET);
+    REQUIRE(request->method == Method::GET);
     REQUIRE(request->http_version() == "1.0");
     REQUIRE(request->headers.get_field("Header1") == "header1");
     REQUIRE(request->headers.get_field("Header2") == "header2");

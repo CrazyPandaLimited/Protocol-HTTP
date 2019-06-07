@@ -17,7 +17,7 @@ TEST_CASE("post with content-length content as single buffer", "[content-length]
     _DBG("["<< request->body->as_buffer() << "]");
     
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::POST);
+    REQUIRE(request->method == Method::POST);
     REQUIRE(request->http_version() == "1.1");
     REQUIRE(request->headers.fields.size() == 1);
     REQUIRE(request->headers.get_field("Content-Length") == "23");
@@ -61,7 +61,7 @@ TEST_CASE("post with content-length content in parts", "[content-length]") {
 
     _DBG("["<< request->body->as_buffer() << "]");
 
-    REQUIRE(request->method() == Method::POST);
+    REQUIRE(request->method == Method::POST);
     REQUIRE(request->http_version() == "1.1");
     REQUIRE(request->headers.fields.size() == 1);
     REQUIRE(request->headers.get_field("Content-Length") == "23");
@@ -84,7 +84,7 @@ TEST_CASE("post with null content-length", "[content-length]") {
     _DBG("["<< request->body->as_buffer() << "]");
     
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::POST);
+    REQUIRE(request->method == Method::POST);
     REQUIRE(request->http_version() == "1.1");
     REQUIRE(request->headers.fields.size() == 1);
     REQUIRE(request->headers.get_field("Content-Length") == "0");
@@ -118,7 +118,7 @@ TEST_CASE("post iterator single request", "[content-length]") {
 
     http::RequestSP request = result.request;
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::POST);
+    REQUIRE(request->method == Method::POST);
     REQUIRE(request->http_version() == "1.1");
     REQUIRE(request->headers.fields.size() == 1);
     REQUIRE(request->headers.get_field("Content-Length") == "2");
@@ -152,7 +152,7 @@ TEST_CASE("post iterator multiple messages", "[content-length]") {
 
     http::RequestSP request1 = result1.request;
     REQUIRE(request1->is_valid());
-    REQUIRE(request1->method() == Method::POST);
+    REQUIRE(request1->method == Method::POST);
     REQUIRE(request1->http_version() == "1.1");
     REQUIRE(request1->headers.fields.size() == 1);
     REQUIRE(request1->headers.get_field("Content-Length") == "2");
@@ -173,7 +173,7 @@ TEST_CASE("post iterator multiple messages", "[content-length]") {
     
     http::RequestSP request2 = result2.request;
     REQUIRE(request2->is_valid());
-    REQUIRE(request2->method() == Method::POST);
+    REQUIRE(request2->method == Method::POST);
     REQUIRE(request2->http_version() == "1.1");
     REQUIRE(request2->headers.fields.size() == 1);
     REQUIRE(request2->headers.get_field("Content-Length") == "2");

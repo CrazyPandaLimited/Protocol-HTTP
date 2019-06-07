@@ -18,8 +18,8 @@ TEST_CASE("parsing message with fragmented chunks", "[fragmented]") {
 
     _DBG(
             "request: version: " << request->http_version() 
-            << " method: " << static_cast<int>(request->method()) 
-            << " uri: " << request->uri()
+            << " method: " << static_cast<int>(request->method)
+            << " uri: " << request->uri
     );
     
     for(auto field : request->headers.fields) {
@@ -33,7 +33,7 @@ TEST_CASE("parsing message with fragmented chunks", "[fragmented]") {
     _DBG(request->headers.get_field("Header1"));
 
     REQUIRE(request->is_valid());
-    REQUIRE(request->method() == Method::POST);
+    REQUIRE(request->method == Method::POST);
     REQUIRE(request->http_version() == "1.1");
     REQUIRE(request->headers.get_field("Transfer-Encoding") == "chunked");
     REQUIRE(request->headers.get_field("Trailer") == "Expires");

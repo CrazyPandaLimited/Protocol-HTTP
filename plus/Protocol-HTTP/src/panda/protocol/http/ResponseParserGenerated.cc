@@ -3346,7 +3346,7 @@ case 157:
 f1:
 #line 46 "MessageParser.rl"
 	{
-        // mark the beginning of the buffer to copy it later  
+        // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
         _PDEBUG("mark");
         mark = p - buffer_ptr;
@@ -3367,7 +3367,7 @@ f11:
 	goto _again;
 f0:
 #line 7 "ResponseParser.rl"
-	{ 
+	{
         _PDEBUG("begin");
         if(!current_message_) {
             create_message();
@@ -3376,25 +3376,25 @@ f0:
 	goto _again;
 f4:
 #line 14 "ResponseParser.rl"
-	{ 
+	{
         _PDEBUG("reason");
         if(marked_buffer_.empty()) {
-            current_message_->reason(string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, p)));
+            current_message_->message = string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, p));
         } else {
             marked_buffer_.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, p)));
-            current_message_->reason(marked_buffer_);
+            current_message_->message = marked_buffer_;
         }
     }
 	goto _again;
 f3:
 #line 24 "ResponseParser.rl"
-	{ 
+	{
         _PDEBUG("status code");
         if(marked_buffer_.empty()) {
-            current_message_->code(std::stol(_HTTP_PARSER_PTR_TO(mark), 0));
+            current_message_->code = std::stol(_HTTP_PARSER_PTR_TO(mark), 0);
         } else {
             marked_buffer_.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, p)));
-            current_message_->code(std::stol(marked_buffer_, 0));
+            current_message_->code = std::stol(marked_buffer_, 0);
         }
     }
 	goto _again;
@@ -3407,10 +3407,10 @@ f5:
 
         // Response to HEAD is the same as response to GET, but without body
         if(requests_.empty()) {
-            throw ParserError("Cannot create response as there are no corresponding request"); 
+            throw ParserError("Cannot create response as there are no corresponding request");
         }
 
-        if(requests_.back()->method() == Request::Method::HEAD) {
+        if(requests_.back()->method == Request::Method::HEAD) {
             {p++; goto _out; }
         }
 
@@ -3426,7 +3426,7 @@ f5:
                 // set state and wait for the body in next calls
                 state_ = State::in_body;
             } else {
-                // we have more buffer to process, 
+                // we have more buffer to process,
                 // set position on the next character and proceed
                 process_body(buffer, ++p, pe);
             }
@@ -3437,7 +3437,7 @@ f5:
 f15:
 #line 46 "MessageParser.rl"
 	{
-        // mark the beginning of the buffer to copy it later  
+        // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
         _PDEBUG("mark");
         mark = p - buffer_ptr;
@@ -3450,9 +3450,9 @@ f15:
 	goto _again;
 f6:
 #line 62 "MessageParser.rl"
-	{ 
+	{
         marked_buffer_ = advance_buffer(buffer, p, HTTP_COPYING_HEADERS);
-        current_field_buffer_ = marked_buffer_; 
+        current_field_buffer_ = marked_buffer_;
         _PDEBUG("write_field " << current_field_buffer_);
     }
 #line 54 "MessageParser.rl"
@@ -3471,7 +3471,7 @@ f8:
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
         if(!trailing_header) {
             marked_buffer_ = advance_buffer(buffer, p, HTTP_COPYING_HEADERS);
-           
+
             // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
             // separate buffer, which is not cheap
             // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl
@@ -3495,7 +3495,7 @@ f10:
     }
 #line 46 "MessageParser.rl"
 	{
-        // mark the beginning of the buffer to copy it later  
+        // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
         _PDEBUG("mark");
         mark = p - buffer_ptr;
@@ -3560,7 +3560,7 @@ f2:
 f7:
 #line 46 "MessageParser.rl"
 	{
-        // mark the beginning of the buffer to copy it later  
+        // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
         _PDEBUG("mark");
         mark = p - buffer_ptr;
@@ -3572,7 +3572,7 @@ f7:
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
         if(!trailing_header) {
             marked_buffer_ = advance_buffer(buffer, p, HTTP_COPYING_HEADERS);
-           
+
             // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
             // separate buffer, which is not cheap
             // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl
@@ -3596,7 +3596,7 @@ f12:
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
         if(!trailing_header) {
             marked_buffer_ = advance_buffer(buffer, p, HTTP_COPYING_HEADERS);
-           
+
             // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
             // separate buffer, which is not cheap
             // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl
@@ -3605,7 +3605,7 @@ f12:
         }
     }
 #line 82 "MessageParser.rl"
-	{ 
+	{
         content_len = std::stol(marked_buffer_);
         body_so_far = 0;
         _PDEBUG("content-len: " << content_len);
@@ -3625,7 +3625,7 @@ f16:
         _PDEBUG("chunk data");
         if(chunk_len > 0) {
             current_message_->add_body_part( advance_buffer(buffer, p, false) );
-        } 
+        }
     }
 #line 54 "MessageParser.rl"
 	{
@@ -3643,7 +3643,7 @@ f16:
 f14:
 #line 46 "MessageParser.rl"
 	{
-        // mark the beginning of the buffer to copy it later  
+        // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
         _PDEBUG("mark");
         mark = p - buffer_ptr;
@@ -3654,7 +3654,7 @@ f14:
         _PDEBUG("chunk data");
         if(chunk_len > 0) {
             current_message_->add_body_part( advance_buffer(buffer, p, false) );
-        } 
+        }
     }
 #line 54 "MessageParser.rl"
 	{
@@ -3675,7 +3675,7 @@ f17:
         _PDEBUG("chunk data");
         if(chunk_len > 0) {
             current_message_->add_body_part( advance_buffer(buffer, p, false) );
-        } 
+        }
     }
 #line 54 "MessageParser.rl"
 	{
@@ -3691,7 +3691,7 @@ f17:
     }
 #line 46 "MessageParser.rl"
 	{
-        // mark the beginning of the buffer to copy it later  
+        // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
         _PDEBUG("mark");
         mark = p - buffer_ptr;
@@ -3704,7 +3704,7 @@ f19:
         _PDEBUG("chunk data");
         if(chunk_len > 0) {
             current_message_->add_body_part( advance_buffer(buffer, p, false) );
-        } 
+        }
     }
 #line 54 "MessageParser.rl"
 	{
@@ -3724,7 +3724,7 @@ f19:
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
         if(!trailing_header) {
             marked_buffer_ = advance_buffer(buffer, p, HTTP_COPYING_HEADERS);
-           
+
             // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
             // separate buffer, which is not cheap
             // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl
@@ -3739,7 +3739,7 @@ f18:
         _PDEBUG("chunk data");
         if(chunk_len > 0) {
             current_message_->add_body_part( advance_buffer(buffer, p, false) );
-        } 
+        }
     }
 #line 54 "MessageParser.rl"
 	{
@@ -3755,7 +3755,7 @@ f18:
     }
 #line 46 "MessageParser.rl"
 	{
-        // mark the beginning of the buffer to copy it later  
+        // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
         _PDEBUG("mark");
         mark = p - buffer_ptr;
@@ -3767,7 +3767,7 @@ f18:
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
         if(!trailing_header) {
             marked_buffer_ = advance_buffer(buffer, p, HTTP_COPYING_HEADERS);
-           
+
             // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
             // separate buffer, which is not cheap
             // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl

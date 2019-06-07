@@ -55,7 +55,7 @@ ResponseSP ResponseParser::create_message() {
         throw ParserError("Cannot create response as there are no corresponding request");
     }
 
-    if(current_message_ && current_message_->code()) {
+    if(current_message_ && current_message_->code) {
         throw ParserError("Programming error, there is incomplete message in the parser");
     }
 

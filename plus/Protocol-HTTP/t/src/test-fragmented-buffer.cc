@@ -23,9 +23,9 @@ TEST_CASE("parsing fragmented messages allocating buffer", "[fragmented]") {
         request = result.request;
 
         REQUIRE(request->is_valid());
-        REQUIRE(request->method() == Method::GET);
+        REQUIRE(request->method == Method::GET);
         REQUIRE(request->http_version() == "1.0");
-        REQUIRE(request->uri()->to_string() == "/r1");
+        REQUIRE(request->uri->to_string() == "/r1");
         REQUIRE(request->headers.get_field("Header1") == "header1");
         REQUIRE(request->headers.get_field("Header2") == "header2");
         REQUIRE(request->headers.get_field("Header3") == "header3");
@@ -39,8 +39,8 @@ TEST_CASE("parsing fragmented messages allocating buffer", "[fragmented]") {
         _DBG("position: " << result.position);
 
         REQUIRE(request->is_valid());
-        REQUIRE(request->method() == Method::GET);
-        REQUIRE(request->uri()->to_string() == "/r2");
+        REQUIRE(request->method == Method::GET);
+        REQUIRE(request->uri->to_string() == "/r2");
         REQUIRE(request->http_version() == "1.0");
         REQUIRE(request->headers.get_field("Header4") == "header4");
         REQUIRE(request->headers.get_field("Header5") == "header5");
@@ -55,9 +55,9 @@ TEST_CASE("parsing fragmented messages allocating buffer", "[fragmented]") {
         _DBG("position: " << result.position);
         
         REQUIRE(request->is_valid());
-        REQUIRE(request->method() == Method::GET);
+        REQUIRE(request->method == Method::GET);
         REQUIRE(request->http_version() == "1.0");
-        REQUIRE(request->uri()->to_string() == "/r3");
+        REQUIRE(request->uri->to_string() == "/r3");
         REQUIRE(request->headers.get_field("Header7") == "header7");
         REQUIRE(request->headers.get_field("Header8") == "header8");
         REQUIRE(request->headers.get_field("Header9") == "header9");

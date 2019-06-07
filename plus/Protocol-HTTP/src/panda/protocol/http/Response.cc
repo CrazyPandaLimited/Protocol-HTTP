@@ -6,18 +6,18 @@ Response::~Response() {
 }
 
 Response::Response() :
-    code_(0) {
+    code(0) {
 }
 
 Response::Response(int code, const string& reason, Header&& header, BodySP body, const string& http_version) :
     Message(std::move(header), body, http_version),
-    code_(code),
-    reason_(reason)
+    code(code),
+    message(reason)
 {
 }
 
 std::ostream& Response::print(std::ostream& os) const {
-    os << "HTTP/" << http_version_ << " " << to_string(code_) << " " << reason_ << "\r\n";
+    os << "HTTP/" << http_version_ << " " << to_string(code) << " " << message << "\r\n";
     Message::print(os);
     return os;
 }

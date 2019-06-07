@@ -3,7 +3,7 @@
 TEST_CASE("google response 0", "[parser]") {
     http::ResponseParser response_parser;
     http::RequestSP request = make_iptr<http::Request>();
-    request->method(Method::GET);
+    request->method = Method::GET;
     response_parser.append_request(request);
     
     string raw =
@@ -34,7 +34,7 @@ TEST_CASE("google response 1", "[parser]") {
     const std::string TEST_DIR = TEST_ROOT + "test-regress-1";
     http::ResponseParser response_parser;
     http::RequestSP request = make_iptr<http::Request>();
-    request->method(Method::GET);
+    request->method = Method::GET;
     response_parser.append_request(request);
     
     http::ResponseSP response;
