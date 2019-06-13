@@ -78,4 +78,24 @@ std::ostream& operator<<(std::ostream& os, const RequestSP& ptr) {
     return os;
 }
 
+inline std::vector<string> to_vector(RequestSP request_ptr) {
+    std::vector<string> result;
+    result.reserve(1 + request_ptr->body->parts.size());
+
+    string header_str;
+    header_str += string(to_string(request_ptr->method)) + " " + request_ptr->uri->relative() + " " + "HTTP/" + request_ptr->http_version() + "\r\n";
+    for(auto field : request_ptr->headers.fields) {
+        header_str += field.name + ": " + field.value + "\r\n";
+    }
+
+    header_str += "\r\n";
+
+    result.emplace_back(header_str);
+    for(auto part : request_ptr->body->parts) {
+        result.emplace_back(part);
+    }
+
+    return result;
+}
+
 }}} // namespace panda::protocol::http
