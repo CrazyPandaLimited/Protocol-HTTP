@@ -21,11 +21,6 @@
 
 #include <panda/refcnt.h>
 #include <panda/uri/URI.h>
-#include <panda/unievent.h>
-#include <panda/unievent/Debug.h>
-#include <panda/unievent/test/AsyncTest.h>
-#include <panda/unievent/Loop.h>
-#include <panda/unievent/Timer.h>
 #include <panda/protocol/http/ParserError.h>
 #include <panda/protocol/http/Request.h>
 #include <panda/protocol/http/Response.h>
@@ -40,9 +35,7 @@
 #endif
 
 using namespace panda;
-using namespace unievent;
 using namespace protocol;
-using namespace test;
 
 using State = http::RequestParser::State;
 using Method = http::Request::Method;
