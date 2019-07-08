@@ -5,7 +5,8 @@
 
 namespace panda { namespace protocol { namespace http {
 
-using URISP = iptr<uri::URI>;
+using uri::URI;
+using URISP = iptr<URI>;
 
 class Response;
 using ResponseSP = iptr<Response>;

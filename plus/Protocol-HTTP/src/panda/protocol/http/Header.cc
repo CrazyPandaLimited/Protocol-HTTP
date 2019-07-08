@@ -48,17 +48,8 @@ void Header::add_field(std::string_view key, const string& value) {
 }
 
 void Header::set_field(std::string_view key, const string& value) {
-    auto pos = std::find_if(fields.begin(), fields.end(),[&](const HeaderField& f){
-        return iequals(f.name, key);
-    });
-
-
-    if (pos == fields.end()) {
-        add_field(key, value);
-        return;
-    }
-
-    *pos = {string(key.data(), key.size()), value};
+    remove_field(key);
+    add_field(key, value);
 }
 
 void Header::remove_field(std::string_view key) {

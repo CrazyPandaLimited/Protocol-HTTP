@@ -41,7 +41,11 @@
             throw ParserError("Cannot create response as there are no corresponding request");
         }
 
-        if(requests_.back()->method == Request::Method::HEAD) {
+        if(requests_.back()->method == Request::Method::HEAD
+           || current_message_->code  < 200
+           || current_message_->code == 203
+           || current_message_->code == 304)
+        {
             fbreak;
         }
 

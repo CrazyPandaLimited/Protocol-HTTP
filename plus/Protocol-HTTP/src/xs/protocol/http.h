@@ -1,6 +1,7 @@
 #pragma once
 
 #include <xs.h>
+#include <xs/uri.h>
 #include <panda/protocol/http/Request.h>
 #include <panda/protocol/http/Response.h>
 #include <panda/string.h>
@@ -14,6 +15,25 @@ namespace http {
 
     void http_packet_set_headers (pTHX_ panda::protocol::http::Message* p, const Hash& headers);
     void http_packet_set_body    (pTHX_ panda::protocol::http::Message* p, const Simple& body);
+
+    template <class T>
+    Simple strings_to_sv (pTHX_ const T& v) {
+        size_t len = 0;
+        for (const string& s : v) len += s.length();
+        if (!len) return Simple::undef;
+
+        auto ret = Simple::create(len);
+        char* dest = ret.get<char*>();
+        for (const string& s : v) {
+            memcpy(dest, s.data(), s.length());
+            dest += s.length();
+        }
+        *dest = 0;
+        ret.length(len);
+        return ret;
+    }
+
+    Simple strings_to_sv (pTHX_ const string& s1, const string& s2);
 }}
 
 template <class TYPE>

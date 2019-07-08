@@ -1,7 +1,7 @@
 
 #line 1 "ResponseParser.rl"
 
-#line 74 "ResponseParser.rl"
+#line 78 "ResponseParser.rl"
 
 
 #if defined(MACHINE_DATA)
@@ -40,7 +40,7 @@ static const int http_response_parser_en_chunked_body = 112;
 static const int http_response_parser_en_main = 1;
 
 
-#line 80 "ResponseParser.rl"
+#line 84 "ResponseParser.rl"
 
 #endif
 
@@ -53,7 +53,7 @@ static const int http_response_parser_en_main = 1;
 	top = 0;
 	}
 
-#line 87 "ResponseParser.rl"
+#line 91 "ResponseParser.rl"
 
 #endif
 
@@ -3410,7 +3410,11 @@ f5:
             throw ParserError("Cannot create response as there are no corresponding request");
         }
 
-        if(requests_.back()->method == Request::Method::HEAD) {
+        if(requests_.back()->method == Request::Method::HEAD
+           || current_message_->code  < 200
+           || current_message_->code == 203
+           || current_message_->code == 304)
+        {
             {p++; goto _out; }
         }
 
@@ -3794,13 +3798,13 @@ _again:
 goto _again;}
     }
 	break;
-#line 3798 "ResponseParserGenerated.cc"
+#line 3802 "ResponseParserGenerated.cc"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 94 "ResponseParser.rl"
+#line 98 "ResponseParser.rl"
 
 #endif

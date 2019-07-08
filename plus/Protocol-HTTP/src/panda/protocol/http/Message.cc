@@ -9,6 +9,7 @@ Message::Message() :
     headers(),
     body(make_iptr<Body>()),
     is_valid_(false),
+    http_version_("1.1"),
     has_header_(false),
     has_body_(false) {
 }

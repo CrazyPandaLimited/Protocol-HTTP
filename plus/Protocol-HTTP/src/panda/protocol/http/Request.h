@@ -78,7 +78,7 @@ std::ostream& operator<<(std::ostream& os, const RequestSP& ptr) {
     return os;
 }
 
-inline std::vector<string> to_vector(RequestSP request_ptr) {
+inline std::vector<string> to_vector(Request* request_ptr) {
     std::vector<string> result;
     result.reserve(1 + request_ptr->body->parts.size());
 

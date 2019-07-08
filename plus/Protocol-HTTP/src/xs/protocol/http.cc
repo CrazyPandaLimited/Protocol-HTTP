@@ -15,6 +15,19 @@ void http_packet_set_body (pTHX_ panda::protocol::http::Message* p, const Simple
     if (newbody.length()) p->body->parts.push_back(newbody);
 }
 
+Simple strings_to_sv (pTHX_ const string& s1, const string& s2) {
+    auto len = s1.length() + s2.length();
+    if (!len) return Simple::undef;
+
+    auto ret = Simple::create(len);
+    char* dest = SvPVX(ret);
+    std::memcpy(dest, s1.data(), s1.length());
+    std::memcpy(dest + s1.length(), s2.data(), s2.length());
+    dest[len] = 0;
+    ret.length(len);
+    return ret;
+}
+
 }
 }
 }
