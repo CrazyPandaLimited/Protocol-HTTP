@@ -4,7 +4,6 @@
 
 #include <panda/string.h>
 #include <panda/refcnt.h>
-#include <panda/lib.h>
 
 #include "Defines.h"
 
