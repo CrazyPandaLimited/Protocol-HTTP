@@ -13,7 +13,7 @@ using ResponseSP = iptr<Response>;
 class Request;
 using RequestSP = iptr<Request>;
 
-class RequestFactory;
+struct RequestFactory;
 using RequestFactorySP = iptr<RequestFactory>;
 
 class ResponseParser;
