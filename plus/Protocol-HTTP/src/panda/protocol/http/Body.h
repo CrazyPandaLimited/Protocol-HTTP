@@ -1,6 +1,6 @@
 #pragma once
-
 #include <vector>
+#include <iosfwd>
 
 #include <panda/refcnt.h>
 #include <panda/string.h>
@@ -27,20 +27,7 @@ struct Body : virtual Refcnt {
     std::vector<string> parts;
 };
 
-inline
-std::ostream& operator<<(std::ostream& os, const Body& b) {
-    for(auto part : b.parts) {
-        os << part;
-    }
-    return os;
-}
-
-inline
-std::ostream& operator<<(std::ostream& os, const BodySP& ptr) {
-    if(ptr) {
-        os << *ptr;
-    }
-    return os;
-}
+std::ostream& operator<< (std::ostream& os, const Body& b); 
+std::ostream& operator<< (std::ostream& os, const BodySP& ptr); 
 
 }}} // namespace panda::protocol::http
