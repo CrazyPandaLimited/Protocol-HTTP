@@ -11,7 +11,7 @@ namespace xs {
 namespace protocol {
 namespace http {
     using panda::string;
-    using std::string_view;
+    using panda::string_view;
 
     void http_packet_set_headers (pTHX_ panda::protocol::http::Message* p, const Hash& headers);
     void http_packet_set_body    (pTHX_ panda::protocol::http::Message* p, const Simple& body);
@@ -52,8 +52,8 @@ struct Typemap<panda::protocol::http::ResponseSP, panda::iptr<TYPE>> : Typemap<T
     using Super = Typemap<TYPE*>;
     static panda::iptr<TYPE> in (pTHX_ Sv arg) {
         if (!arg.defined()) return {};
-        Object obj = arg.is_object_ref() ? Object(std::move(arg)) : Super::default_stash().call("new", arg);
-        return Super::in(aTHX_ obj);
+        if (!arg.is_object_ref()) arg = Super::default_stash().call("new", arg);
+        return Super::in(aTHX_ arg);
     }
 };
 

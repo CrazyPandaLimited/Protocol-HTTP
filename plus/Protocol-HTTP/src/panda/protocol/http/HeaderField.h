@@ -10,7 +10,7 @@
 namespace panda { namespace protocol { namespace http {
 
 inline
-bool iequals(std::string_view a, std::string_view b) {
+bool iequals(panda::string_view a, panda::string_view b) {
     return std::equal(a.begin(), a.end(), b.begin(), [](char a, char b) { return a == b || tolower(a) == tolower(b); });
 }
 

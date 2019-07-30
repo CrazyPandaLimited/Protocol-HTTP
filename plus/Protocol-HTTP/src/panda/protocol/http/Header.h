@@ -64,15 +64,15 @@ struct Header {
         std::vector<HeaderField> fields;
     };
 
-    bool has_field(std::string_view key) const;
+    bool has_field(panda::string_view key) const;
 
-    string get_field(std::string_view key, const string& default_val = "") const;
+    string get_field(panda::string_view key, const string& default_val = "") const;
 
-    void add_field(std::string_view key, const string& value);
+    void add_field(panda::string_view key, const string& value);
 
-    void set_field(std::string_view key, const string& value);
+    void set_field(panda::string_view key, const string& value);
 
-    void remove_field(std::string_view key);
+    void remove_field(panda::string_view key);
 
     bool empty() const {
         return fields.empty();
@@ -86,8 +86,8 @@ struct Header {
         return fields.size();
     }
 
-    Container::reverse_iterator find(std::string_view key);
-    Container::const_reverse_iterator find(std::string_view key) const;
+    Container::reverse_iterator find(panda::string_view key);
+    Container::const_reverse_iterator find(panda::string_view key) const;
 
     Container::reverse_iterator end() { return fields.rend(); }
     Container::const_reverse_iterator end() const { return fields.rend(); }

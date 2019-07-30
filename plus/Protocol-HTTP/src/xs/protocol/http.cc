@@ -1,4 +1,5 @@
 #include "http.h"
+#include <cstring>
 
 namespace xs {
 namespace protocol {
