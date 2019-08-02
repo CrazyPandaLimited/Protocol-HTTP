@@ -3374,18 +3374,6 @@ f0:
         }
     }
 	goto _again;
-f4:
-#line 14 "ResponseParser.rl"
-	{
-        _PDEBUG("reason");
-        if(marked_buffer_.empty()) {
-            current_message_->message = string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, p));
-        } else {
-            marked_buffer_.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, p)));
-            current_message_->message = marked_buffer_;
-        }
-    }
-	goto _again;
 f3:
 #line 24 "ResponseParser.rl"
 	{
@@ -3551,6 +3539,26 @@ f2:
             current_message_->http_version(marked_buffer_);
         }
         _PDEBUG("http version: " << current_message_->http_version());
+    }
+#line 54 "MessageParser.rl"
+	{
+        _PDEBUG("unmark");
+        marked = false;
+        mark = 0;
+        if(!marked_buffer_.empty())
+            marked_buffer_.clear();
+    }
+	goto _again;
+f4:
+#line 14 "ResponseParser.rl"
+	{
+        _PDEBUG("reason");
+        if(marked_buffer_.empty()) {
+            current_message_->message = string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, p));
+        } else {
+            marked_buffer_.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, p)));
+            current_message_->message = marked_buffer_;
+        }
     }
 #line 54 "MessageParser.rl"
 	{
@@ -3798,7 +3806,7 @@ _again:
 goto _again;}
     }
 	break;
-#line 3802 "ResponseParserGenerated.cc"
+#line 3810 "ResponseParserGenerated.cc"
 	}
 	}
 

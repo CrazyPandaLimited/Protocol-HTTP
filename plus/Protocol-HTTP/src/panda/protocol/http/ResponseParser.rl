@@ -69,7 +69,7 @@
         fbreak;
     }
 
-    reason_phrase = (any -- crlf)+ >mark %reason_phrase;
+    reason_phrase = (any -- crlf)+ >mark %reason_phrase %unmark;
     status_code = digit+ >mark %status_code;
     status_line = http_version " " status_code " " reason_phrase :> crlf;
 
