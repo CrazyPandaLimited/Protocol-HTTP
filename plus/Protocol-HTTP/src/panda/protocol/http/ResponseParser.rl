@@ -53,12 +53,13 @@
            || current_message_->code == 203
            || current_message_->code == 304)
         {
+            state_ = State::done;
             fbreak;
         }
 
         if(chunked) {
             fcall chunked_body;
-            state_ = State::got_body;
+            state_ = State::done;
             current_message_->set_body();;
         }
         else if(content_len > 0) {

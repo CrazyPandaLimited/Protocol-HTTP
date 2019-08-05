@@ -1,7 +1,7 @@
 
 #line 1 "RequestParser.rl"
 
-#line 55 "RequestParser.rl"
+#line 58 "RequestParser.rl"
 
 
 #if defined(MACHINE_DATA)
@@ -43,7 +43,7 @@ static const int http_request_parser_en_chunked_body = 142;
 static const int http_request_parser_en_main = 1;
 
 
-#line 61 "RequestParser.rl"
+#line 64 "RequestParser.rl"
 
 #endif
 
@@ -56,7 +56,7 @@ static const int http_request_parser_en_main = 1;
 	top = 0;
 	}
 
-#line 68 "RequestParser.rl"
+#line 71 "RequestParser.rl"
 
 #endif
 
@@ -3543,7 +3543,7 @@ f4:
         current_message_->set_header();
         if(chunked) {
             {stack[top++] = cs; cs = 142;goto _again;}
-            state_ = State::got_body;
+            state_ = State::done;
             current_message_->set_body();;
         }
         else if(content_len > 0) {
@@ -3558,39 +3558,42 @@ f4:
                 process_body(buffer, ++p, pe);
             }
         }
+        else {
+            state_ = State::done;
+        }
         {p++; goto _out; }
     }
 	goto _again;
 f15:
-#line 40 "RequestParser.rl"
+#line 43 "RequestParser.rl"
 	{current_message_->method = Request::Method::OPTIONS; }
 	goto _again;
 f13:
-#line 41 "RequestParser.rl"
+#line 44 "RequestParser.rl"
 	{current_message_->method = Request::Method::GET; }
 	goto _again;
 f14:
-#line 42 "RequestParser.rl"
+#line 45 "RequestParser.rl"
 	{current_message_->method = Request::Method::HEAD; }
 	goto _again;
 f16:
-#line 43 "RequestParser.rl"
+#line 46 "RequestParser.rl"
 	{current_message_->method = Request::Method::POST; }
 	goto _again;
 f17:
-#line 44 "RequestParser.rl"
+#line 47 "RequestParser.rl"
 	{current_message_->method = Request::Method::PUT; }
 	goto _again;
 f12:
-#line 45 "RequestParser.rl"
+#line 48 "RequestParser.rl"
 	{current_message_->method = Request::Method::DELETE; }
 	goto _again;
 f18:
-#line 46 "RequestParser.rl"
+#line 49 "RequestParser.rl"
 	{current_message_->method = Request::Method::TRACE; }
 	goto _again;
 f0:
-#line 47 "RequestParser.rl"
+#line 50 "RequestParser.rl"
 	{current_message_->method = Request::Method::CONNECT; }
 	goto _again;
 f21:
@@ -3973,13 +3976,13 @@ _again:
 goto _again;}
     }
 	break;
-#line 3977 "RequestParserGenerated.cc"
+#line 3980 "RequestParserGenerated.cc"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 75 "RequestParser.rl"
+#line 78 "RequestParser.rl"
 
 #endif

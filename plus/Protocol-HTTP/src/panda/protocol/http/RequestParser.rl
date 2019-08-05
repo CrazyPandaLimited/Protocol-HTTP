@@ -19,7 +19,7 @@
         current_message_->set_header();
         if(chunked) {
             fcall chunked_body;
-            state_ = State::got_body;
+            state_ = State::done;
             current_message_->set_body();;
         }
         else if(content_len > 0) {
@@ -33,6 +33,9 @@
                 // set position on the next character and proceed
                 process_body(buffer, ++fpc, pe);
             }
+        }
+        else {
+            state_ = State::done;
         }
         fbreak;
     }

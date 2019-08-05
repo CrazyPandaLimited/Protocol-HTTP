@@ -48,7 +48,7 @@ public:
         not_yet,
         got_header,
         in_body,
-        got_body,
+        done,
         failed
     };
 
@@ -130,7 +130,7 @@ protected:
             unmark();
 
             // there was the last body part
-            state_ = State::got_body;
+            state_ = State::done;
             current_message_->set_body();
             return true;
         }

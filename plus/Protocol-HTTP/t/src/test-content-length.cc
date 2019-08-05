@@ -10,7 +10,7 @@ TEST_CASE("post with content-length content as single buffer", "[content-length]
         ;
     http::RequestParser::Result result = request_parser.parse_first(raw);
 
-    REQUIRE(result.state == State::got_body);
+    REQUIRE(result.state == State::done);
     
     http::RequestSP request = result.request;
 
@@ -55,7 +55,7 @@ TEST_CASE("post with content-length content in parts", "[content-length]") {
     result = request_parser.parse_first("\r\nchunks.");
     
     REQUIRE(result.request->is_valid());
-    REQUIRE(result.state == State::got_body);
+    REQUIRE(result.state == State::done);
 
     http::RequestSP request = result.request;
 
@@ -77,7 +77,7 @@ TEST_CASE("post with null content-length", "[content-length]") {
         ;
     http::RequestParser::Result result = request_parser.parse_first(raw);
 
-    REQUIRE(result.state == State::got_header);
+    REQUIRE(result.state == State::done);
     
     http::RequestSP request = result.request;
 
@@ -112,7 +112,7 @@ TEST_CASE("post iterator single request", "[content-length]") {
     
     result = request_parser.parse_first("X");
     
-    REQUIRE(result.state == State::got_body);
+    REQUIRE(result.state == State::done);
 
     _DBG("["<< result.request->body->as_buffer() << "]");
 
@@ -146,7 +146,7 @@ TEST_CASE("post iterator multiple messages", "[content-length]") {
     
     result1 = request_parser.parse_first("X" + raw);
     
-    REQUIRE(result1.state == State::got_body);
+    REQUIRE(result1.state == State::done);
 
     _DBG("["<< result1.request->body->as_buffer() << "]");
 

@@ -1,7 +1,7 @@
 
 #line 1 "ResponseParser.rl"
 
-#line 85 "ResponseParser.rl"
+#line 86 "ResponseParser.rl"
 
 
 #if defined(MACHINE_DATA)
@@ -40,7 +40,7 @@ static const int http_response_parser_en_chunked_body = 112;
 static const int http_response_parser_en_main = 1;
 
 
-#line 91 "ResponseParser.rl"
+#line 92 "ResponseParser.rl"
 
 #endif
 
@@ -53,7 +53,7 @@ static const int http_response_parser_en_main = 1;
 	top = 0;
 	}
 
-#line 98 "ResponseParser.rl"
+#line 99 "ResponseParser.rl"
 
 #endif
 
@@ -3391,12 +3391,13 @@ f5:
            || current_message_->code == 203
            || current_message_->code == 304)
         {
+            state_ = State::done;
             {p++; goto _out; }
         }
 
         if(chunked) {
             {stack[top++] = cs; cs = 112;goto _again;}
-            state_ = State::got_body;
+            state_ = State::done;
             current_message_->set_body();;
         }
         else if(content_len > 0) {
@@ -3814,13 +3815,13 @@ _again:
 goto _again;}
     }
 	break;
-#line 3818 "ResponseParserGenerated.cc"
+#line 3819 "ResponseParserGenerated.cc"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 105 "ResponseParser.rl"
+#line 106 "ResponseParser.rl"
 
 #endif
