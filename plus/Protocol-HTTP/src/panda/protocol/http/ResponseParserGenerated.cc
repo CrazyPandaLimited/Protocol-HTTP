@@ -1,7 +1,7 @@
 
 #line 1 "ResponseParser.rl"
 
-#line 78 "ResponseParser.rl"
+#line 85 "ResponseParser.rl"
 
 
 #if defined(MACHINE_DATA)
@@ -40,7 +40,7 @@ static const int http_response_parser_en_chunked_body = 112;
 static const int http_response_parser_en_main = 1;
 
 
-#line 84 "ResponseParser.rl"
+#line 91 "ResponseParser.rl"
 
 #endif
 
@@ -53,7 +53,7 @@ static const int http_response_parser_en_main = 1;
 	top = 0;
 	}
 
-#line 91 "ResponseParser.rl"
+#line 98 "ResponseParser.rl"
 
 #endif
 
@@ -3374,20 +3374,8 @@ f0:
         }
     }
 	goto _again;
-f3:
-#line 24 "ResponseParser.rl"
-	{
-        _PDEBUG("status code");
-        if(marked_buffer_.empty()) {
-            current_message_->code = std::stol(_HTTP_PARSER_PTR_TO(mark), 0);
-        } else {
-            marked_buffer_.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, p)));
-            current_message_->code = std::stol(marked_buffer_, 0);
-        }
-    }
-	goto _again;
 f5:
-#line 34 "ResponseParser.rl"
+#line 41 "ResponseParser.rl"
 	{
         _PDEBUG("done");
         state_ = State::got_header;
@@ -3558,6 +3546,26 @@ f4:
         } else {
             marked_buffer_.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, p)));
             current_message_->message = marked_buffer_;
+        }
+    }
+#line 54 "MessageParser.rl"
+	{
+        _PDEBUG("unmark");
+        marked = false;
+        mark = 0;
+        if(!marked_buffer_.empty())
+            marked_buffer_.clear();
+    }
+	goto _again;
+f3:
+#line 24 "ResponseParser.rl"
+	{
+        _PDEBUG("status code");
+        if(marked_buffer_.empty()) {
+            current_message_->code = std::stol(_HTTP_PARSER_PTR_TO(mark), 0);
+        } else {
+            marked_buffer_.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, p)));
+            current_message_->code = std::stol(marked_buffer_, 0);
         }
     }
 #line 54 "MessageParser.rl"
@@ -3806,13 +3814,13 @@ _again:
 goto _again;}
     }
 	break;
-#line 3810 "ResponseParserGenerated.cc"
+#line 3818 "ResponseParserGenerated.cc"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 98 "ResponseParser.rl"
+#line 105 "ResponseParser.rl"
 
 #endif

@@ -31,6 +31,13 @@
         }
     }
 
+    action append_mark {
+        if(marked_buffer_.empty()) {
+        } else {
+            marked_buffer_.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, fpc)));
+        }
+    }
+
     action done {
         _PDEBUG("done");
         state_ = State::got_header;
@@ -70,7 +77,7 @@
     }
 
     reason_phrase = (any -- crlf)+ >mark %reason_phrase %unmark;
-    status_code = digit+ >mark %status_code;
+    status_code = digit+ >mark %status_code %unmark;
     status_line = http_version " " status_code " " reason_phrase :> crlf;
 
     main := status_line >begin message_header* :> crlf @done;

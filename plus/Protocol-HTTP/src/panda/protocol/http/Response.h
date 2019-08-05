@@ -18,6 +18,8 @@ public:
     int code;
     string message;
 
+    string full_message() {return panda::to_string(code) + " " + message;}
+
     std::ostream& print(std::ostream& os) const override;
 
 protected:
