@@ -34,11 +34,11 @@ public:
     R* operator->() { return &result_; }
 
     bool operator==(const MessageIterator& rhs) const {
-        return parser_ == rhs.parser_ && result_.state == rhs.result_.state && result_.position == rhs.result_.position && buffer_ == rhs.buffer_;
+        return parser_ == rhs.parser_ && result_.state.value_or(P::State::not_yet) == rhs.result_.state.value_or(P::State::not_yet) && result_.position == rhs.result_.position && buffer_ == rhs.buffer_;
     }
 
     bool operator!=(const MessageIterator& rhs) const {
-        return parser_ != rhs.parser_ || result_.state != rhs.result_.state || result_.position != rhs.result_.position || buffer_ != rhs.buffer_;
+        return !operator ==(rhs);
     }
 
 private:

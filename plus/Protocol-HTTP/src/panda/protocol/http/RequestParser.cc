@@ -33,7 +33,7 @@ RequestParser::RequestParser(RequestFactorySP request_factory) :
     _PDEBUG("ctor");
 }
 
-RequestParser::Result RequestParser::reset_and_build_result(bool is_valid, size_t position, State state) {
+RequestParser::Result RequestParser::reset_and_build_result(bool is_valid, size_t position, const excepted<State, ParserError>& state) {
     init();
 
     MessageSP result = current_message_;
@@ -88,7 +88,7 @@ RequestParser::Result RequestParser::parse_first(const string& buffer) {
         return reset_and_build_result(true, position, state_);
     } else if(cs == http_request_parser_error) {
         _PDEBUG("error, mark: " << mark << " buffer: "<< marked_buffer_);
-        return reset_and_build_result(false, position, state_);
+        return reset_and_build_result(false, position, make_unexpected(ParserError("http parsing error")));
     } else {
         // append into current marked buffer everything which is unparsed yet
         if(marked) {

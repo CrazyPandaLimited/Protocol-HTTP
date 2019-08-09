@@ -40,7 +40,8 @@ public:
 
     MessageParser(MessageSP message, int cs_initial_state) :
         current_message_(message),
-        cs_initial_state_(cs_initial_state) {
+        cs_initial_state_(cs_initial_state)
+    {
         init();
     }
 
@@ -49,7 +50,7 @@ public:
         got_header,
         in_body,
         done,
-        failed
+        error
     };
 
     MessageSP create_message() { return static_cast<I*>(this)->create_message(); }
@@ -71,10 +72,17 @@ public:
         marked = false;
         mark = 0;
 
+        max_body_size = BODY_UNLIMITED;
+
         // we don't want extra virtual call, so set machine state by hand
         cs = cs_initial_state_;
         top = 0;
     }
+
+    enum BodyLimit : size_t {
+        BODY_UNLIMITED = 0,
+        BODY_PROHIBITED = size_t(-1)
+    };
 
 protected:
     inline void unmark() {
@@ -156,6 +164,8 @@ protected:
     bool trailing_header;
     bool marked;
     size_t mark;
+
+    size_t max_body_size;
 
     // initial state, set by specific parser implementation
     int cs_initial_state_;

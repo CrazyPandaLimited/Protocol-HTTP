@@ -1,6 +1,6 @@
 #pragma once
 
-#include <exception>
+#include <stdexcept>
 
 namespace panda { namespace protocol { namespace http {
 

@@ -7,7 +7,9 @@ TEST_CASE("double first line", "[bad]") {
         "GET / HTTP/1.0\r\n"
         "Host: host1\r\n"
         "\r\n";
-    http::RequestSP request = request_parser.parse_first(raw).request;
+    auto res = request_parser.parse_first(raw);
+    REQUIRE_FALSE(res.state);
+    http::RequestSP request = res.request;
     
     REQUIRE(!request->is_valid());
     REQUIRE(request->method == Method::GET);
@@ -21,7 +23,9 @@ TEST_CASE("bad first line", "[bad]") {
         "GET / HTTP/1.0\r\n"
         "Host: host1\r\n"
         "\r\n";
-    http::RequestSP request = request_parser.parse_first(raw).request;
+    auto res = request_parser.parse_first(raw);
+    REQUIRE_FALSE(res.state);
+    http::RequestSP request = res.request;
     
     REQUIRE(!request->is_valid());
 }
@@ -32,7 +36,9 @@ TEST_CASE("space before colon in header field", "[bad]") {
         "GET / HTTP/1.0\r\n"
         "Host : host1\r\n"
         "\r\n";
-    http::RequestSP request = request_parser.parse_first(raw).request;
+    auto res = request_parser.parse_first(raw);
+    REQUIRE_FALSE(res.state);
+    http::RequestSP request = res.request;
     
     REQUIRE(!request->is_valid());
 }
@@ -44,7 +50,9 @@ TEST_CASE("space before header field", "[bad]") {
         "GET / HTTP/1.0\r\n"
         " Host: host1\r\n"
         "\r\n";
-    http::RequestSP request = request_parser.parse_first(raw).request;
+    auto res = request_parser.parse_first(raw);
+    REQUIRE_FALSE(res.state);
+    http::RequestSP request = res.request;
 
     REQUIRE(!request->is_valid());
 }

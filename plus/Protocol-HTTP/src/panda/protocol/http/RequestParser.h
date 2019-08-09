@@ -3,11 +3,13 @@
 #include <memory>
 
 #include <panda/string.h>
+#include <panda/excepted.h>
 
 #include "Defines.h"
 #include "Request.h"
 #include "MessageParser.h"
 #include "MessageIterator.h"
+#include "ParserError.h"
 
 namespace panda { namespace protocol { namespace http {
 
@@ -20,10 +22,12 @@ public:
     virtual ~RequestParser();
     RequestParser(RequestFactorySP request_factory = make_iptr<RequestFactory>());
 
+    using MessageParser::max_body_size;
+
     struct Result {
         RequestSP request;
         size_t position;
-        State state;
+        excepted<State, ParserError> state;
     };
 
     using ResultSP = iptr<Result>;
@@ -32,8 +36,7 @@ public:
     Result parse_first(const string& buffer);
     ResultIterator parse(const string& buffer);
 
-    Result reset_and_build_result(bool is_valid, size_t position, State state);
-
+    Result reset_and_build_result(bool is_valid, size_t position, const excepted<State, ParserError>& state);
 private:
     RequestFactorySP request_factory_;
 };

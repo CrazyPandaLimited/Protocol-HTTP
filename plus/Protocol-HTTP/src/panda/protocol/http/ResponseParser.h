@@ -4,12 +4,14 @@
 
 #include <panda/string.h>
 #include <panda/refcnt.h>
+#include <panda/excepted.h>
 
 #include "Defines.h"
 #include "Response.h"
 #include "Request.h"
 #include "MessageParser.h"
 #include "MessageIterator.h"
+#include "ParserError.h"
 
 namespace panda { namespace protocol { namespace http {
 
@@ -22,7 +24,7 @@ public:
         RequestSP request;
         ResponseSP response;
         size_t position;
-        MessageParser<ResponseParser, Response>::State state;
+        excepted<State, ParserError> state;
     };
 
     using ResultSP = iptr<Result>;
