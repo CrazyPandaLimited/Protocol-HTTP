@@ -4,6 +4,7 @@
 #include <xs/uri.h>
 #include <panda/protocol/http/Request.h>
 #include <panda/protocol/http/Response.h>
+#include <panda/protocol/http/RequestParser.h>
 #include <panda/string.h>
 
 namespace xs {
@@ -56,5 +57,8 @@ struct Typemap<panda::protocol::http::ResponseSP, panda::iptr<TYPE>> : Typemap<T
         return Super::in(aTHX_ arg);
     }
 };
+
+template <class TYPE>
+struct Typemap<panda::protocol::http::RequestParser*, TYPE> : TypemapObject<panda::protocol::http::RequestParser*, TYPE, ObjectTypeRefcntPtr, ObjectStorageMG> {};
 
 }
