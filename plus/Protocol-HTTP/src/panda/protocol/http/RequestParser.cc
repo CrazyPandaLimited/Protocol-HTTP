@@ -46,6 +46,23 @@ RequestParser::Result RequestParser::reset_and_build_result(bool is_valid, size_
     return {result, position, state};
 }
 
+
+
+RequestParser::Result RequestParser::build_result(FinalFlag flag, size_t position) {
+    // TODO: body->length() is linear, we need cache
+
+    auto length = current_message_->body->length();
+    if (max_body_size == BODY_PROHIBITED && length > 0) {
+        return reset_and_build_result(false, position, make_unexpected(ParserError("body is prohibited")));
+    } else  if (max_body_size != BODY_UNLIMITED && length > max_body_size) {
+        return reset_and_build_result(false, position, make_unexpected(ParserError("body is bigger than max_body_size")));
+    } else if (flag == FinalFlag::RESET) {
+        return reset_and_build_result(true, position, state_);
+    } else {
+        return {current_message_, position, state_};
+    }
+}
+
 RequestParser::ResultIterator RequestParser::parse(const string& buffer) {
     return ResultIterator(this, buffer);
 }
@@ -67,10 +84,10 @@ RequestParser::Result RequestParser::parse_first(const string& buffer) {
         bool is_completed = process_body(buffer, p, pe);
         if(is_completed) {
             size_t position = p - buffer_ptr;
-            return reset_and_build_result(true, position, state_);
+            return build_result(FinalFlag::RESET, position);
         } else {
             size_t position = p - buffer_ptr;
-            return {current_message_, position, state_};
+            return build_result(FinalFlag::CONTINUE, position);
         }
     }
 
@@ -82,10 +99,10 @@ RequestParser::Result RequestParser::parse_first(const string& buffer) {
     if(cs == http_request_parser_first_final) {
         if(state_ == State::in_body) {
             _PDEBUG("body not completed, mark: " << mark << " buffer: "<< marked_buffer_);
-            return {current_message_, position, state_};
+            return build_result(FinalFlag::CONTINUE, position);
         }
         _PDEBUG("completed, mark: " << mark << " buffer: "<< marked_buffer_);
-        return reset_and_build_result(true, position, state_);
+        return build_result(FinalFlag::RESET, position);
     } else if(cs == http_request_parser_error) {
         _PDEBUG("error, mark: " << mark << " buffer: "<< marked_buffer_);
         return reset_and_build_result(false, position, make_unexpected(ParserError("http parsing error")));
@@ -99,7 +116,7 @@ RequestParser::Result RequestParser::parse_first(const string& buffer) {
         } else {
             _PDEBUG("not completed");
         }
-        return {current_message_, position, state_};
+        return build_result(FinalFlag::CONTINUE, position);
     }
 }
 

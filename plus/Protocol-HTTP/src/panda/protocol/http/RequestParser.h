@@ -36,8 +36,13 @@ public:
     Result parse_first(const string& buffer);
     ResultIterator parse(const string& buffer);
 
-    Result reset_and_build_result(bool is_valid, size_t position, const excepted<State, ParserError>& state);
 private:
+    enum class FinalFlag {
+        CONTINUE, RESET
+    };
+    Result reset_and_build_result(bool is_valid, size_t position, const excepted<State, ParserError>& state);
+    Result build_result(FinalFlag reset, size_t position);
+
     RequestFactorySP request_factory_;
 };
 

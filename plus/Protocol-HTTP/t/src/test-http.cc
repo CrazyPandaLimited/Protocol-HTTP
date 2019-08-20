@@ -323,3 +323,50 @@ TEST_CASE("case insensitive headers", "[parser]") {
     h.add_field("Aa", "value");
     CHECK(h.get_field("AA") == "value");
 }
+
+TEST_CASE("max_body_size", "[parser]") {
+    http::RequestParser request_parser;
+    request_parser.max_body_size = 2;
+    string raw =
+        "POST /upload HTTP/1.1\r\n"
+        "Content-Length: 10\r\n"
+        "\r\n"
+        "1234567890"
+        ;
+    CHECK_FALSE(request_parser.parse_first(raw).state);
+}
+
+TEST_CASE("max_body_size prohibited", "[parser]") {
+    http::RequestParser request_parser;
+    request_parser.max_body_size = http::RequestParser::BODY_PROHIBITED;
+    string raw =
+        "POST /upload HTTP/1.1\r\n"
+        "Content-Length: 1\r\n"
+        "\r\n"
+        "1"
+        ;
+    CHECK_FALSE(request_parser.parse_first(raw).state);
+}
+
+TEST_CASE("max_body_size chunked", "[parser]") {
+    http::RequestParser request_parser;
+    request_parser.max_body_size = 3;
+    string raw =
+        "POST /upload HTTP/1.1\r\n"
+        "Transfer-Encoding: chunked\r\n"
+        "\r\n"
+        "4\r\n"
+        "Wiki\r\n"
+        "5\r\n"
+        "pedia\r\n"
+        "E\r\n"
+        " in\r\n"
+        "\r\n"
+        "chunks.\r\n"
+        "0\r\n"
+        "\r\n"
+        ;
+    auto res = request_parser.parse_first(raw);
+
+    REQUIRE_FALSE(res.state);
+}
