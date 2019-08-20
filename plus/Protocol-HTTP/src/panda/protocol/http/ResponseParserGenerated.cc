@@ -2049,7 +2049,7 @@ case 115:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 185 "MessageParser.rl"
+#line 187 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr138;
@@ -2144,7 +2144,7 @@ case 119:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 185 "MessageParser.rl"
+#line 187 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr147;
@@ -2254,7 +2254,7 @@ case 126:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 185 "MessageParser.rl"
+#line 187 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr160;
@@ -2461,7 +2461,7 @@ case 136:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 185 "MessageParser.rl"
+#line 187 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 266: goto tr178;
@@ -2498,7 +2498,7 @@ case 161:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 185 "MessageParser.rl"
+#line 187 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr160;
@@ -2531,7 +2531,7 @@ case 137:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 185 "MessageParser.rl"
+#line 187 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr160;
@@ -2670,7 +2670,7 @@ case 144:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 185 "MessageParser.rl"
+#line 187 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr193;
@@ -2983,7 +2983,7 @@ case 155:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 185 "MessageParser.rl"
+#line 187 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 266: goto tr187;
@@ -3018,7 +3018,7 @@ case 156:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 185 "MessageParser.rl"
+#line 187 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr211;
@@ -3079,7 +3079,7 @@ case 157:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 185 "MessageParser.rl"
+#line 187 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 265: goto tr191;
@@ -3344,7 +3344,7 @@ case 157:
 	tr179: cs = 161; goto _again;
 
 f1:
-#line 46 "MessageParser.rl"
+#line 48 "MessageParser.rl"
 	{
         // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
@@ -3354,13 +3354,13 @@ f1:
     }
 	goto _again;
 f9:
-#line 88 "MessageParser.rl"
+#line 90 "MessageParser.rl"
 	{
         connection_close = true;
     }
 	goto _again;
 f11:
-#line 132 "MessageParser.rl"
+#line 134 "MessageParser.rl"
 	{
         chunked = true;
     }
@@ -3416,7 +3416,7 @@ f5:
     }
 	goto _again;
 f15:
-#line 46 "MessageParser.rl"
+#line 48 "MessageParser.rl"
 	{
         // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
@@ -3424,19 +3424,19 @@ f15:
         mark = p - buffer_ptr;
         marked = true;
     }
-#line 92 "MessageParser.rl"
+#line 94 "MessageParser.rl"
 	{
         trailing_header = true;
     }
 	goto _again;
 f6:
-#line 62 "MessageParser.rl"
+#line 64 "MessageParser.rl"
 	{
         marked_buffer_ = advance_buffer(buffer, p, HTTP_COPYING_HEADERS);
         current_field_buffer_ = marked_buffer_;
         _PDEBUG("write_field " << current_field_buffer_);
     }
-#line 54 "MessageParser.rl"
+#line 56 "MessageParser.rl"
 	{
         _PDEBUG("unmark");
         marked = false;
@@ -3446,7 +3446,7 @@ f6:
     }
 	goto _again;
 f8:
-#line 68 "MessageParser.rl"
+#line 70 "MessageParser.rl"
 	{
         // ignore trailing header
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
@@ -3460,7 +3460,7 @@ f8:
             _PDEBUG("write_value " << marked_buffer_);
         }
     }
-#line 54 "MessageParser.rl"
+#line 56 "MessageParser.rl"
 	{
         _PDEBUG("unmark");
         marked = false;
@@ -3470,11 +3470,11 @@ f8:
     }
 	goto _again;
 f10:
-#line 88 "MessageParser.rl"
+#line 90 "MessageParser.rl"
 	{
         connection_close = true;
     }
-#line 46 "MessageParser.rl"
+#line 48 "MessageParser.rl"
 	{
         // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
@@ -3484,7 +3484,7 @@ f10:
     }
 	goto _again;
 f13:
-#line 96 "MessageParser.rl"
+#line 98 "MessageParser.rl"
 	{
         _PDEBUG("chunk size buffer: " << marked_buffer_);
         if(marked_buffer_.empty()) {
@@ -3508,7 +3508,7 @@ f13:
 
         _PDEBUG("chunk size: " << chunk_len);
     }
-#line 54 "MessageParser.rl"
+#line 56 "MessageParser.rl"
 	{
         _PDEBUG("unmark");
         marked = false;
@@ -3518,7 +3518,7 @@ f13:
     }
 	goto _again;
 f2:
-#line 136 "MessageParser.rl"
+#line 138 "MessageParser.rl"
 	{
         _PDEBUG("http version");
         if(marked_buffer_.empty()) {
@@ -3529,7 +3529,7 @@ f2:
         }
         _PDEBUG("http version: " << current_message_->http_version());
     }
-#line 54 "MessageParser.rl"
+#line 56 "MessageParser.rl"
 	{
         _PDEBUG("unmark");
         marked = false;
@@ -3549,7 +3549,7 @@ f4:
             current_message_->message = marked_buffer_;
         }
     }
-#line 54 "MessageParser.rl"
+#line 56 "MessageParser.rl"
 	{
         _PDEBUG("unmark");
         marked = false;
@@ -3569,7 +3569,7 @@ f3:
             current_message_->code = std::stol(marked_buffer_, 0);
         }
     }
-#line 54 "MessageParser.rl"
+#line 56 "MessageParser.rl"
 	{
         _PDEBUG("unmark");
         marked = false;
@@ -3579,7 +3579,7 @@ f3:
     }
 	goto _again;
 f7:
-#line 46 "MessageParser.rl"
+#line 48 "MessageParser.rl"
 	{
         // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
@@ -3587,7 +3587,7 @@ f7:
         mark = p - buffer_ptr;
         marked = true;
     }
-#line 68 "MessageParser.rl"
+#line 70 "MessageParser.rl"
 	{
         // ignore trailing header
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
@@ -3601,7 +3601,7 @@ f7:
             _PDEBUG("write_value " << marked_buffer_);
         }
     }
-#line 54 "MessageParser.rl"
+#line 56 "MessageParser.rl"
 	{
         _PDEBUG("unmark");
         marked = false;
@@ -3611,7 +3611,7 @@ f7:
     }
 	goto _again;
 f12:
-#line 68 "MessageParser.rl"
+#line 70 "MessageParser.rl"
 	{
         // ignore trailing header
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
@@ -3625,13 +3625,13 @@ f12:
             _PDEBUG("write_value " << marked_buffer_);
         }
     }
-#line 82 "MessageParser.rl"
+#line 84 "MessageParser.rl"
 	{
         content_len = std::stol(marked_buffer_);
         body_so_far = 0;
         _PDEBUG("content-len: " << content_len);
     }
-#line 54 "MessageParser.rl"
+#line 56 "MessageParser.rl"
 	{
         _PDEBUG("unmark");
         marked = false;
@@ -3641,14 +3641,14 @@ f12:
     }
 	goto _again;
 f16:
-#line 120 "MessageParser.rl"
+#line 122 "MessageParser.rl"
 	{
         _PDEBUG("chunk data");
         if(chunk_len > 0) {
             current_message_->add_body_part( advance_buffer(buffer, p, false) );
         }
     }
-#line 54 "MessageParser.rl"
+#line 56 "MessageParser.rl"
 	{
         _PDEBUG("unmark");
         marked = false;
@@ -3656,13 +3656,13 @@ f16:
         if(!marked_buffer_.empty())
             marked_buffer_.clear();
     }
-#line 92 "MessageParser.rl"
+#line 94 "MessageParser.rl"
 	{
         trailing_header = true;
     }
 	goto _again;
 f14:
-#line 46 "MessageParser.rl"
+#line 48 "MessageParser.rl"
 	{
         // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
@@ -3670,14 +3670,14 @@ f14:
         mark = p - buffer_ptr;
         marked = true;
     }
-#line 120 "MessageParser.rl"
+#line 122 "MessageParser.rl"
 	{
         _PDEBUG("chunk data");
         if(chunk_len > 0) {
             current_message_->add_body_part( advance_buffer(buffer, p, false) );
         }
     }
-#line 54 "MessageParser.rl"
+#line 56 "MessageParser.rl"
 	{
         _PDEBUG("unmark");
         marked = false;
@@ -3685,20 +3685,20 @@ f14:
         if(!marked_buffer_.empty())
             marked_buffer_.clear();
     }
-#line 92 "MessageParser.rl"
+#line 94 "MessageParser.rl"
 	{
         trailing_header = true;
     }
 	goto _again;
 f17:
-#line 120 "MessageParser.rl"
+#line 122 "MessageParser.rl"
 	{
         _PDEBUG("chunk data");
         if(chunk_len > 0) {
             current_message_->add_body_part( advance_buffer(buffer, p, false) );
         }
     }
-#line 54 "MessageParser.rl"
+#line 56 "MessageParser.rl"
 	{
         _PDEBUG("unmark");
         marked = false;
@@ -3706,11 +3706,11 @@ f17:
         if(!marked_buffer_.empty())
             marked_buffer_.clear();
     }
-#line 92 "MessageParser.rl"
+#line 94 "MessageParser.rl"
 	{
         trailing_header = true;
     }
-#line 46 "MessageParser.rl"
+#line 48 "MessageParser.rl"
 	{
         // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
@@ -3720,14 +3720,14 @@ f17:
     }
 	goto _again;
 f19:
-#line 120 "MessageParser.rl"
+#line 122 "MessageParser.rl"
 	{
         _PDEBUG("chunk data");
         if(chunk_len > 0) {
             current_message_->add_body_part( advance_buffer(buffer, p, false) );
         }
     }
-#line 54 "MessageParser.rl"
+#line 56 "MessageParser.rl"
 	{
         _PDEBUG("unmark");
         marked = false;
@@ -3735,11 +3735,11 @@ f19:
         if(!marked_buffer_.empty())
             marked_buffer_.clear();
     }
-#line 92 "MessageParser.rl"
+#line 94 "MessageParser.rl"
 	{
         trailing_header = true;
     }
-#line 68 "MessageParser.rl"
+#line 70 "MessageParser.rl"
 	{
         // ignore trailing header
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
@@ -3755,14 +3755,14 @@ f19:
     }
 	goto _again;
 f18:
-#line 120 "MessageParser.rl"
+#line 122 "MessageParser.rl"
 	{
         _PDEBUG("chunk data");
         if(chunk_len > 0) {
             current_message_->add_body_part( advance_buffer(buffer, p, false) );
         }
     }
-#line 54 "MessageParser.rl"
+#line 56 "MessageParser.rl"
 	{
         _PDEBUG("unmark");
         marked = false;
@@ -3770,11 +3770,11 @@ f18:
         if(!marked_buffer_.empty())
             marked_buffer_.clear();
     }
-#line 92 "MessageParser.rl"
+#line 94 "MessageParser.rl"
 	{
         trailing_header = true;
     }
-#line 46 "MessageParser.rl"
+#line 48 "MessageParser.rl"
 	{
         // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
@@ -3782,7 +3782,7 @@ f18:
         mark = p - buffer_ptr;
         marked = true;
     }
-#line 68 "MessageParser.rl"
+#line 70 "MessageParser.rl"
 	{
         // ignore trailing header
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
@@ -3810,12 +3810,14 @@ _again:
 	case 21:
 #line 42 "MessageParser.rl"
 	{
+        state_ = State::done;
+        current_message_->set_body();
         {cs = stack[--top];	if ( p == pe )
 		goto _test_eof;
 goto _again;}
     }
 	break;
-#line 3819 "ResponseParserGenerated.cc"
+#line 3821 "ResponseParserGenerated.cc"
 	}
 	}
 

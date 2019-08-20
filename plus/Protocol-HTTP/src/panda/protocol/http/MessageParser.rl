@@ -40,6 +40,8 @@
     machine http_message_parser;
 
     action return {
+        state_ = State::done;
+        current_message_->set_body();
         fret;
     }
 
