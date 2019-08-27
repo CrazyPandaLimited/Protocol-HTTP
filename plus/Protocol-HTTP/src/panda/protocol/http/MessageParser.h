@@ -85,6 +85,10 @@ public:
     };
 
 protected:
+    enum class FinalFlag {
+        CONTINUE, RESET
+    };
+
     inline void unmark() {
         _PDEBUG("unmark");
         marked = false;

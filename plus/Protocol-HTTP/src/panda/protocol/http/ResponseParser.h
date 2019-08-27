@@ -36,7 +36,7 @@ public:
     ResultIterator parse(const string& buffer);
 
     ResponseSP create_message();
-    Result reset_and_build_result(bool is_valid, size_t position, State state);
+    Result reset_and_build_result(bool is_valid, size_t position, const excepted<State, ParserError>& state);
 
     void append_request(RequestSP request);
 
@@ -45,6 +45,8 @@ public:
     bool no_pending_requests() const { return requests_.empty(); }
 
 private:
+    Result build_result(FinalFlag reset, size_t position);
+
     std::deque<RequestSP> requests_;
 };
 

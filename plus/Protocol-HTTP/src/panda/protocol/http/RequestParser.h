@@ -37,9 +37,7 @@ public:
     ResultIterator parse(const string& buffer);
 
 private:
-    enum class FinalFlag {
-        CONTINUE, RESET
-    };
+    using MessageParser::FinalFlag;
     Result reset_and_build_result(bool is_valid, size_t position, const excepted<State, ParserError>& state);
     Result build_result(FinalFlag reset, size_t position);
 
