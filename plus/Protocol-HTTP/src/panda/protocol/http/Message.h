@@ -47,11 +47,14 @@ struct Message : virtual Refcnt {
 
     virtual std::ostream& print(std::ostream& os) const;
 
+    size_t buf_size() const {return _buf_size;}
+
 protected:
     bool is_valid_;
     string http_version_;
     bool has_header_;
     bool has_body_;
+    size_t _buf_size; // only for parser inner limits
 };
 
 }}} // namespace panda::protocol::http

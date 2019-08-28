@@ -72,17 +72,21 @@ public:
         marked = false;
         mark = 0;
 
-        max_body_size = BODY_UNLIMITED;
+        max_body_size = SIZE_UNLIMITED;
+        max_message_size = SIZE_UNLIMITED;
 
         // we don't want extra virtual call, so set machine state by hand
         cs = cs_initial_state_;
         top = 0;
     }
 
-    enum BodyLimit : size_t {
-        BODY_UNLIMITED = 0,
-        BODY_PROHIBITED = size_t(-1)
+    enum SizeLimit : size_t {
+        SIZE_UNLIMITED = 0,
+        SIZE_PROHIBITED = size_t(-1)
     };
+
+    size_t max_body_size; // limits body
+    size_t max_message_size; // limmits all message with start line, headers and body
 
 protected:
     enum class FinalFlag {
@@ -168,8 +172,6 @@ protected:
     bool trailing_header;
     bool marked;
     size_t mark;
-
-    size_t max_body_size;
 
     // initial state, set by specific parser implementation
     int cs_initial_state_;

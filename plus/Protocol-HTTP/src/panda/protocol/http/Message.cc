@@ -11,8 +11,9 @@ Message::Message() :
     is_valid_(false),
     http_version_("1.1"),
     has_header_(false),
-    has_body_(false) {
-}
+    has_body_(false),
+    _buf_size(0)
+{}
 
 Message::Message(
         Header&& header,
@@ -24,16 +25,18 @@ Message::Message(
     is_valid_(true),
     http_version_(http_version),
     has_header_(!header.fields.empty()),
-    has_body_(!body->parts.empty())
-{
-}
+    has_body_(!body->parts.empty()),
+    _buf_size(0)
+{}
 
 void Message::add_header_field(const string& key, const string& value) {
     headers.fields.emplace_back(key, value);
+    _buf_size += key.size() + value.size();
 }
 
 void Message::add_body_part(const string& bodypart) {
     body->parts.emplace_back(bodypart);
+    _buf_size += bodypart.size();
 }
 
 bool Message::is_valid() const {

@@ -106,7 +106,6 @@ struct Header {
     }
 
     Container fields;
-
 };
 
 inline

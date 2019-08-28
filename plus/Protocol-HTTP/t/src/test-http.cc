@@ -324,9 +324,10 @@ TEST_CASE("case insensitive headers", "[parser]") {
     CHECK(h.get_field("AA") == "value");
 }
 
-TEST_CASE("max_body_size", "[parser]") {
+TEST_CASE("max_{message,body}_size", "[parser]") {
     http::RequestParser request_parser;
-    request_parser.max_body_size = 2;
+    auto conf = GENERATE(&http::RequestParser::max_body_size, &http::RequestParser::max_message_size);
+    request_parser.*conf = 2;
     string raw =
         "POST /upload HTTP/1.1\r\n"
         "Content-Length: 10\r\n"
@@ -338,7 +339,7 @@ TEST_CASE("max_body_size", "[parser]") {
 
 TEST_CASE("max_body_size prohibited", "[parser]") {
     http::RequestParser request_parser;
-    request_parser.max_body_size = http::RequestParser::BODY_PROHIBITED;
+    request_parser.max_body_size = http::RequestParser::SIZE_PROHIBITED;
     string raw =
         "POST /upload HTTP/1.1\r\n"
         "Content-Length: 1\r\n"

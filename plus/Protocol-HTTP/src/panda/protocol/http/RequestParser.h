@@ -22,8 +22,6 @@ public:
     virtual ~RequestParser();
     RequestParser(RequestFactorySP request_factory = make_iptr<RequestFactory>());
 
-    using MessageParser::max_body_size;
-
     struct Result {
         RequestSP request;
         size_t position;

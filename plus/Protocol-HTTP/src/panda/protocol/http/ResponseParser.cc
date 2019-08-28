@@ -48,11 +48,15 @@ ResponseParser::Result ResponseParser::reset_and_build_result(bool is_valid, siz
 }
 
 ResponseParser::Result ResponseParser::build_result(FinalFlag flag, size_t position) {
+    if (max_message_size != SIZE_UNLIMITED && current_message_->buf_size() > max_message_size) {
+        return reset_and_build_result(false, position, make_unexpected(ParserError("message is bigger than max_message_size")));
+    }
+
     // TODO: body->length() is linear, we need cache
     auto length = current_message_->body->length();
-    if (max_body_size == BODY_PROHIBITED && length > 0) {
+    if (max_body_size == SIZE_PROHIBITED && length > 0) {
         return reset_and_build_result(false, position, make_unexpected(ParserError("body is prohibited")));
-    } else  if (max_body_size != BODY_UNLIMITED && length > max_body_size) {
+    } else  if (max_body_size != SIZE_UNLIMITED && length > max_body_size) {
         return reset_and_build_result(false, position, make_unexpected(ParserError("body is bigger than max_body_size")));
     } else if (flag == FinalFlag::RESET) {
         return reset_and_build_result(true, position, state_);

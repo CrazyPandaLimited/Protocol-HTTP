@@ -20,8 +20,6 @@ public:
     virtual ~ResponseParser();
     ResponseParser();
 
-    using MessageParser::max_body_size;
-
     struct Result {
         RequestSP request;
         ResponseSP response;
