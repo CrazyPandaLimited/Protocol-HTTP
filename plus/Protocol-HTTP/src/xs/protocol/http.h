@@ -14,11 +14,11 @@ namespace http {
     using panda::string;
     using panda::string_view;
 
-    void http_packet_set_headers (pTHX_ panda::protocol::http::Message* p, const Hash& headers);
-    void http_packet_set_body    (pTHX_ panda::protocol::http::Message* p, const Simple& body);
+    void http_packet_set_headers (panda::protocol::http::Message* p, const Hash& headers);
+    void http_packet_set_body    (panda::protocol::http::Message* p, const Simple& body);
 
     template <class T>
-    Simple strings_to_sv (pTHX_ const T& v) {
+    Simple strings_to_sv (const T& v) {
         size_t len = 0;
         for (const string& s : v) len += s.length();
         if (!len) return Simple::undef;
@@ -34,7 +34,7 @@ namespace http {
         return ret;
     }
 
-    Simple strings_to_sv (pTHX_ const string& s1, const string& s2);
+    Simple strings_to_sv (const string& s1, const string& s2);
 }}
 
 template <class TYPE>
@@ -51,10 +51,10 @@ struct Typemap<panda::protocol::http::Response*, TYPE> : Typemap<panda::protocol
 template <class TYPE>
 struct Typemap<panda::protocol::http::ResponseSP, panda::iptr<TYPE>> : Typemap<TYPE*> {
     using Super = Typemap<TYPE*>;
-    static panda::iptr<TYPE> in (pTHX_ Sv arg) {
+    static panda::iptr<TYPE> in (Sv arg) {
         if (!arg.defined()) return {};
         if (!arg.is_object_ref()) arg = Super::default_stash().call("new", arg);
-        return Super::in(aTHX_ arg);
+        return Super::in(arg);
     }
 };
 
