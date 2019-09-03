@@ -82,9 +82,14 @@
     }
 
     action write_content_len {
-        content_len = std::stol(marked_buffer_);
-        body_so_far = 0;
-        _PDEBUG("content-len: " << content_len);
+        auto res = panda::from_chars(marked_buffer_.data(), marked_buffer_.data() + marked_buffer_.length(), content_len);
+        if (res.ec) {
+            state_ = State::error;
+            fbreak;
+        } else {
+            body_so_far = 0;
+            _PDEBUG("content-len: " << content_len);
+        }
     }
 
     action write_connection_close {

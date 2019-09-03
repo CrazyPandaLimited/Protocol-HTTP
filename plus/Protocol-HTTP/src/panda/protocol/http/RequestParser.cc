@@ -99,7 +99,9 @@ RequestParser::Result RequestParser::parse_first(const string& buffer) {
     #include "RequestParserGenerated.cc"
 
     size_t position = p - buffer_ptr;
-    if(cs == http_request_parser_first_final) {
+    if (state_ == State::error) {
+        return reset_and_build_result(false, position, make_unexpected(ParserError("http parsing error")));
+    } else if (cs == http_request_parser_first_final) {
         if(state_ == State::in_body) {
             _PDEBUG("body not completed, mark: " << mark << " buffer: "<< marked_buffer_);
             return build_result(FinalFlag::CONTINUE, position);

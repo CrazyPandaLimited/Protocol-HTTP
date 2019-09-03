@@ -371,3 +371,27 @@ TEST_CASE("max_body_size chunked", "[parser]") {
 
     REQUIRE_FALSE(res.state);
 }
+
+template <typename P>
+static void test_unreal_content_length(P& parser) {
+    string raw =
+        "POST /upload HTTP/1.1\r\n"
+        "Content-Length: 100500999999999999099999999\r\n"
+        "\r\n"
+        "1234567890"
+        ;
+    CHECK_FALSE(parser.parse_first(raw).state);
+}
+
+TEST_CASE("unreal content lentgh request", "[parser]") {
+    http::RequestParser request_parser;
+    test_unreal_content_length(request_parser);
+}
+
+TEST_CASE("unreal content lentgh response", "[parser]") {
+    http::ResponseParser response_parser;
+    http::RequestSP request = new http::Request(http::Request::Method::GET, new uri::URI("http://dev/"), http::Header(), new http::Body, "1.1");
+    response_parser.append_request(request);
+    test_unreal_content_length(response_parser);
+}
+

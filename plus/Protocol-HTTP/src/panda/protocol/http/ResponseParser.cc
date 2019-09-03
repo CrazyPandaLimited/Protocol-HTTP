@@ -140,7 +140,9 @@ ResponseParser::Result ResponseParser::parse_first(const string& buffer) {
 
     size_t position = p - buffer_ptr;
 
-    if(cs == http_response_parser_first_final) {
+    if (state_ == State::error) {
+        return reset_and_build_result(false, position, make_unexpected(ParserError("http parsing error")));
+    } else if(cs == http_response_parser_first_final) {
         if(state_ == State::in_body) {
             _PDEBUG("body not completed, mark: " << mark << " buffer: "<< marked_buffer_);
             return build_result(FinalFlag::CONTINUE, position);
@@ -149,7 +151,7 @@ ResponseParser::Result ResponseParser::parse_first(const string& buffer) {
         return build_result(FinalFlag::RESET, position);
     } else if(cs == http_response_parser_error) {
         _PDEBUG("error, mark: " << mark << " buffer: "<< marked_buffer_);
-        return reset_and_build_result(false, position, state_);
+        return reset_and_build_result(false, position, make_unexpected(ParserError("http parsing error")));
     } else {
         // append into current marked buffer everything which is unparsed yet
         if(marked) {

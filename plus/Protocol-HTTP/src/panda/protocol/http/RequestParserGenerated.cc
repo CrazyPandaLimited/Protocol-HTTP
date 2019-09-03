@@ -2183,7 +2183,7 @@ case 145:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 187 "MessageParser.rl"
+#line 192 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr174;
@@ -2278,7 +2278,7 @@ case 149:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 187 "MessageParser.rl"
+#line 192 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr183;
@@ -2388,7 +2388,7 @@ case 156:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 187 "MessageParser.rl"
+#line 192 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr196;
@@ -2595,7 +2595,7 @@ case 166:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 187 "MessageParser.rl"
+#line 192 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 266: goto tr214;
@@ -2632,7 +2632,7 @@ case 191:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 187 "MessageParser.rl"
+#line 192 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr196;
@@ -2665,7 +2665,7 @@ case 167:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 187 "MessageParser.rl"
+#line 192 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr196;
@@ -2804,7 +2804,7 @@ case 174:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 187 "MessageParser.rl"
+#line 192 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr229;
@@ -3117,7 +3117,7 @@ case 185:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 187 "MessageParser.rl"
+#line 192 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 266: goto tr223;
@@ -3152,7 +3152,7 @@ case 186:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 187 "MessageParser.rl"
+#line 192 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr247;
@@ -3213,7 +3213,7 @@ case 187:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 187 "MessageParser.rl"
+#line 192 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 265: goto tr227;
@@ -3524,13 +3524,13 @@ f1:
     }
 	goto _again;
 f8:
-#line 90 "MessageParser.rl"
+#line 95 "MessageParser.rl"
 	{
         connection_close = true;
     }
 	goto _again;
 f10:
-#line 134 "MessageParser.rl"
+#line 139 "MessageParser.rl"
 	{
         chunked = true;
     }
@@ -3603,7 +3603,7 @@ f21:
         mark = p - buffer_ptr;
         marked = true;
     }
-#line 94 "MessageParser.rl"
+#line 99 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -3649,7 +3649,7 @@ f7:
     }
 	goto _again;
 f9:
-#line 90 "MessageParser.rl"
+#line 95 "MessageParser.rl"
 	{
         connection_close = true;
     }
@@ -3663,7 +3663,7 @@ f9:
     }
 	goto _again;
 f19:
-#line 98 "MessageParser.rl"
+#line 103 "MessageParser.rl"
 	{
         _PDEBUG("chunk size buffer: " << marked_buffer_);
         if(marked_buffer_.empty()) {
@@ -3697,7 +3697,7 @@ f19:
     }
 	goto _again;
 f3:
-#line 138 "MessageParser.rl"
+#line 143 "MessageParser.rl"
 	{
         _PDEBUG("http version");
         if(marked_buffer_.empty()) {
@@ -3786,9 +3786,14 @@ f11:
     }
 #line 84 "MessageParser.rl"
 	{
-        content_len = std::stol(marked_buffer_);
-        body_so_far = 0;
-        _PDEBUG("content-len: " << content_len);
+        auto res = panda::from_chars(marked_buffer_.data(), marked_buffer_.data() + marked_buffer_.length(), content_len);
+        if (res.ec) {
+            state_ = State::error;
+            {p++; goto _out; }
+        } else {
+            body_so_far = 0;
+            _PDEBUG("content-len: " << content_len);
+        }
     }
 #line 56 "MessageParser.rl"
 	{
@@ -3800,7 +3805,7 @@ f11:
     }
 	goto _again;
 f22:
-#line 122 "MessageParser.rl"
+#line 127 "MessageParser.rl"
 	{
         _PDEBUG("chunk data");
         if(chunk_len > 0) {
@@ -3815,7 +3820,7 @@ f22:
         if(!marked_buffer_.empty())
             marked_buffer_.clear();
     }
-#line 94 "MessageParser.rl"
+#line 99 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -3829,7 +3834,7 @@ f20:
         mark = p - buffer_ptr;
         marked = true;
     }
-#line 122 "MessageParser.rl"
+#line 127 "MessageParser.rl"
 	{
         _PDEBUG("chunk data");
         if(chunk_len > 0) {
@@ -3844,13 +3849,13 @@ f20:
         if(!marked_buffer_.empty())
             marked_buffer_.clear();
     }
-#line 94 "MessageParser.rl"
+#line 99 "MessageParser.rl"
 	{
         trailing_header = true;
     }
 	goto _again;
 f23:
-#line 122 "MessageParser.rl"
+#line 127 "MessageParser.rl"
 	{
         _PDEBUG("chunk data");
         if(chunk_len > 0) {
@@ -3865,7 +3870,7 @@ f23:
         if(!marked_buffer_.empty())
             marked_buffer_.clear();
     }
-#line 94 "MessageParser.rl"
+#line 99 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -3879,7 +3884,7 @@ f23:
     }
 	goto _again;
 f25:
-#line 122 "MessageParser.rl"
+#line 127 "MessageParser.rl"
 	{
         _PDEBUG("chunk data");
         if(chunk_len > 0) {
@@ -3894,7 +3899,7 @@ f25:
         if(!marked_buffer_.empty())
             marked_buffer_.clear();
     }
-#line 94 "MessageParser.rl"
+#line 99 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -3914,7 +3919,7 @@ f25:
     }
 	goto _again;
 f24:
-#line 122 "MessageParser.rl"
+#line 127 "MessageParser.rl"
 	{
         _PDEBUG("chunk data");
         if(chunk_len > 0) {
@@ -3929,7 +3934,7 @@ f24:
         if(!marked_buffer_.empty())
             marked_buffer_.clear();
     }
-#line 94 "MessageParser.rl"
+#line 99 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -3976,7 +3981,7 @@ _again:
 goto _again;}
     }
 	break;
-#line 3980 "RequestParserGenerated.cc"
+#line 3985 "RequestParserGenerated.cc"
 	}
 	}
 
