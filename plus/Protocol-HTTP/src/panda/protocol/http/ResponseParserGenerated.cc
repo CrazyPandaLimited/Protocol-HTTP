@@ -1,7 +1,7 @@
 
 #line 1 "ResponseParser.rl"
 
-#line 86 "ResponseParser.rl"
+#line 94 "ResponseParser.rl"
 
 
 #if defined(MACHINE_DATA)
@@ -40,7 +40,7 @@ static const int http_response_parser_en_chunked_body = 112;
 static const int http_response_parser_en_main = 1;
 
 
-#line 92 "ResponseParser.rl"
+#line 100 "ResponseParser.rl"
 
 #endif
 
@@ -53,7 +53,7 @@ static const int http_response_parser_en_main = 1;
 	top = 0;
 	}
 
-#line 99 "ResponseParser.rl"
+#line 107 "ResponseParser.rl"
 
 #endif
 
@@ -3375,7 +3375,7 @@ f0:
     }
 	goto _again;
 f5:
-#line 41 "ResponseParser.rl"
+#line 49 "ResponseParser.rl"
 	{
         _PDEBUG("done");
         state_ = State::got_header;
@@ -3562,11 +3562,19 @@ f3:
 #line 24 "ResponseParser.rl"
 	{
         _PDEBUG("status code");
+        string code_str;
         if(marked_buffer_.empty()) {
-            current_message_->code = std::stol(_HTTP_PARSER_PTR_TO(mark), 0);
+            //current_message_->code = std::stol(_HTTP_PARSER_PTR_TO(mark), 0);
+            code_str = string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, p));
         } else {
             marked_buffer_.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, p)));
-            current_message_->code = std::stol(marked_buffer_, 0);
+            code_str = marked_buffer_;
+            //current_message_->code = std::stol(marked_buffer_, 0);
+        }
+        auto res = panda::from_chars(code_str.data(), code_str.data() + code_str.length(), current_message_->code);
+        if (res.ec || current_message_->code > 999) {
+            state_ = State::error;
+            {p++; goto _out; }
         }
     }
 #line 56 "MessageParser.rl"
@@ -3822,13 +3830,13 @@ _again:
 goto _again;}
     }
 	break;
-#line 3826 "ResponseParserGenerated.cc"
+#line 3834 "ResponseParserGenerated.cc"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 106 "ResponseParser.rl"
+#line 114 "ResponseParser.rl"
 
 #endif

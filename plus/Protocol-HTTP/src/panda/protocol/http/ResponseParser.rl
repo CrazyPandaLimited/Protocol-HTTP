@@ -23,11 +23,19 @@
 
     action status_code {
         _PDEBUG("status code");
+        string code_str;
         if(marked_buffer_.empty()) {
-            current_message_->code = std::stol(_HTTP_PARSER_PTR_TO(mark), 0);
+            //current_message_->code = std::stol(_HTTP_PARSER_PTR_TO(mark), 0);
+            code_str = string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc));
         } else {
             marked_buffer_.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, fpc)));
-            current_message_->code = std::stol(marked_buffer_, 0);
+            code_str = marked_buffer_;
+            //current_message_->code = std::stol(marked_buffer_, 0);
+        }
+        auto res = panda::from_chars(code_str.data(), code_str.data() + code_str.length(), current_message_->code);
+        if (res.ec || current_message_->code < 100 || current_message_->code > 999) {
+            state_ = State::error;
+            fbreak;
         }
     }
 

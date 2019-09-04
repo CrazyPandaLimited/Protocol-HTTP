@@ -56,3 +56,53 @@ TEST_CASE("space before header field", "[bad]") {
 
     REQUIRE(!request->is_valid());
 }
+
+template <typename ParserFactory>
+static void test_unreal_digits_request(ParserFactory&& f) {
+    string raws[] = {
+        "POST /upload HTTP/1.1\r\n"
+        "Content-Length: 100500999999999999099999999\r\n"
+        "\r\n"
+        "1234567890"
+        ,
+
+    };
+    for (auto raw : raws) {
+        auto parser = f();
+        CHECK_FALSE(parser.parse_first(raw).state);
+    }
+}
+
+template <typename ParserFactory>
+static void test_unreal_digits_response(ParserFactory&& f) {
+    string raws[] = {
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Length: 100500999999999999099999999\r\n"
+        "\r\n"
+        "1234567890"
+        ,
+        "HTTP/1.1 11111 OK\r\n"
+        "Content-Length: 10\r\n"
+        "\r\n"
+        "1234567890"
+    };
+    for (auto raw : raws) {
+        auto parser = f();
+        CHECK_FALSE(parser.parse_first(raw).state);
+    }
+}
+
+TEST_CASE("unreal content lentgh request", "[parser]") {
+    test_unreal_digits_request([]() {
+        return http::RequestParser();
+    });
+}
+
+TEST_CASE("unreal content lentgh response", "[parser]") {
+    test_unreal_digits_response([]() {
+        http::ResponseParser response_parser;
+        http::RequestSP request = new http::Request(http::Request::Method::GET, new uri::URI("http://dev/"), http::Header(), new http::Body, "1.1");
+        response_parser.append_request(request);
+        return response_parser;
+    });
+}
