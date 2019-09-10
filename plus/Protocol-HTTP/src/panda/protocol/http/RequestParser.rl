@@ -4,19 +4,17 @@
     include http_message_parser "MessageParser.rl";
 
     action request_uri {
-        _PDEBUG("uri");
-        if(marked_buffer_.empty()) {
-            current_message_->uri = make_iptr<uri::URI>(string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc)));
+        if(marked_buffer.empty()) {
+            current_message->uri = make_iptr<uri::URI>(string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc)));
         } else {
-            marked_buffer_.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, fpc)));
-            current_message_->uri = make_iptr<uri::URI>(marked_buffer_);
+            marked_buffer.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, fpc)));
+            current_message->uri = make_iptr<uri::URI>(marked_buffer);
         }
     }
 
     action done {
-        _PDEBUG("done");
-        state_ = State::got_header;
-        current_message_->set_header();
+        state = State::got_header;
+        current_message->set_header();
         if(chunked) {
             fcall chunked_body;
         }
@@ -25,7 +23,7 @@
             // current position is on LF
             if(pe - fpc == 1) {
                 // set state and wait for the body in next calls
-                state_ = State::in_body;
+                state = State::in_body;
             } else {
                 // we have more buffer to process,
                 // set position on the next character and proceed
@@ -33,19 +31,19 @@
             }
         }
         else {
-            state_ = State::done;
+            state = State::done;
         }
         fbreak;
     }
 
-    method = ( "OPTIONS" @{current_message_->method = Request::Method::OPTIONS; }
-             | "GET" @{current_message_->method = Request::Method::GET; }
-             | "HEAD" @{current_message_->method = Request::Method::HEAD; }
-             | "POST" @{current_message_->method = Request::Method::POST; }
-             | "PUT" @{current_message_->method = Request::Method::PUT; }
-             | "DELETE" @{current_message_->method = Request::Method::DELETE; }
-             | "TRACE" @{current_message_->method = Request::Method::TRACE; }
-             | "CONNECT" @{current_message_->method = Request::Method::CONNECT; }
+    method = ( "OPTIONS" @{current_message->method = Request::Method::OPTIONS; }
+             | "GET" @{current_message->method = Request::Method::GET; }
+             | "HEAD" @{current_message->method = Request::Method::HEAD; }
+             | "POST" @{current_message->method = Request::Method::POST; }
+             | "PUT" @{current_message->method = Request::Method::PUT; }
+             | "DELETE" @{current_message->method = Request::Method::DELETE; }
+             | "TRACE" @{current_message->method = Request::Method::TRACE; }
+             | "CONNECT" @{current_message->method = Request::Method::CONNECT; }
              ) ;
 
     uri_reference = vchar+ >mark %request_uri %unmark;

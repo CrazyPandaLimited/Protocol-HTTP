@@ -6,7 +6,7 @@ const std::string TEST_RESPONSE = "response.txt";
 
 TEST_CASE("parsing request with iterator", "[iterator]") {
     http::RequestParser request_parser;
-    http::RequestSP request = request_parser.message();
+    http::RequestSP request;
 
     std::ifstream file(TEST_DIR+"/"+TEST_REQUEST, std::ios::binary);
     std::string str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
@@ -64,7 +64,7 @@ TEST_CASE("parsing response with iterator", "[iterator]") {
     http::ResponseSP response;
 
     // dont know the right response type, so will throw
-    REQUIRE_THROWS_AS([&]{response_parser.message();}(), http::ParserError);
+    REQUIRE_THROWS_AS([&]{response_parser.parse_first("abc");}(), http::ParserError);
     
     http::RequestSP request = make_iptr<http::Request>();
     request->method = Method::GET;
@@ -72,11 +72,6 @@ TEST_CASE("parsing response with iterator", "[iterator]") {
     response_parser.append_request(request);
     response_parser.append_request(request);
     
-    // known response type, will create a new empty one
-    response = response_parser.message();
-
-    REQUIRE(!response->is_valid());
-
     std::ifstream file(TEST_DIR+"/"+TEST_RESPONSE, std::ios::binary);
     std::string str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     
@@ -129,7 +124,6 @@ TEST_CASE("parsing response with iterator", "[iterator]") {
 
 TEST_CASE("assign and compare iterators", "[iterator]") {
     http::RequestParser request_parser;
-    http::RequestSP request = request_parser.message();
 
     std::ifstream file(TEST_DIR+"/"+TEST_REQUEST, std::ios::binary);
     std::string str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());

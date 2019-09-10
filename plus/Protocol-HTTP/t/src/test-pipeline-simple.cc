@@ -5,7 +5,6 @@ const std::string TEST_REQUEST = "pipeline.txt";
 
 TEST_CASE("parsing pipelined messages", "[parser]") {
     http::RequestParser request_parser;
-    http::RequestSP request = request_parser.message();
 
     std::ifstream file(TEST_DIR+"/"+TEST_REQUEST, std::ios::binary);
     std::string str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
@@ -13,7 +12,7 @@ TEST_CASE("parsing pipelined messages", "[parser]") {
     string buffer1(str.c_str());
     http::RequestParser::Result result = request_parser.parse_first(buffer1); 
     size_t position = result.position;
-    request = result.request;
+    auto request = result.request;
 
     _DBG("position: " << position);
 

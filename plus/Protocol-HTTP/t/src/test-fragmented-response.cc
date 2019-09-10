@@ -6,12 +6,12 @@ TEST_CASE("parsing response byte by byte", "[fragmented]") {
     http::ResponseParser response_parser;
     http::RequestSP request = new http::Request(http::Request::Method::GET, new uri::URI("http://dev/"), http::Header(), new http::Body, "1.1");
     response_parser.append_request(request);
-    http::ResponseSP response = response_parser.message();
+    http::ResponseSP response;
 
     const size_t CHUNK = GENERATE(1, 10);
     char file_buffer[CHUNK];
-    for(auto file_name : read_directory(TEST_DIR)) {
-        REQUIRE(!response->is_valid());
+    for (auto file_name : read_directory(TEST_DIR)) {
+        if (response) REQUIRE(!response->is_valid());
 
         std::ifstream file(TEST_DIR+"/"+file_name, std::ios::binary);
 

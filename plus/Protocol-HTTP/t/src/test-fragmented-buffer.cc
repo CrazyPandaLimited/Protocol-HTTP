@@ -5,11 +5,9 @@ const std::string TEST_DIR = TEST_ROOT + "test-fragmented-buffer";
 const int CHUNK_SIZE = 74;
 
 TEST_CASE("parsing fragmented messages allocating buffer", "[fragmented]") {
-
     http::RequestParser request_parser;
-    http::RequestSP request = request_parser.message();
 
-    for(auto file_name : read_directory(TEST_DIR)) {
+    for (auto file_name : read_directory(TEST_DIR)) {
         std::ifstream file(TEST_DIR+"/"+file_name, std::ios::binary);
 
         std::vector<char> file_buffer(CHUNK_SIZE, 0);
@@ -20,7 +18,7 @@ TEST_CASE("parsing fragmented messages allocating buffer", "[fragmented]") {
         buffer = string(file_buffer.data());
 
         http::RequestParser::Result result = request_parser.parse_first(buffer); 
-        request = result.request;
+        auto request = result.request;
 
         REQUIRE(request->is_valid());
         REQUIRE(request->method == Method::GET);

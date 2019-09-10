@@ -4,10 +4,10 @@ const std::string TEST_DIR = TEST_ROOT + "test-fragmented-simple";
 
 TEST_CASE("parsing message fragmented by lines", "[fragmented]") {
     http::RequestParser request_parser;
-    http::RequestSP request = request_parser.message();
+    http::RequestSP request;
 
     for(auto file_name : read_directory(TEST_DIR)) {
-        REQUIRE(!request->is_valid());
+        if (request) REQUIRE(!request->is_valid());
 
         std::ifstream file(TEST_DIR+"/"+file_name, std::ios::binary);
         std::string str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());

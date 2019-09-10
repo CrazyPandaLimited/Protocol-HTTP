@@ -46,7 +46,6 @@ private:
     MessageIterator(P* parser, const string& buffer) : parser_(parser), buffer_(buffer) { parse(); }
 
     void parse() {
-        _PDEBUG("parse iterator, buffer size: " << buffer_.size());
         result_ = parser_->parse_first(buffer_);
         if (result_.position >= buffer_.size()) {
             buffer_.clear();

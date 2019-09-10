@@ -35,60 +35,55 @@
 //
 // See Ragel Guide for a full info: https://www.colm.net/files/ragel/ragel-guide-6.4.pdf
 //
+
 %%{
 
     machine http_message_parser;
 
     action return {
-        state_ = State::done;
-        current_message_->set_body();
+        state = State::done;
+        current_message->set_body();
         fret;
     }
 
     action mark {
         // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
-        _PDEBUG("mark");
         mark = fpc - buffer_ptr;
         marked = true;
     }
 
     action unmark {
-        _PDEBUG("unmark");
         marked = false;
         mark = 0;
-        if(!marked_buffer_.empty())
-            marked_buffer_.clear();
+        if (!marked_buffer.empty()) marked_buffer.clear();
     }
 
     action write_field {
-        marked_buffer_ = advance_buffer(buffer, fpc, HTTP_COPYING_HEADERS);
-        current_field_buffer_ = marked_buffer_;
-        _PDEBUG("write_field " << current_field_buffer_);
+        marked_buffer = advance_buffer(buffer, fpc, copy_headers);
+        current_field_buffer = marked_buffer;
     }
 
     action write_value {
         // ignore trailing header
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
         if(!trailing_header) {
-            marked_buffer_ = advance_buffer(buffer, fpc, HTTP_COPYING_HEADERS);
+            marked_buffer = advance_buffer(buffer, fpc, copy_headers);
 
             // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
             // separate buffer, which is not cheap
             // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl
-            current_message_->add_header_field(current_field_buffer_, rtrim(marked_buffer_));
-            _PDEBUG("write_value " << marked_buffer_);
+            current_message->add_header_field(current_field_buffer, rtrim(marked_buffer));
         }
     }
 
     action write_content_len {
-        auto res = panda::from_chars(marked_buffer_.data(), marked_buffer_.data() + marked_buffer_.length(), content_len);
+        auto res = panda::from_chars(marked_buffer.data(), marked_buffer.data() + marked_buffer.length(), content_len);
         if (res.ec) {
-            state_ = State::error;
+            state = State::error;
             fbreak;
         } else {
             body_so_far = 0;
-            _PDEBUG("content-len: " << content_len);
         }
     }
 
@@ -101,39 +96,32 @@
     }
 
     action chunk_size {
-        _PDEBUG("chunk size buffer: " << marked_buffer_);
-        if(marked_buffer_.empty()) {
+        if(marked_buffer.empty()) {
             if(_HTTP_PARSER_LEN(mark, fpc) > 16) {
-                _PDEBUG("bad chunk size");
                 fbreak;
             }
 
             chunk_len = std::stol(string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc)), 0, 16);
         } else {
-            if(marked_buffer_.length() + _HTTP_PARSER_LEN(0, fpc) > 16) {
-                _PDEBUG("bad chunk size");
+            if(marked_buffer.length() + _HTTP_PARSER_LEN(0, fpc) > 16) {
                 fbreak;
             }
 
-            marked_buffer_.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, fpc)));
-            chunk_len = std::stol(marked_buffer_, 0, 16);
+            marked_buffer.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, fpc)));
+            chunk_len = std::stol(marked_buffer, 0, 16);
         }
 
         chunk_so_far = 0;
-
-        _PDEBUG("chunk size: " << chunk_len);
     }
 
     action chunk_data {
-        _PDEBUG("chunk data");
         if(chunk_len > 0) {
-            current_message_->add_body_part( advance_buffer(buffer, fpc, false) );
+            current_message->add_body_part( advance_buffer(buffer, fpc, false) );
         }
     }
 
     action body_data {
-        _PDEBUG("body data");
-        current_message_->add_body_part( advance_buffer(buffer, fpc, false) );
+        current_message->add_body_part( advance_buffer(buffer, fpc, false) );
     }
 
     action trans_chunked {
@@ -141,14 +129,12 @@
     }
 
     action http_version {
-        _PDEBUG("http version");
-        if(marked_buffer_.empty()) {
-            current_message_->http_version(string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc)));
+        if(marked_buffer.empty()) {
+            current_message->http_version(string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc)));
         } else {
-            marked_buffer_.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, fpc)));
-            current_message_->http_version(marked_buffer_);
+            marked_buffer.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, fpc)));
+            current_message->http_version(marked_buffer);
         }
-        _PDEBUG("http version: " << current_message_->http_version());
     }
 
 #### HTTP PROTOCOL GRAMMAR

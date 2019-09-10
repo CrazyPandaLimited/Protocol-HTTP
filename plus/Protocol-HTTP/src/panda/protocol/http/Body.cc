@@ -1,25 +1,24 @@
 #include "Body.h"
-#include <numeric>
 #include <ostream>
 
 namespace panda { namespace protocol { namespace http {
 
-Body::~Body() {
-}
-
-Body::Body() {
-}
-
-Body::Body(const string& body) {
+Body::Body (const string& body) {
     parts.emplace_back(body);
 }
 
-string Body::as_buffer() const {
-    return std::accumulate(parts.begin(), parts.end(), string());
+string Body::as_buffer () const {
+    if (!parts.size()) return "";
+    if (parts.size() == 1) return parts[0];
+    string ret(length() + 1); // speedup possible c_str()
+    for (auto& s : parts) ret += s;
+    return ret;
 }
 
-size_t Body::content_length() const {
-    return std::accumulate(parts.begin(), parts.end(), 0, [](size_t a, const string& b) { return a + b.length(); });
+size_t Body::length () const {
+    uint64_t size = 0;
+    for (auto& s : parts) size += s.length();
+    return size;
 }
 
 std::ostream& operator<< (std::ostream& os, const Body& b) {
@@ -27,7 +26,7 @@ std::ostream& operator<< (std::ostream& os, const Body& b) {
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const BodySP& ptr) {
+std::ostream& operator<< (std::ostream& os, const BodySP& ptr) {
     if (ptr) os << *ptr;
     return os;
 }

@@ -1,31 +1,25 @@
 #pragma once
-
 #include <xs.h>
 #include <xs/uri.h>
 #include <panda/protocol/http/Request.h>
 #include <panda/protocol/http/Response.h>
 #include <panda/protocol/http/RequestParser.h>
-#include <panda/string.h>
 
-namespace xs {
+namespace xs { namespace protocol { namespace http {
+    using namespace panda::protocol::http;
 
-namespace protocol {
-namespace http {
-    using panda::string;
-    using panda::string_view;
-
-    void http_packet_set_headers (panda::protocol::http::Message* p, const Hash& headers);
-    void http_packet_set_body    (panda::protocol::http::Message* p, const Simple& body);
+    void http_packet_set_headers (Message* p, const Hash& headers);
+    void http_packet_set_body    (Message* p, const Simple& body);
 
     template <class T>
     Simple strings_to_sv (const T& v) {
         size_t len = 0;
-        for (const string& s : v) len += s.length();
+        for (const panda::string& s : v) len += s.length();
         if (!len) return Simple::undef;
 
         auto ret = Simple::create(len);
         char* dest = ret.get<char*>();
-        for (const string& s : v) {
+        for (const panda::string& s : v) {
             memcpy(dest, s.data(), s.length());
             dest += s.length();
         }
@@ -34,8 +28,10 @@ namespace http {
         return ret;
     }
 
-    Simple strings_to_sv (const string& s1, const string& s2);
-}}
+    Simple strings_to_sv (const panda::string& s1, const panda::string& s2);
+}}}
+
+namespace xs {
 
 template <class TYPE>
 struct Typemap<panda::protocol::http::Message*, TYPE> : TypemapObject<panda::protocol::http::Message*, TYPE, ObjectTypeRefcntPtr, ObjectStorageMG> {};
@@ -59,6 +55,8 @@ struct Typemap<panda::protocol::http::ResponseSP, panda::iptr<TYPE>> : Typemap<T
 };
 
 template <class TYPE>
-struct Typemap<panda::protocol::http::RequestParser*, TYPE> : TypemapObject<panda::protocol::http::RequestParser*, TYPE, ObjectTypeRefcntPtr, ObjectStorageMG> {};
+struct Typemap<panda::protocol::http::RequestParser*, TYPE> : TypemapObject<panda::protocol::http::RequestParser*, TYPE, ObjectTypeRefcntPtr, ObjectStorageMG> {
+    static std::string package () { return "Protocol::HTTP::RequestParser"; }
+};
 
 }

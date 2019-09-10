@@ -4,12 +4,11 @@ const std::string TEST_DIR = TEST_ROOT + "test-fragmented-chunks";
 
 TEST_CASE("parsing message with fragmented chunks", "[fragmented]") {
     http::RequestParser request_parser;
-    http::RequestSP request = request_parser.message();
-
+    http::RequestSP request;
     http::RequestParser::State final_state;
 
-    for(auto file_name : read_directory(TEST_DIR)) {
-        REQUIRE(!request->is_valid());
+    for (auto file_name : read_directory(TEST_DIR)) {
+        if (request) REQUIRE(!request->is_valid());
 
         std::ifstream file(TEST_DIR+"/"+file_name, std::ios::binary);
         std::string str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());

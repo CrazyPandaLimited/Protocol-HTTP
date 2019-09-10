@@ -1,16 +1,16 @@
 #include "http.h"
 #include <cstring>
 
-namespace xs {
-namespace protocol {
-namespace http {
+namespace xs { namespace protocol { namespace http {
 
-void http_packet_set_headers (panda::protocol::http::Message* p, const Hash& hv) {
+using panda::string;
+
+void http_packet_set_headers (Message* p, const Hash& hv) {
     p->headers.clear();
     for (const auto& row : hv) p->headers.add_field(string(row.key()), xs::in<string>(row.value()));
 }
 
-void http_packet_set_body (panda::protocol::http::Message* p, const Simple& sv) {
+void http_packet_set_body (Message* p, const Simple& sv) {
     p->body->parts.clear();
     auto newbody = xs::in<string>(sv);
     if (newbody.length()) p->body->parts.push_back(newbody);
@@ -29,6 +29,4 @@ Simple strings_to_sv (const string& s1, const string& s2) {
     return ret;
 }
 
-}
-}
-}
+}}}
