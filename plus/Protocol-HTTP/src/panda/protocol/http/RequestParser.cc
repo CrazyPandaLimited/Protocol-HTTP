@@ -45,14 +45,14 @@ RequestParser::Result RequestParser::parse_first (const string& buffer) {
 
     size_t position = p - buffer_ptr;
     if (state == State::error) {
-        return reset_and_build_result(false, position, make_unexpected(ParserError("http parsing error")));
+        return reset_and_build_result(false, position, make_unexpected(ParserError("http parsing semantic error")));
     } else if (cs == http_request_parser_first_final) {
         if(state == State::in_body) {
             return build_result(FinalFlag::CONTINUE, position);
         }
         return build_result(FinalFlag::RESET, position);
     } else if (cs == http_request_parser_error) {
-        return reset_and_build_result(false, position, make_unexpected(ParserError("http parsing error")));
+        return reset_and_build_result(false, position, make_unexpected(ParserError("http parsing lexical error")));
     } else {
         // append into current marked buffer everything which is unparsed yet
         if (marked) {

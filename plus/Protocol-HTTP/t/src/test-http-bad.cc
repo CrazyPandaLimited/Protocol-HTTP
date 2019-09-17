@@ -106,3 +106,34 @@ TEST_CASE("unreal content lentgh response", "[parser]") {
         return response_parser;
     });
 }
+
+TEST_CASE("bad chunk size", "[bad]") {
+    http::RequestParser request_parser;
+    string raw = GENERATE(
+        string(
+            "POST /upload HTTP/1.1\r\n"
+            "Transfer-Encoding: chunked\r\n"
+            "\r\n"
+            "12345678901234567890\r\n"
+            "1234\r\n"
+            "0\r\n"
+            "\r\n")
+        ,
+        string(
+            "POST /upload HTTP/1.1\r\n"
+            "Transfer-Encoding: chunked\r\n"
+            "\r\n"
+            "82222222222222222\r\n"
+            "12345678901234567890\r\n"
+            "1234\r\n"
+            "0\r\n"
+            "\r\n"
+        )
+    );
+    auto res = request_parser.parse_first(raw);
+    REQUIRE(!res.state);
+    http::RequestSP request = res.request;
+
+    REQUIRE(!request->is_valid());
+    REQUIRE(request->method == Method::POST);
+}

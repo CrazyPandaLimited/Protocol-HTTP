@@ -96,21 +96,18 @@
     }
 
     action chunk_size {
+        string len_str;
         if(marked_buffer.empty()) {
-            if(_HTTP_PARSER_LEN(mark, fpc) > 16) {
-                fbreak;
-            }
-
-            chunk_len = std::stol(string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc)), 0, 16);
+            len_str = string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc));
         } else {
-            if(marked_buffer.length() + _HTTP_PARSER_LEN(0, fpc) > 16) {
-                fbreak;
-            }
-
             marked_buffer.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, fpc)));
-            chunk_len = std::stol(marked_buffer, 0, 16);
+            len_str = marked_buffer;
         }
-
+        auto len = len_str.length();
+        if (len > 16 || panda::from_chars(len_str.data(), len_str.data() + len, chunk_len, 16).ec) {
+            state = State::error;
+            fbreak;
+        }
         chunk_so_far = 0;
     }
 
