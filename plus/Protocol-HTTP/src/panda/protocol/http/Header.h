@@ -1,98 +1,75 @@
 #pragma once
-
-#include <vector>
-
-#include <panda/refcnt.h>
-#include <panda/string.h>
-
-#include "Defines.h"
 #include "HeaderField.h"
+#include <vector>
+#include <panda/string.h>
+#include <range/v3/core.hpp>
+#include <range/v3/view/filter.hpp>
 
 namespace panda { namespace protocol { namespace http {
 
 static int const DEFAULT_FIELDS_RESERVE = 20;
 
-struct Header : virtual Refcnt {
-    friend std::ostream& operator<<(std::ostream& os, const HeaderField& hf);
+struct Header {
     using Container = std::vector<HeaderField>;
-
-    virtual ~Header();
-
-    Header();
-
-    Header(const std::vector<HeaderField>& fields);
-
-    struct Builder {
-        Builder& connection_close() {
-            fields.emplace_back("Connection", "close");
-            return *this;
-        }
-
-        Builder& date(const string& date) {
-            fields.emplace_back("Date", date);
-            return *this;
-        }
-
-        Builder& host(const string& host) {
-            fields.emplace_back("Host", host);
-            return *this;
-        }
-
-        Builder& location(const string& location) {
-            fields.emplace_back("Location", location);
-            return *this;
-        }
-
-        Builder& chunked() {
-            fields.emplace_back("Transfer-Encoding", "chunked");
-            return *this;
-        }
-
-        Builder& add_field(const string& name, const string& value) {
-            fields.emplace_back(name, value);
-            return *this;
-        }
-
-        HeaderSP build() {
-            return make_iptr<Header>(fields);
-        }
-
-    protected:
-        std::vector<HeaderField> fields;
-    };
-
-    bool has_field(const string& key) const;
-
-    string get_field(const string& key) const;
-
-    void add_field(const string& key, const string& value);
-
-    void set_field(const string& key, const string& value);
-
-    bool empty() const {
-        return fields.empty();
-    }
-
-    Container::const_reverse_iterator find(const string &key) const;
 
     Container fields;
 
+    Header ();
+    Header (const Container& fields);
+    Header (Container&& fields);
+
+    virtual ~Header () {}
+
+    bool     has_field    (string_view key) const;
+    string   get_field    (string_view key, const string& default_val = "") const;
+    Header&  add_field    (const string& key, const string& value) &;
+    Header&& add_field    (const string& key, const string& value) && { add_field(key, value); return std::move(*this); }
+    void     set_field    (const string& key, const string& value);
+    void     remove_field (string_view key);
+
+    bool   empty () const { return fields.empty(); }
+    size_t size  () const { return fields.size(); }
+
+
+    void clear () { fields.clear(); }
+
+    string connection () const { return get_field("Connection", ""); }
+    string date       () const { return get_field("Date", ""); }
+    string host       () const { return get_field("Host", ""); }
+    string location   () const { return get_field("Location", ""); }
+    bool   is_chunked () const { return get_field("Transfer-Encoding", "") == "chunked"; }
+
+    Header&  connection (const string& ctype) &     { return add_field("Connection", ctype); }
+    Header&& connection (const string& ctype) &&    { return std::move(*this).add_field("Connection", ctype); }
+    Header&  date       (const string& date) &      { return add_field("Date", date); }
+    Header&& date       (const string& date) &&     { return std::move(*this).add_field("Date", date); }
+    Header&  host       (const string& host) &      { return add_field("Host", host); }
+    Header&& host       (const string& host) &&     { return std::move(*this).add_field("Host", host); }
+    Header&  location   (const string& location) &  { return add_field("Location", location); }
+    Header&& location   (const string& location) && { return std::move(*this).add_field("Location", location); }
+    Header&  chunked    () &                        { return add_field("Transfer-Encoding", "chunked"); }
+    Header&& chunked    () &&                       { return std::move(*this).add_field("Transfer-Encoding", "chunked"); }
+
+    Container::reverse_iterator       find (string_view key);
+    Container::const_reverse_iterator find (string_view key) const;
+
+    Container::reverse_iterator       end ()       { return fields.rend(); }
+    Container::const_reverse_iterator end () const { return fields.rend(); }
+
+    struct Comparator {
+        string key;
+        bool operator()(const HeaderField& f) const {
+            return iequals(f.name, key);
+        }
+    };
+
+    using Range = decltype(std::declval<const Container&>() | ::ranges::view::filter(std::declval<Comparator>()));
+
+    Range equal_range (const string& key) const {
+        return fields | ::ranges::view::filter(Comparator{key});
+    }
 };
 
-inline
-std::ostream& operator<<(std::ostream& os, const Header& h) {
-    for(auto field : h.fields) {
-        os << field << "\r\n";
-    }
-    return os;
-}
+std::ostream& operator<< (std::ostream&, const Header&);
 
-inline
-std::ostream& operator<<(std::ostream& os, const HeaderSP& ptr) {
-    if(ptr) {
-        os << *ptr;
-    }
-    return os;
-}
-
-}}} // namespace panda::protocol::http
+}}}

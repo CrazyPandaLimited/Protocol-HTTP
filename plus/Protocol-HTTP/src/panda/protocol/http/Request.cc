@@ -1,35 +1,35 @@
 #include "Request.h"
 
-#include "Response.h"
-#include "Header.h"
-
 namespace panda { namespace protocol { namespace http {
 
-Request::~Request() {
-}
+Request::Request (Method method, const URISP& uri, Header&& header, const BodySP& body, const string& http_version) :
+    Message(std::move(header), body, http_version), method(method), uri(uri)
+{}
 
-Request::Request() {
-}
-
-Request::Request(Method method, URISP uri, HeaderSP header, BodySP body, const string& http_version) :
-    Message(header, body, http_version),
-    method_(method),
-    uri_(uri)
-{
-}
-
-ResponseSP Request::response() const {
-    return create_response();
-}
-
-ResponseSP Request::create_response() const {
-    return make_iptr<Response>();
-}
-
-std::ostream& Request::print(std::ostream& os) const {
-    os << to_string(method_) << " " << uri_->to_string() << " " << "HTTP/" << http_version_ << "\r\n";
+std::ostream& Request::print (std::ostream& os) const {
+    os << to_string(method) << " " << uri->to_string() << " " << "HTTP/" << http_version_ << "\r\n";
     Message::print(os);
     return os;
 }
 
-}}} // namespace panda::protocol::http
+std::ostream& operator<< (std::ostream& os, const RequestSP& ptr) {
+    if (ptr) os << *ptr;
+    return os;
+}
+
+std::vector<string> to_vector (Request* r) {
+    std::vector<string> result;
+    result.reserve(1 + r->body->parts.size());
+
+    string header_str;
+    header_str += string(to_string(r->method)) + " " + r->uri->relative() + " " + "HTTP/" + r->http_version() + "\r\n";
+    for (auto& field : r->headers.fields) header_str += field.name + ": " + field.value + "\r\n";
+    header_str += "\r\n";
+
+    result.emplace_back(header_str);
+    for (auto part : r->body->parts) result.emplace_back(part);
+
+    return result;
+}
+
+}}}

@@ -1,0 +1,12 @@
+#pragma once
+#define _HTTP_PARSER_LEN(AT, FPC) (FPC - buffer_ptr - AT)
+#define _HTTP_PARSER_PTR_TO(F) (buffer_ptr + F)
+
+namespace panda { namespace protocol { namespace http {
+
+inline string rtrim (const string& str) {
+    string::size_type end = str.find_last_not_of(" ");
+    return end == string::npos ? string() : str.substr(0, end+1);
+}
+
+}}}

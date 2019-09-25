@@ -1,34 +1,24 @@
 #pragma once
-
-#include <vector>
-#include <iostream>
+#include <iosfwd>
 #include <algorithm>
-
-#include <panda/refcnt.h>
 #include <panda/string.h>
 
 namespace panda { namespace protocol { namespace http {
 
-inline
-bool iequals(const string& a, const string& b) {
-    return std::equal(a.begin(), a.end(), b.begin(), b.end(), [](char a, char b) { return a == b || tolower(a) == tolower(b); });
+inline bool iequals (string_view a, string_view b) {
+    return std::equal(a.begin(), a.end(), b.begin(), [](char a, char b) { return a == b || tolower(a) == tolower(b); });
 }
 
 struct HeaderField {
-    friend std::ostream& operator<<(std::ostream& os, const HeaderField& hf);
-
-    HeaderField(const string& name, const string& value);
-    bool operator==(const HeaderField& rhs) const;
-    bool operator!=(const HeaderField& rhs) const;
-
     string name;
     string value;
+
+    HeaderField (const string& name, const string& value);
+
+    bool operator== (const HeaderField& rhs) const;
+    bool operator!= (const HeaderField& rhs) const { return !(*this == rhs); }
 };
 
-inline
-std::ostream& operator<<(std::ostream& os, const HeaderField& hf) {
-    os << hf.name << ": " << hf.value;
-    return os;
-}
+std::ostream& operator<< (std::ostream& os, const HeaderField& hf);
 
-}}} // namespace panda::protocol::http
+}}}

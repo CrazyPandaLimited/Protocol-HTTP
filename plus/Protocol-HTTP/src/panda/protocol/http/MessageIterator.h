@@ -34,11 +34,11 @@ public:
     R* operator->() { return &result_; }
 
     bool operator==(const MessageIterator& rhs) const {
-        return parser_ == rhs.parser_ && result_.state == rhs.result_.state && result_.position == rhs.result_.position && buffer_ == rhs.buffer_;
+        return parser_ == rhs.parser_ && result_.state.value_or(P::State::not_yet) == rhs.result_.state.value_or(P::State::not_yet) && result_.position == rhs.result_.position && buffer_ == rhs.buffer_;
     }
 
     bool operator!=(const MessageIterator& rhs) const {
-        return parser_ != rhs.parser_ || result_.state != rhs.result_.state || result_.position != rhs.result_.position || buffer_ != rhs.buffer_;
+        return !operator ==(rhs);
     }
 
 private:
@@ -46,7 +46,6 @@ private:
     MessageIterator(P* parser, const string& buffer) : parser_(parser), buffer_(buffer) { parse(); }
 
     void parse() {
-        _PDEBUG("parse iterator, buffer size: " << buffer_.size());
         result_ = parser_->parse_first(buffer_);
         if (result_.position >= buffer_.size()) {
             buffer_.clear();

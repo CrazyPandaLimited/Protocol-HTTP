@@ -1,18 +1,5 @@
 #include "ResponseParser.h"
-
-#include <cstdio>
-#include <cassert>
-#include <cstdlib>
-#include <cctype>
-#include <cstring>
-
-#include <iostream>
-
-#include <panda/string.h>
-#include <panda/log.h>
-
-#include "MessageParser.h"
-#include "ParserError.h"
+#include "parser.icc"
 
 namespace panda { namespace protocol { namespace http {
 
@@ -21,73 +8,28 @@ namespace {
     #include "ResponseParserGenerated.cc"
 }
 
-ResponseParser::~ResponseParser() {
-    _PDEBUG("dtor");
+ResponseParser::ResponseParser () : MessageParser<Response>(nullptr, http_response_parser_start) {}
+
+void ResponseParser::append_request (const RequestSP& request) {
+    requests.emplace_front(request);
 }
 
-ResponseParser::ResponseParser() :
-    MessageParser<ResponseParser, Response>(nullptr, http_response_parser_start) {
-    _PDEBUG("ctor");
-}
-
-ResponseParser::Result ResponseParser::reset_and_build_result(bool is_valid, size_t position, State state) {
-    init();
-
-    MessageSP message = current_message_;
-    if(is_valid) {
-        message->set_valid();
-    }
-
-    RequestSP request = requests_.back();
-
-    requests_.pop_back();
-
-    current_message_ = nullptr;
-
-    return {request, message, position, state};
-}
-
-ResponseSP ResponseParser::create_message() {
-    _PDEBUG("create_message");
+ResponseSP ResponseParser::create_message () {
     // we need requests to parse some responses correctly (for example HEAD response)
     // so something is terribly wrong if we have no corresponding request
-    if(requests_.empty()) {
-        throw ParserError("Cannot create response as there are no corresponding request");
-    }
-
-    if(current_message_ && current_message_->code()) {
-        throw ParserError("Programming error, there is incomplete message in the parser");
-    }
-
-    current_message_ = requests_.back()->response();
-    return current_message_;
+    assert(!current_message);
+    if (requests.empty()) throw ParserError("Cannot create response as there are no corresponding request");
+    current_message = requests.back()->response();
+    return current_message;
 }
 
-void ResponseParser::append_request(iptr<Request> request) {
-    _PDEBUG("append_request");
-    requests_.emplace_front(request);
-}
-
-ResponseSP ResponseParser::message() {
-    if(!current_message_) {
-        if(requests_.empty()) {
-            throw ParserError("Cannot get response as there are no corresponding request");
-        }
-        current_message_ = requests_.back()->response();
-    }
-
-    return current_message_;
-}
-
-ResponseParser::ResultIterator ResponseParser::parse(const string& buffer) {
+ResponseParser::ResultIterator ResponseParser::parse (const string& buffer) {
     return ResultIterator(this, buffer);
 }
 
-ResponseParser::Result ResponseParser::parse_first(const string& buffer) {
-    _PDEBUG("parsing [" << buffer << "]");
-
-    if(requests_.empty()) {
-        if(buffer.empty()) {
+ResponseParser::Result ResponseParser::parse_first (const string& buffer) {
+    if (requests.empty()) {
+        if (buffer.empty()) {
             // stop iteration
             return { nullptr, nullptr, 0, State::not_yet };
         } else {
@@ -105,14 +47,14 @@ ResponseParser::Result ResponseParser::parse_first(const string& buffer) {
     //
     const char *eof = pe;
 
-    if(state_ == State::in_body) {
+    if (state == State::in_body) {
         bool is_completed = process_body(buffer, p, pe);
-        if(is_completed) {
+        if (is_completed) {
             size_t position = p - buffer_ptr;
-            return reset_and_build_result(true, position, state_);
+            return build_result(FinalFlag::RESET, position);
         } else {
             size_t position = p - buffer_ptr;
-            return {requests_.back(), current_message_, position, state_};
+            return build_result(FinalFlag::CONTINUE, position);
         }
     }
 
@@ -122,29 +64,56 @@ ResponseParser::Result ResponseParser::parse_first(const string& buffer) {
 
     size_t position = p - buffer_ptr;
 
-    if(cs == http_response_parser_first_final) {
-        if(state_ == State::in_body) {
-            _PDEBUG("body not completed, mark: " << mark << " buffer: "<< marked_buffer_);
-            return {requests_.back(), current_message_, position, state_};
+    if (state == State::error) {
+        return reset_and_build_result(false, position, make_unexpected(ParserError("http parsing error")));
+    } else if (cs == http_response_parser_first_final) {
+        if (state == State::in_body) {
+            return build_result(FinalFlag::CONTINUE, position);
         }
-        _PDEBUG("completed, mark: " << mark << " buffer: "<< marked_buffer_);
-        return reset_and_build_result(true, position, state_);
-    } else if(cs == http_response_parser_error) {
-        _PDEBUG("error, mark: " << mark << " buffer: "<< marked_buffer_);
-        return reset_and_build_result(false, position, state_);
+        return build_result(FinalFlag::RESET, position);
+    } else if (cs == http_response_parser_error) {
+        return reset_and_build_result(false, position, make_unexpected(ParserError("http parsing error")));
     } else {
         // append into current marked buffer everything which is unparsed yet
-        if(marked) {
-            _PDEBUG("not completed, mark: " << mark);
-            marked_buffer_.append(buffer.substr(mark));
+        if (marked) {
+            marked_buffer.append(buffer.substr(mark));
             // current block is over, but we are still copying the next block from the beginning into our buffer
             mark = 0;
-        } else {
-            _PDEBUG("not completed");
         }
-        //_PDEBUG("not completed, mark: " << mark << " buffer: "<< marked_buffer_);
-        return {requests_.back(), current_message_, position, state_};
+        return build_result(FinalFlag::CONTINUE, position);
     }
 }
 
-}}} // namespace panda::protocol::http
+ResponseParser::Result ResponseParser::reset_and_build_result (bool is_valid, size_t position, const excepted<State, ParserError>& state) {
+    init();
+
+    MessageSP message = current_message;
+    if (is_valid) message->set_valid();
+
+    RequestSP request = requests.back();
+    requests.pop_back();
+
+    current_message = nullptr;
+
+    return {request, message, position, state};
+}
+
+ResponseParser::Result ResponseParser::build_result (FinalFlag flag, size_t position) {
+    if (max_message_size != SIZE_UNLIMITED && current_message->buf_size() > max_message_size) {
+        return reset_and_build_result(false, position, make_unexpected(ParserError("message is bigger than max_message_size")));
+    }
+
+    // TODO: body->length() is linear, we need cache
+    auto length = current_message->body->length();
+    if (max_body_size == SIZE_PROHIBITED && length > 0) {
+        return reset_and_build_result(false, position, make_unexpected(ParserError("body is prohibited")));
+    } else  if (max_body_size != SIZE_UNLIMITED && length > max_body_size) {
+        return reset_and_build_result(false, position, make_unexpected(ParserError("body is bigger than max_body_size")));
+    } else if (flag == FinalFlag::RESET) {
+        return reset_and_build_result(true, position, state);
+    } else {
+        return {requests.back(), current_message, position, state};
+    }
+}
+
+}}}

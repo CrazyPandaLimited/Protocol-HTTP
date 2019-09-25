@@ -1,86 +1,34 @@
 #include "Message.h"
-
-#include <vector>
 #include <algorithm>
 
 namespace panda { namespace protocol { namespace http {
 
-Message::Message() :
-    is_valid_(false),
-    header_(make_iptr<Header>()),
-    body_(make_iptr<Body>()),
-    has_header_(false),
-    has_body_(false) {
+Message::Message () : body(make_iptr<Body>()), is_valid_(), http_version_("1.1"), has_header_(), has_body_(), _buf_size() {}
+
+Message::Message (Header&& headers, const BodySP& body, const string& http_version) :
+    headers(std::move(headers)), body(body), is_valid_(true), http_version_(http_version), has_header_(!headers.empty()),
+    has_body_(!body->parts.empty()), _buf_size()
+{}
+
+void Message::add_header_field (const string& key, const string& value) {
+    headers.add_field(key, value);
+    _buf_size += key.size() + value.size();
 }
 
-Message::Message(
-        HeaderSP header,
-        BodySP body,
-        const string& http_version
-        ) :
-    is_valid_(true),
-    header_(header),
-    body_(body),
-    http_version_(http_version),
-    has_header_(!header->fields.empty()),
-    has_body_(!body->parts.empty())
-{
+void Message::add_body_part (const string& bodypart) {
+    body->parts.emplace_back(bodypart);
+    _buf_size += bodypart.size();
 }
 
-HeaderSP Message::header() const {
-    return header_;
-}
-
-BodySP Message::body() const {
-    return body_;
-}
-
-void Message::add_header_field(const string& key, const string& value) {
-    header_->fields.emplace_back(key, value);
-}
-
-void Message::add_body_part(const string& body_part) {
-    body_->parts.emplace_back(body_part);
-}
-
-bool Message::is_valid() const {
-    return is_valid_;
-}
-
-void Message::set_valid() {
-   is_valid_ = true;
-}
-
-bool Message::has_header() const {
-    return has_header_;
-}
-
-void Message::set_header() {
-   has_header_ = true;
-}
-
-bool Message::has_body() const {
-    return has_body_;
-}
-
-void Message::set_body() {
-   has_body_ = true;
-}
-
-std::ostream& operator<<(std::ostream& os, const Message& message) {
-    return message.print(os);
-}
-
-std::ostream& Message::print(std::ostream& os) const {
-    os << header_;
-
+std::ostream& Message::print (std::ostream& os) const {
+    os << headers;
     os << "\r\n";
-
-    for(auto part : body_->parts) {
-        os << part;
-    }
-
+    for (auto part : body->parts) os << part;
     return os;
 }
 
-}}} // namespace panda::protocol::http
+std::ostream& operator<< (std::ostream& os, const Message& message) {
+    return message.print(os);
+}
+
+}}}

@@ -1,47 +1,43 @@
 #pragma once
-
-#include <deque>
-
-#include <panda/string.h>
-#include <panda/refcnt.h>
-
-#include "Defines.h"
-#include "Response.h"
 #include "Request.h"
+#include "Response.h"
+#include "ParserError.h"
 #include "MessageParser.h"
 #include "MessageIterator.h"
+#include <deque>
+#include <panda/excepted.h>
 
 namespace panda { namespace protocol { namespace http {
 
-class ResponseParser : public MessageParser<ResponseParser, Response> {
-public:
-    virtual ~ResponseParser();
-    ResponseParser();
-
+struct ResponseParser : MessageParser<Response> {
     struct Result {
-        RequestSP request;
+        RequestSP  request;
         ResponseSP response;
-        size_t position;
-        MessageParser<ResponseParser, Response>::State state;
+        size_t     position;
+        excepted<State, ParserError> state;
     };
-
     using ResultSP = iptr<Result>;
     using ResultIterator = MessageIterator<ResponseParser, Result>;
 
-    Result parse_first(const string& buffer);
-    ResultIterator parse(const string& buffer);
+    ResponseParser ();
 
-    ResponseSP create_message();
-    Result reset_and_build_result(bool is_valid, size_t position, State state);
+    virtual ~ResponseParser () {}
 
-    void append_request(RequestSP request);
+    void append_request (const RequestSP& request);
 
-    ResponseSP message() override;
+    Result parse_first (const string& buffer);
+    ResultIterator parse (const string& buffer);
 
-    bool no_pending_requests() const { return requests_.empty(); }
+    bool no_pending_requests () const { return requests.empty(); }
 
 private:
-    std::deque<RequestSP> requests_;
-};
+    ResponseSP create_message ();
 
-}}} // namespace panda::protocol::http
+    Result build_result           (FinalFlag reset, size_t position);
+    Result reset_and_build_result (bool is_valid, size_t position, const excepted<State, ParserError>& state);
+
+    std::deque<RequestSP> requests;
+};
+using ResponseParserSP = iptr<ResponseParser>;
+
+}}}

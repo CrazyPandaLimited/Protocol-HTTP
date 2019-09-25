@@ -1,60 +1,44 @@
 #pragma once
-
-#include <vector>
-#include <iostream>
-
-#include <panda/refcnt.h>
-#include <panda/string.h>
-
 #include "Body.h"
 #include "Header.h"
 
 namespace panda { namespace protocol { namespace http {
 
 struct Message : virtual Refcnt {
-    friend std::ostream& operator<<(std::ostream& os, const Message& message);
+    Message ();
+    Message (Header&& header, const BodySP& body, const string& http_version);
 
-    Message();
+    Header headers;
+    BodySP body;
 
-    Message(HeaderSP header, BodySP body, const string& http_version);
+    void add_header_field (const string& key, const string& value);
+    void add_body_part    (const string& body_part);
 
-    HeaderSP header() const;
+    bool is_valid  () const { return is_valid_; }
+    void set_valid ()       { is_valid_ = true; }
 
-    BodySP body() const;
+    bool has_header () const { return has_header_; }
+    void set_header ()       { has_header_ = true; }
 
-    void add_header_field(const string& key, const string& value);
+    bool has_body () const { return has_body_; }
+    void set_body ()       { has_body_ = true; }
 
-    void add_body_part(const string& body_part);
+    string http_version () const { return http_version_; }
 
-    bool is_valid() const;
+    void http_version (const string& http_version) { http_version_ = http_version; }
 
-    void set_valid();
+    size_t buf_size () const {return _buf_size;}
 
-    bool has_header() const;
-
-    void set_header();
-
-    bool has_body() const;
-
-    void set_body();
-
-    string http_version() const {
-        return http_version_;
-    }
-
-    void http_version(const string& http_version) {
-        http_version_ = http_version;
-    }
-
-    virtual std::ostream& print(std::ostream& os) const;
+    virtual std::ostream& print (std::ostream& os) const;
 
 protected:
-    bool is_valid_;
-    HeaderSP header_;
-    BodySP body_;
+    bool   is_valid_;
     string http_version_;
-    bool has_header_;
-    bool has_body_;
+    bool   has_header_;
+    bool   has_body_;
+    size_t _buf_size; // only for parser inner limits
 };
 
-}}} // namespace panda::protocol::http
+std::ostream& operator<< (std::ostream&, const Message&);
+
+}}}

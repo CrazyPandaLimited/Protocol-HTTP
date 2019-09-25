@@ -1,58 +1,30 @@
 #pragma once
-
 #include "Message.h"
-
-#include <panda/string.h>
-#include <panda/refcnt.h>
-
-#include "Defines.h"
 
 namespace panda { namespace protocol { namespace http {
 
-class Response : public Message {
-public:
-    Response();
+struct Response : Message {
+    int    code;
+    string message;
 
-    Response(int code, const string& reason, HeaderSP header, BodySP body, const string& http_version);
+    Response () : code() {}
+    Response (int code, const string& reason, Header&& header, const BodySP& body, const string& http_version);
 
-    int code() const {
-        return code_;
-    }
+    string full_message () { return panda::to_string(code) + " " + message; }
 
-    void code(int code) {
-        code_ = code;
-    }
-
-    string reason() const {
-        return reason_;
-    }
-
-    void reason(string reason) {
-        reason_ = reason;
-    }
-
-    std::ostream& print(std::ostream& os) const override;
+    std::ostream& print (std::ostream& os) const override;
 
 protected:
-    // restrict stack allocation
-    virtual ~Response();
+    virtual ~Response () {} // restrict stack allocation
 
 private:
-    // disable copying as we disabled stack usage
-    Response(const Response&) = delete;
-    Response& operator=(const Response&) = delete;
-
-private:
-    int code_;
-    string reason_;
+    Response (const Response&) = delete;
+    Response& operator= (const Response&) = delete;
 };
+using ResponseSP = iptr<Response>;
 
-inline
-std::ostream& operator<<(std::ostream& os, const ResponseSP& ptr) {
-    if(ptr) {
-        os << *ptr;
-    }
-    return os;
-}
+std::ostream& operator<< (std::ostream&, const ResponseSP&);
 
-}}} // namespace panda::protocol::http
+std::vector<string> to_vector (Response* response_ptr);
+
+}}}

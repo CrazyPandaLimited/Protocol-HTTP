@@ -1,25 +1,14 @@
 #pragma once
-
-#include <panda/string.h>
-#include <panda/refcnt.h>
-#include <panda/uri/URI.h>
-
 #include "Message.h"
-#include "Defines.h"
+#include "Response.h"
+#include <panda/uri/URI.h>
 
 namespace panda { namespace protocol { namespace http {
 
-// Host field builder
-inline string to_host(URISP uri) {
-    if(uri->port() == 80) {
-        return uri->host();
-    } else {
-        return uri->host() + ":" + to_string(uri->port());
-    }
-}
+using panda::uri::URI;
+using panda::uri::URISP;
 
-class Request : public Message {
-public:
+struct Request : Message {
     enum class Method {
         OPTIONS,
         GET,
@@ -31,67 +20,44 @@ public:
         CONNECT,
     };
 
-    Request();
+    Method method;
+    URISP  uri;
 
-    Request(Method method, URISP uri, HeaderSP header, BodySP body, const string& http_version);
+    Request () {}
+    Request (Method method, const URISP& uri, Header&& header, const BodySP& body, const string& http_version);
 
-    Method method() const {
-        return method_;
-    }
+    ResponseSP response () const { return create_response(); }
 
-    void method(Method method) {
-        method_ = method;
-    }
-
-    URISP uri() const {
-        return uri_;
-    }
-
-    void uri(URISP uri) {
-        uri_ = uri;
-    }
-
-    std::ostream& print(std::ostream& os) const override;
-
-    ResponseSP response() const;
+    std::ostream& print (std::ostream&) const override;
 
 protected:
-    // restrict stack allocation
-    virtual ~Request();
+    virtual ~Request() {} // restrict stack allocation
 
-    virtual ResponseSP create_response() const;
+    virtual ResponseSP create_response () const { return make_iptr<Response>(); }
 
 private:
-    // disable copying as we disabled stack usage
-    Request(const Request&) = delete;
-    Request& operator=(const Request&) = delete;
-
-protected:
-    Method method_;
-    URISP uri_;
+    Request (const Request&) = delete;
+    Request& operator= (const Request&) = delete;
 };
+using RequestSP = iptr<Request>;
 
-inline
-const char* to_string(Request::Method rm) {
+inline const char* to_string (Request::Method rm) {
+    using Method = Request::Method;
     switch (rm) {
-        case Request::Method::OPTIONS: return "OPTIONS";
-        case Request::Method::GET: return "GET";
-        case Request::Method::HEAD: return "HEAD";
-        case Request::Method::POST: return "POST";
-        case Request::Method::PUT: return "PUT";
-        case Request::Method::DELETE: return "DELETE";
-        case Request::Method::TRACE: return "TRACE";
-        case Request::Method::CONNECT: return "CONNECT";
+        case Method::OPTIONS : return "OPTIONS";
+        case Method::GET     : return "GET";
+        case Method::HEAD    : return "HEAD";
+        case Method::POST    : return "POST";
+        case Method::PUT     : return "PUT";
+        case Method::DELETE  : return "DELETE";
+        case Method::TRACE   : return "TRACE";
+        case Method::CONNECT : return "CONNECT";
         default: return "[UNKNOWN]";
     }
 }
 
-inline
-std::ostream& operator<<(std::ostream& os, const RequestSP& ptr) {
-    if(ptr) {
-        os << *ptr;
-    }
-    return os;
-}
+std::ostream& operator<< (std::ostream& os, const RequestSP& ptr);
 
-}}} // namespace panda::protocol::http
+std::vector<string> to_vector(Request* request_ptr);
+
+}}}

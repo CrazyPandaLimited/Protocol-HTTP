@@ -1,13 +1,10 @@
 #pragma once
-
-#include <exception>
+#include <stdexcept>
 
 namespace panda { namespace protocol { namespace http {
 
-class ParserError : public std::runtime_error {
-public:
-    ParserError(const std::string& msg) : std::runtime_error(msg) {
-    }
+struct ParserError : std::runtime_error {
+    ParserError (const std::string& msg) : std::runtime_error(msg) {}
 };
 
-}}} // namespace panda::protocol::http
+}}}
