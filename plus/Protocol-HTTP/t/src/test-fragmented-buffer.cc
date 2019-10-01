@@ -14,8 +14,11 @@ TEST_CASE("parsing fragmented messages allocating buffer", "[fragmented]") {
         string buffer;
 
         assert(file.read(file_buffer.data(), CHUNK_SIZE));
-        
-        buffer = string(file_buffer.data());
+
+        std::streamsize data_size = file.gcount();
+        if (data_size == 0) break; // TODO: should work without this
+
+        buffer = string(file_buffer.data(), data_size);
 
         http::RequestParser::Result result = request_parser.parse_first(buffer); 
         auto request = result.request;
@@ -29,7 +32,10 @@ TEST_CASE("parsing fragmented messages allocating buffer", "[fragmented]") {
         REQUIRE(request->headers.get_field("Header3") == "header3");
         
         assert(file.read(file_buffer.data(), CHUNK_SIZE));
-        buffer = string(file_buffer.data());
+        data_size = file.gcount();
+        if (data_size == 0) break; // TODO: should work without this
+
+        buffer = string(file_buffer.data(), data_size);
 
         result = request_parser.parse_first(buffer); 
         request = result.request;
@@ -45,7 +51,10 @@ TEST_CASE("parsing fragmented messages allocating buffer", "[fragmented]") {
         REQUIRE(request->headers.get_field("Header6") == "header6");
         
         assert(file.read(file_buffer.data(), CHUNK_SIZE));
-        buffer = string(file_buffer.data());
+        data_size = file.gcount();
+        if (data_size == 0) break; // TODO: should work without this
+
+        buffer = string(file_buffer.data(), data_size);
 
         result = request_parser.parse_first(buffer); 
         request = result.request;
