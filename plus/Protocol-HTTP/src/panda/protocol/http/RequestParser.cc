@@ -13,11 +13,7 @@ RequestParser::RequestParser (const RequestFactorySP& fac) :
     request_factory(fac)
 {}
 
-RequestParser::ResultIterator RequestParser::parse (const string& buffer) {
-    return ResultIterator(this, buffer);
-}
-
-RequestParser::Result RequestParser::parse_first (const string& buffer) {
+RequestParser::Result RequestParser::parse (const string& buffer) {
     // pointer to current buffer, used by LEN, PTR_TO defines above
     const char *buffer_ptr = buffer.data();
 
@@ -64,14 +60,15 @@ RequestParser::Result RequestParser::parse_first (const string& buffer) {
     }
 }
 
-RequestParser::Result RequestParser::reset_and_build_result (bool is_valid, size_t position, const excepted<State, ParserError>& state) {
-    init();
+void RequestParser::reset () {
+    MessageParser::reset();
+    current_message = new_request();
+}
 
+RequestParser::Result RequestParser::reset_and_build_result (bool is_valid, size_t position, const excepted<State, ParserError>& state) {
     MessageSP result = current_message;
     if (is_valid) result->set_valid();
-
-    current_message = new_request();
-
+    reset();
     return {result, position, state};
 }
 
@@ -81,7 +78,7 @@ RequestParser::Result RequestParser::build_result (FinalFlag flag, size_t positi
     }
 
     // TODO: body->length() is linear, we need cache
-    auto length = current_message->body->length();
+    auto length = current_message->body.length();
     if (max_body_size == SIZE_PROHIBITED && length > 0) {
         return reset_and_build_result(false, position, make_unexpected(ParserError("body is prohibited")));
     } else if (max_body_size != SIZE_UNLIMITED && length > max_body_size) {

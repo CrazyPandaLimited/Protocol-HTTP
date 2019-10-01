@@ -22,12 +22,12 @@ TEST_CASE("google response 0", "[parser]") {
         "<A HREF=\"http://www.google.ru/?gfe_rd=cr&amp;dcr=0&amp;ei=dlSVWsfRFMiG7gT1wK8Q\">here</A>.\r\n"
         "</BODY></HTML>\r\n";
 
-    http::ResponseSP response = response_parser.parse_first(raw).response;
+    http::ResponseSP response = response_parser.parse(raw).response;
     
     _DBG("response " << response);
 
     REQUIRE(response->is_valid());
-    REQUIRE(response->http_version() == "1.1");
+    REQUIRE(response->http_version == "1.1");
 }
 
 TEST_CASE("google response 1", "[parser]") {
@@ -44,11 +44,11 @@ TEST_CASE("google response 1", "[parser]") {
         std::string str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
        
         string buffer(str.c_str()); 
-        response = response_parser.parse_first(buffer).response;
+        response = response_parser.parse(buffer).response;
     }
 
     _DBG("response " << response);
 
     REQUIRE(response->is_valid());
-    REQUIRE(response->http_version() == "1.1");
+    REQUIRE(response->http_version == "1.1");
 }

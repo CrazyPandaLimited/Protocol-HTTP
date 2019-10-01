@@ -55,7 +55,7 @@ struct Typemap<panda::protocol::http::ResponseSP, panda::iptr<TYPE>> : Typemap<T
 };
 
 template <class TYPE>
-struct Typemap<panda::protocol::http::RequestParser*, TYPE> : TypemapObject<panda::protocol::http::RequestParser*, TYPE, ObjectTypeRefcntPtr, ObjectStorageMG> {
+struct Typemap<panda::protocol::http::RequestParser*, TYPE> : TypemapObject<panda::protocol::http::RequestParser*, TYPE, ObjectTypePtr, ObjectStorageMG> {
     static std::string package () { return "Protocol::HTTP::RequestParser"; }
 };
 

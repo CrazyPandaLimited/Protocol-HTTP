@@ -2,32 +2,41 @@
 
 namespace panda { namespace protocol { namespace http {
 
-Response::Response (int code, const string& reason, Header&& header, const BodySP& body, const string& http_version) :
-    Message(std::move(header), body, http_version), code(code), message(reason)
+Response::Response (int code, const string& reason, Header&& header, Body&& body, const string& http_version, bool chunked) :
+    Message(std::move(header), std::move(body), http_version, chunked), code(code), message(reason)
 {}
 
-std::ostream& Response::print (std::ostream& os) const {
-    os << "HTTP/" << http_version_ << " " << to_string(code) << " " << message << "\r\n";
-    Message::print(os);
-    return os;
+string Response::_http_header (size_t reserve) {
+    prepare_tostr();
+
+    string s(5 + http_version.length() + 5 + message.length() + 2 + headers.length() + 2 + reserve);
+
+    s += "HTTP/";
+    s += http_version;
+    s += ' ';
+    s += panda::to_string(code);
+    s += ' ';
+    s += message;
+    s += "\r\n";
+    headers.write(s);
+    s += "\r\n";
+
+    return s;
 }
 
-std::ostream& operator<< (std::ostream& os, const ResponseSP& ptr) {
-    if (ptr) os << *ptr;
-    return os;
-}
-
-std::vector<string> to_vector (Response* r) {
-    string header_str = string("HTTP/") + r->http_version() + " " + panda::to_string(r->code) + " " + r->message + "\r\n";
-    for (auto& field : r->headers.fields) header_str += field.name + ": " + field.value + "\r\n";
-    header_str += "\r\n";
-
+std::vector<string> Response::to_vector () const {
     std::vector<string> result;
-    result.reserve(1 + r->body->parts.size());
-    result.emplace_back(header_str);
-    for (auto part : r->body->parts) result.emplace_back(part);
-
+    result.reserve(1 + body.parts.size());
+    result.emplace_back(const_cast<Response*>(this)->_http_header(0));
+    for (auto& part : body.parts) result.emplace_back(part);
     return result;
+}
+
+string Response::to_string () const {
+    auto ret = const_cast<Response*>(this)->_http_header(body.length());
+    for (auto& part : body.parts) ret += part;
+
+    return ret;
 }
 
 }}}

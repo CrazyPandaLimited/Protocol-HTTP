@@ -4,7 +4,7 @@ const std::string TEST_DIR = TEST_ROOT + "test-fragmented-response";
 
 TEST_CASE("parsing response byte by byte", "[fragmented]") {
     http::ResponseParser response_parser;
-    http::RequestSP request = new http::Request(http::Request::Method::GET, new uri::URI("http://dev/"), http::Header(), new http::Body, "1.1");
+    http::RequestSP request = new http::Request(http::Request::Method::GET, new uri::URI("http://dev/"), http::Header(), http::Body(), "1.1");
     response_parser.append_request(request);
     http::ResponseSP response;
 
@@ -20,7 +20,7 @@ TEST_CASE("parsing response byte by byte", "[fragmented]") {
             std::streamsize dataSize = file.gcount();
             if (dataSize == 0) break; // TODO: should work without this
             string str(file_buffer, dataSize);
-            response = response_parser.parse_first(str).response;
+            response = response_parser.parse(str).response;
         }
 
     }
@@ -29,7 +29,7 @@ TEST_CASE("parsing response byte by byte", "[fragmented]") {
 
     REQUIRE(response);
     REQUIRE(response->is_valid());
-    REQUIRE(response->http_version() == "1.1");
+    REQUIRE(response->http_version == "1.1");
 
     CHECK(response->code == 101);
     CHECK(response->full_message() == "101 Switching Protocols");

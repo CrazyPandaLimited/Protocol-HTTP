@@ -11,9 +11,9 @@ void http_packet_set_headers (Message* p, const Hash& hv) {
 }
 
 void http_packet_set_body (Message* p, const Simple& sv) {
-    p->body->parts.clear();
+    p->body.parts.clear();
     auto newbody = xs::in<string>(sv);
-    if (newbody.length()) p->body->parts.push_back(newbody);
+    if (newbody.length()) p->body.parts.push_back(newbody);
 }
 
 Simple strings_to_sv (const string& s1, const string& s2) {

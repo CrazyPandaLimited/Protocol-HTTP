@@ -9,7 +9,7 @@
 namespace panda { namespace protocol { namespace http {
 
 template <class T>
-struct MessageParser : virtual Refcnt {
+struct MessageParser {
     using MessageSP = iptr<T>;
 
     enum class State {
@@ -28,7 +28,15 @@ struct MessageParser : virtual Refcnt {
     size_t max_body_size; // limits body
     size_t max_message_size; // limits all message with start line, headers and body
 
-    void inline init () {
+protected:
+    enum class FinalFlag { CONTINUE, RESET };
+
+    MessageParser (const MessageSP& message, int cs_initial_state) : cs_initial_state(cs_initial_state) {
+        reset();
+        current_message = message;
+    }
+
+    inline void reset () {
         state = State::not_yet;
 
         content_len = 0;
@@ -48,13 +56,7 @@ struct MessageParser : virtual Refcnt {
         // we don't want extra virtual call, so set machine state by hand
         cs = cs_initial_state;
         top = 0;
-    }
-
-protected:
-    enum class FinalFlag { CONTINUE, RESET };
-
-    MessageParser (const MessageSP& message, int cs_initial_state) : current_message(message), cs_initial_state(cs_initial_state) {
-        init();
+        current_message.reset();
     }
 
     inline void unmark () {
@@ -129,7 +131,7 @@ protected:
     bool      marked;
     bool      copy_headers;
     size_t    mark;
-    int       cs_initial_state; // initial state, set by specific parser implementation
+    const int cs_initial_state; // initial state, set by specific parser implementation
     // internal variables used by Ragel, see guide 5.1 "Variables Used by Ragel"
     int cs;            // current state
     int top, stack[1]; // to call subparsers with fcall/fret

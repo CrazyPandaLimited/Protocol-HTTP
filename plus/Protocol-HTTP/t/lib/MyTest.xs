@@ -15,26 +15,11 @@ void _benchmark() {
                 "\r\n"
                 "{\"params\":[\"Howdy\",\"Python!\"],\"method\":\"concat\",\"id\":1}";
 
-        http::RequestSP request = request_parser.parse_first(buf).request;
+        http::RequestSP request = request_parser.parse(buf).request;
     }
 }
 
-void _benchmark_iterator() {
-    static http::RequestParser request_parser;
-    std::vector<http::RequestSP> requests;
-    static string buf =
-        "POST http://alx3apps.appspot.com/jsonrpc_example/json_service/ HTTP/1.1\r\n"
-        "Host: alx3apps.appspot.com\r\n"
-        "Content-Length: 1\r\n"
-        "\r\n"
-        "1";
-    
-    for(auto i=0; i<1000; i++) {
-        http::RequestParser::ResultIterator pos = request_parser.parse(buf);
-    }
-}
-
-void _benchmark_iterator_body() {
+void _benchmark_body() {
     static http::RequestParser request_parser;
     std::vector<http::RequestSP> requests;
     static string buf =
@@ -50,7 +35,7 @@ void _benchmark_iterator_body() {
 
 
     for(auto i=0; i<1000; i++) {
-        http::RequestParser::ResultIterator pos = request_parser.parse(buf);
+        auto res = request_parser.parse(buf);
     }
 }
 
@@ -77,6 +62,6 @@ void _benchmark_heavy_headers() {
                 "\r\n"
                 "{\"params\":[\"Howdy\",\"Python!\"],\"method\":\"concat\",\"id\":1}";
 
-        http::RequestSP request = request_parser.parse_first(buf).request;
+        http::RequestSP request = request_parser.parse(buf).request;
     }
 }

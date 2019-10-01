@@ -18,8 +18,6 @@ struct Header {
     Header (const Container& fields);
     Header (Container&& fields);
 
-    virtual ~Header () {}
-
     bool     has_field    (string_view key) const;
     string   get_field    (string_view key, const string& default_val = "") const;
     Header&  add_field    (const string& key, const string& value) &;
@@ -30,6 +28,11 @@ struct Header {
     bool   empty () const { return fields.empty(); }
     size_t size  () const { return fields.size(); }
 
+    uint32_t length () const {
+        uint32_t ret = 0;
+        for (auto& field : fields) ret += field.name.length() + 2 + field.value.length() + 2;
+        return ret;
+    }
 
     void clear () { fields.clear(); }
 
@@ -67,6 +70,15 @@ struct Header {
 
     Range equal_range (const string& key) const {
         return fields | ::ranges::view::filter(Comparator{key});
+    }
+
+    void write (string& s) {
+        for (auto& field : fields) {
+            s += field.name;
+            s += ": ";
+            s += field.value;
+            s += "\r\n";
+        }
     }
 };
 

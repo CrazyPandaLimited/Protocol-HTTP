@@ -7,13 +7,13 @@ TEST_CASE("double first line", "[bad]") {
         "GET / HTTP/1.0\r\n"
         "Host: host1\r\n"
         "\r\n";
-    auto res = request_parser.parse_first(raw);
+    auto res = request_parser.parse(raw);
     REQUIRE_FALSE(res.state);
     http::RequestSP request = res.request;
     
     REQUIRE(!request->is_valid());
     REQUIRE(request->method == Method::GET);
-    REQUIRE(request->http_version() == "1.0");
+    REQUIRE(request->http_version == "1.0");
 }
 
 TEST_CASE("bad first line", "[bad]") {
@@ -23,7 +23,7 @@ TEST_CASE("bad first line", "[bad]") {
         "GET / HTTP/1.0\r\n"
         "Host: host1\r\n"
         "\r\n";
-    auto res = request_parser.parse_first(raw);
+    auto res = request_parser.parse(raw);
     REQUIRE_FALSE(res.state);
     http::RequestSP request = res.request;
     
@@ -36,7 +36,7 @@ TEST_CASE("space before colon in header field", "[bad]") {
         "GET / HTTP/1.0\r\n"
         "Host : host1\r\n"
         "\r\n";
-    auto res = request_parser.parse_first(raw);
+    auto res = request_parser.parse(raw);
     REQUIRE_FALSE(res.state);
     http::RequestSP request = res.request;
     
@@ -50,7 +50,7 @@ TEST_CASE("space before header field", "[bad]") {
         "GET / HTTP/1.0\r\n"
         " Host: host1\r\n"
         "\r\n";
-    auto res = request_parser.parse_first(raw);
+    auto res = request_parser.parse(raw);
     REQUIRE_FALSE(res.state);
     http::RequestSP request = res.request;
 
@@ -69,7 +69,7 @@ static void test_unreal_digits_request(ParserFactory&& f) {
     };
     for (auto raw : raws) {
         auto parser = f();
-        CHECK_FALSE(parser.parse_first(raw).state);
+        CHECK_FALSE(parser.parse(raw).state);
     }
 }
 
@@ -88,7 +88,7 @@ static void test_unreal_digits_response(ParserFactory&& f) {
     };
     for (auto raw : raws) {
         auto parser = f();
-        CHECK_FALSE(parser.parse_first(raw).state);
+        CHECK_FALSE(parser.parse(raw).state);
     }
 }
 
@@ -101,7 +101,7 @@ TEST_CASE("unreal content lentgh request", "[parser]") {
 TEST_CASE("unreal content lentgh response", "[parser]") {
     test_unreal_digits_response([]() {
         http::ResponseParser response_parser;
-        http::RequestSP request = new http::Request(http::Request::Method::GET, new uri::URI("http://dev/"), http::Header(), new http::Body, "1.1");
+        http::RequestSP request = new http::Request(http::Request::Method::GET, new uri::URI("http://dev/"), http::Header(), http::Body(), "1.1");
         response_parser.append_request(request);
         return response_parser;
     });
@@ -130,7 +130,7 @@ TEST_CASE("bad chunk size", "[bad]") {
             "\r\n"
         )
     );
-    auto res = request_parser.parse_first(raw);
+    auto res = request_parser.parse(raw);
     REQUIRE(!res.state);
     http::RequestSP request = res.request;
 

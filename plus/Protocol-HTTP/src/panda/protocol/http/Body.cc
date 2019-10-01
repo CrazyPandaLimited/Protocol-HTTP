@@ -3,10 +3,6 @@
 
 namespace panda { namespace protocol { namespace http {
 
-Body::Body (const string& body) {
-    parts.emplace_back(body);
-}
-
 string Body::as_buffer () const {
     if (!parts.size()) return "";
     if (parts.size() == 1) return parts[0];
@@ -15,19 +11,8 @@ string Body::as_buffer () const {
     return ret;
 }
 
-size_t Body::length () const {
-    uint64_t size = 0;
-    for (auto& s : parts) size += s.length();
-    return size;
-}
-
 std::ostream& operator<< (std::ostream& os, const Body& b) {
     for (auto part : b.parts) os << part;
-    return os;
-}
-
-std::ostream& operator<< (std::ostream& os, const BodySP& ptr) {
-    if (ptr) os << *ptr;
     return os;
 }
 

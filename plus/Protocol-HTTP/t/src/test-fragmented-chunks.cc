@@ -14,7 +14,7 @@ TEST_CASE("parsing message with fragmented chunks", "[fragmented]") {
         std::string str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
        
         string buffer(str.c_str()); 
-        auto res =  request_parser.parse_first(buffer);
+        auto res =  request_parser.parse(buffer);
         request = res.request;
         final_state = res.state.value_or(http::RequestParser::State::not_yet);
     }
@@ -30,7 +30,7 @@ TEST_CASE("parsing message with fragmented chunks", "[fragmented]") {
         _DBG("header: "<< field.name << ":" << field.value);
     }
 
-    for(auto part : request->body->parts) {
+    for(auto part : request->body.parts) {
         _DBG("body part: [" << part << "]");
     }
 
@@ -39,9 +39,9 @@ TEST_CASE("parsing message with fragmented chunks", "[fragmented]") {
     REQUIRE(request->is_valid());
     CHECK(final_state == http::RequestParser::State::done);
     CHECK(request->method == Method::POST);
-    CHECK(request->http_version() == "1.1");
+    CHECK(request->http_version == "1.1");
     CHECK(request->headers.get_field("Transfer-Encoding") == "chunked");
     CHECK(request->headers.get_field("Trailer") == "Expires");
-    CHECK(request->body->as_buffer() == "Wikipedia in\r\n\r\nchunks.");
+    CHECK(request->body.as_buffer() == "Wikipedia in\r\n\r\nchunks.");
     CHECK(request->has_body());
 }

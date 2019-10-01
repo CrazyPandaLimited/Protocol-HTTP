@@ -20,44 +20,56 @@ struct Request : Message {
         CONNECT,
     };
 
+    struct Builder; template <class T = void> struct BuilderImpl;
+
     Method method;
     URISP  uri;
 
     Request () {}
-    Request (Method method, const URISP& uri, Header&& header, const BodySP& body, const string& http_version);
+    Request (Method method, const URISP& uri, Header&& header, Body&& body, const string& http_version, bool chunked = false);
 
     ResponseSP response () const { return create_response(); }
 
-    std::ostream& print (std::ostream&) const override;
+    std::vector<string> to_vector () const override;
+    string              to_string () const override;
 
 protected:
-    virtual ~Request() {} // restrict stack allocation
+    ~Request () {} // restrict stack allocation
 
     virtual ResponseSP create_response () const { return make_iptr<Response>(); }
 
 private:
-    Request (const Request&) = delete;
-    Request& operator= (const Request&) = delete;
+    string _http_header (size_t);
 };
 using RequestSP = iptr<Request>;
 
-inline const char* to_string (Request::Method rm) {
-    using Method = Request::Method;
-    switch (rm) {
-        case Method::OPTIONS : return "OPTIONS";
-        case Method::GET     : return "GET";
-        case Method::HEAD    : return "HEAD";
-        case Method::POST    : return "POST";
-        case Method::PUT     : return "PUT";
-        case Method::DELETE  : return "DELETE";
-        case Method::TRACE   : return "TRACE";
-        case Method::CONNECT : return "CONNECT";
-        default: return "[UNKNOWN]";
+template <class T>
+struct Request::BuilderImpl : Message::Builder<T> {
+    BuilderImpl () : _method(Request::Method::GET) {}
+
+    T& method (Request::Method method) {
+        _method = method;
+        return this->self();
     }
-}
 
-std::ostream& operator<< (std::ostream& os, const RequestSP& ptr);
+    T& uri (const string& uri) {
+        _uri = new URI(uri);
+        return this->self();
+    }
 
-std::vector<string> to_vector(Request* request_ptr);
+    T& uri (const URISP& uri) {
+        _uri = uri;
+        return this->self();
+    }
+
+    RequestSP build () {
+        return new Request(_method, _uri, std::move(this->_headers), std::move(this->_body), this->_http_version, this->_chunked);
+    }
+
+protected:
+    Request::Method _method;
+    URISP           _uri;
+};
+struct Request::Builder : Request::BuilderImpl<Builder> {};
 
 }}}

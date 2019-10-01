@@ -127,10 +127,10 @@
 
     action http_version {
         if(marked_buffer.empty()) {
-            current_message->http_version(string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc)));
+            current_message->http_version = string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc));
         } else {
             marked_buffer.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, fpc)));
-            current_message->http_version(marked_buffer);
+            current_message->http_version = marked_buffer;
         }
     }
 

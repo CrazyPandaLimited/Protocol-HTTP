@@ -12,7 +12,7 @@ TEST_CASE("parsing message byte by byte", "[fragmented]") {
         std::ifstream file(TEST_DIR+"/"+file_name, std::ios::binary);
 
         while(file.read(&file_buffer, 1)) {
-            request = request_parser.parse_first(string(&file_buffer, 1)).request;
+            request = request_parser.parse(string(&file_buffer, 1)).request;
         }
     }
 
@@ -20,7 +20,7 @@ TEST_CASE("parsing message byte by byte", "[fragmented]") {
 
     REQUIRE(request->is_valid());
     REQUIRE(request->method == Method::GET);
-    REQUIRE(request->http_version() == "1.0");
+    REQUIRE(request->http_version == "1.0");
     REQUIRE(request->headers.get_field("Header1") == "header1");
     REQUIRE(request->headers.get_field("Header2") == "header2");
     REQUIRE(request->headers.get_field("Header3") == "header3");

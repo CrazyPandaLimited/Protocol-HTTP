@@ -1,27 +1,41 @@
 #pragma once
 #include <vector>
 #include <iosfwd>
-#include <panda/refcnt.h>
 #include <panda/string.h>
 
 namespace panda { namespace protocol { namespace http {
 
-struct Body : virtual Refcnt {
+struct Body {
     Body () {}
-    Body (const string& body);
+    Body (const string& body) { parts.emplace_back(body); }
 
-    virtual ~Body() {}
+    Body (const Body&) = default;
+    Body (Body&& oth)  = default;
 
-    string as_buffer      () const;
-    size_t length         () const;
-    size_t content_length () const { return length(); }
-    bool   empty          () const { return length() == 0; }
+    Body& operator= (const string& str) {
+        parts.clear();
+        parts.emplace_back(str);
+        return *this;
+    }
+
+    Body& operator= (string&& str) {
+        parts.clear();
+        parts.emplace_back(std::move(str));
+        return *this;
+    }
+
+    size_t length () const {
+        uint64_t size = 0;
+        for (auto& s : parts) size += s.length();
+        return size;
+    }
+
+    string as_buffer () const;
+    bool   empty     () const { return !length(); }
 
     std::vector<string> parts;
 };
-using BodySP = iptr<Body>;
 
 std::ostream& operator<< (std::ostream&, const Body&);
-std::ostream& operator<< (std::ostream&, const BodySP&);
 
 }}}

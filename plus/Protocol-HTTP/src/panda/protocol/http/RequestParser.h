@@ -2,7 +2,6 @@
 #include "Request.h"
 #include "ParserError.h"
 #include "MessageParser.h"
-#include "MessageIterator.h"
 #include <panda/excepted.h>
 
 namespace panda { namespace protocol { namespace http {
@@ -19,14 +18,14 @@ struct RequestParser : MessageParser<Request> {
         excepted<State, ParserError> state;
     };
     using ResultSP = iptr<Result>;
-    using ResultIterator = MessageIterator<RequestParser, Result>;
 
     RequestParser (const RequestFactorySP& request_factory = {});
 
     virtual ~RequestParser () {}
 
-    Result parse_first (const string& buffer);
-    ResultIterator parse (const string& buffer);
+    Result parse (const string& buffer);
+
+    void reset ();
 
 private:
     using MessageParser::FinalFlag;
@@ -38,6 +37,5 @@ private:
     Result build_result           (FinalFlag reset, size_t position);
     Result reset_and_build_result (bool is_valid, size_t position, const excepted<State, ParserError>& state);
 };
-using RequestParserSP = iptr<RequestParser>;
 
 }}}

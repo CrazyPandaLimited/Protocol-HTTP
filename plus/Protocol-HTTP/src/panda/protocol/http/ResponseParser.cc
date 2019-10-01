@@ -23,11 +23,7 @@ ResponseSP ResponseParser::create_message () {
     return current_message;
 }
 
-ResponseParser::ResultIterator ResponseParser::parse (const string& buffer) {
-    return ResultIterator(this, buffer);
-}
-
-ResponseParser::Result ResponseParser::parse_first (const string& buffer) {
+ResponseParser::Result ResponseParser::parse (const string& buffer) {
     if (requests.empty()) {
         if (buffer.empty()) {
             // stop iteration
@@ -84,16 +80,18 @@ ResponseParser::Result ResponseParser::parse_first (const string& buffer) {
     }
 }
 
+void ResponseParser::reset () {
+    MessageParser::reset();
+    requests.clear();
+}
+
 ResponseParser::Result ResponseParser::reset_and_build_result (bool is_valid, size_t position, const excepted<State, ParserError>& state) {
-    init();
-
-    MessageSP message = current_message;
+    auto message = current_message;
     if (is_valid) message->set_valid();
-
     RequestSP request = requests.back();
     requests.pop_back();
 
-    current_message = nullptr;
+    MessageParser::reset();
 
     return {request, message, position, state};
 }
@@ -104,7 +102,7 @@ ResponseParser::Result ResponseParser::build_result (FinalFlag flag, size_t posi
     }
 
     // TODO: body->length() is linear, we need cache
-    auto length = current_message->body->length();
+    auto length = current_message->body.length();
     if (max_body_size == SIZE_PROHIBITED && length > 0) {
         return reset_and_build_result(false, position, make_unexpected(ParserError("body is prohibited")));
     } else  if (max_body_size != SIZE_UNLIMITED && length > max_body_size) {

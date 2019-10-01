@@ -3,7 +3,6 @@
 #include "Response.h"
 #include "ParserError.h"
 #include "MessageParser.h"
-#include "MessageIterator.h"
 #include <deque>
 #include <panda/excepted.h>
 
@@ -17,7 +16,6 @@ struct ResponseParser : MessageParser<Response> {
         excepted<State, ParserError> state;
     };
     using ResultSP = iptr<Result>;
-    using ResultIterator = MessageIterator<ResponseParser, Result>;
 
     ResponseParser ();
 
@@ -25,8 +23,9 @@ struct ResponseParser : MessageParser<Response> {
 
     void append_request (const RequestSP& request);
 
-    Result parse_first (const string& buffer);
-    ResultIterator parse (const string& buffer);
+    Result parse (const string& buffer);
+
+    void reset ();
 
     bool no_pending_requests () const { return requests.empty(); }
 
@@ -38,6 +37,5 @@ private:
 
     std::deque<RequestSP> requests;
 };
-using ResponseParserSP = iptr<ResponseParser>;
 
 }}}

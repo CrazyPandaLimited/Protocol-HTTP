@@ -3498,10 +3498,10 @@ f2:
 #line 128 "MessageParser.rl"
 	{
         if(marked_buffer.empty()) {
-            current_message->http_version(string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, p)));
+            current_message->http_version = string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, p));
         } else {
             marked_buffer.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, p)));
-            current_message->http_version(marked_buffer);
+            current_message->http_version = marked_buffer;
         }
     }
 #line 56 "MessageParser.rl"

@@ -17,12 +17,12 @@ TEST_CASE("parsing fragmented messages allocating buffer", "[fragmented]") {
         
         buffer = string(file_buffer.data());
 
-        http::RequestParser::Result result = request_parser.parse_first(buffer); 
+        http::RequestParser::Result result = request_parser.parse(buffer); 
         auto request = result.request;
 
         REQUIRE(request->is_valid());
         REQUIRE(request->method == Method::GET);
-        REQUIRE(request->http_version() == "1.0");
+        REQUIRE(request->http_version == "1.0");
         REQUIRE(request->uri->to_string() == "/r1");
         REQUIRE(request->headers.get_field("Header1") == "header1");
         REQUIRE(request->headers.get_field("Header2") == "header2");
@@ -31,7 +31,7 @@ TEST_CASE("parsing fragmented messages allocating buffer", "[fragmented]") {
         assert(file.read(file_buffer.data(), CHUNK_SIZE));
         buffer = string(file_buffer.data());
 
-        result = request_parser.parse_first(buffer); 
+        result = request_parser.parse(buffer); 
         request = result.request;
         
         _DBG("position: " << result.position);
@@ -39,7 +39,7 @@ TEST_CASE("parsing fragmented messages allocating buffer", "[fragmented]") {
         REQUIRE(request->is_valid());
         REQUIRE(request->method == Method::GET);
         REQUIRE(request->uri->to_string() == "/r2");
-        REQUIRE(request->http_version() == "1.0");
+        REQUIRE(request->http_version == "1.0");
         REQUIRE(request->headers.get_field("Header4") == "header4");
         REQUIRE(request->headers.get_field("Header5") == "header5");
         REQUIRE(request->headers.get_field("Header6") == "header6");
@@ -47,14 +47,14 @@ TEST_CASE("parsing fragmented messages allocating buffer", "[fragmented]") {
         assert(file.read(file_buffer.data(), CHUNK_SIZE));
         buffer = string(file_buffer.data());
 
-        result = request_parser.parse_first(buffer); 
+        result = request_parser.parse(buffer); 
         request = result.request;
         
         _DBG("position: " << result.position);
         
         REQUIRE(request->is_valid());
         REQUIRE(request->method == Method::GET);
-        REQUIRE(request->http_version() == "1.0");
+        REQUIRE(request->http_version == "1.0");
         REQUIRE(request->uri->to_string() == "/r3");
         REQUIRE(request->headers.get_field("Header7") == "header7");
         REQUIRE(request->headers.get_field("Header8") == "header8");
