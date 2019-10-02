@@ -6,7 +6,7 @@
 namespace panda { namespace protocol { namespace http {
 
 inline bool iequals (string_view a, string_view b) {
-    return std::equal(a.begin(), a.end(), b.begin(), [](char a, char b) { return a == b || tolower(a) == tolower(b); });
+    return a.length() == b.length() && std::equal(a.begin(), a.end(), b.begin(), [](char a, char b) { return a == b || tolower(a) == tolower(b); });
 }
 
 struct HeaderField {

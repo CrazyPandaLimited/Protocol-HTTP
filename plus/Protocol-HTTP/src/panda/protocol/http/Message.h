@@ -19,6 +19,9 @@ struct Message : virtual Refcnt {
     void add_header_field (const string& key, const string& value);
     void add_body_part    (const string& body_part);
 
+    bool keep_alive () const;
+    void keep_alive (bool val) { val ? headers.connection("keep-alive") : headers.connection("close"); }
+
     bool is_valid  () const { return _is_valid; }
     void set_valid ()       { _is_valid = true; }
 

@@ -1,8 +1,0 @@
-HTTP/1.1 101 Switching Protocols
-Upgrade: websocket
-Connection: Upgrade
-Sec-WebSocket-Protocol: killme
-Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
-Server: Panda-WebSocket
-Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits=15
-

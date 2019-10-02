@@ -20,6 +20,12 @@ void Message::add_body_part (const string& bodypart) {
     _buf_size += bodypart.size();
 }
 
+bool Message::keep_alive () const {
+    auto conn = headers.connection();
+    if (http_version == "1.1") return !iequals(conn, "close");
+    else                       return iequals(conn, "keep-alive");
+}
+
 std::ostream& operator<< (std::ostream& os, const Message& message) {
     return os << message.to_string();
 }

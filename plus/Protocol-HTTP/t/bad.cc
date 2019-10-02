@@ -1,64 +1,60 @@
-#include "../lib/test.h"
+#include "lib/test.h"
 
 TEST_CASE("double first line", "[bad]") {
-    http::RequestParser request_parser;
+    RequestParser p;
     string raw =
         "GET / HTTP/1.0\r\n"
         "GET / HTTP/1.0\r\n"
         "Host: host1\r\n"
         "\r\n";
-    auto res = request_parser.parse(raw);
-    REQUIRE_FALSE(res.state);
-    http::RequestSP request = res.request;
-    
-    REQUIRE(!request->is_valid());
-    REQUIRE(request->method == Method::GET);
-    REQUIRE(request->http_version == "1.0");
+
+    auto result = p.parse(raw);
+    REQUIRE_FALSE(result.state);
+
+    auto req = result.request;
+    REQUIRE(!req->is_valid());
+    REQUIRE(req->method == Method::GET);
+    REQUIRE(req->http_version == "1.0");
 }
 
 TEST_CASE("bad first line", "[bad]") {
-    http::RequestParser request_parser;
+    RequestParser p;
     string raw =
         "\r\n"
         "GET / HTTP/1.0\r\n"
         "Host: host1\r\n"
         "\r\n";
-    auto res = request_parser.parse(raw);
-    REQUIRE_FALSE(res.state);
-    http::RequestSP request = res.request;
-    
-    REQUIRE(!request->is_valid());
+    auto result = p.parse(raw);
+    REQUIRE_FALSE(result.state);
+    REQUIRE(!result.request->is_valid());
 }
 
 TEST_CASE("space before colon in header field", "[bad]") {
-    http::RequestParser request_parser;
+    RequestParser p;
     string raw =
         "GET / HTTP/1.0\r\n"
         "Host : host1\r\n"
         "\r\n";
-    auto res = request_parser.parse(raw);
-    REQUIRE_FALSE(res.state);
-    http::RequestSP request = res.request;
-    
-    REQUIRE(!request->is_valid());
+    auto result = p.parse(raw);
+    REQUIRE_FALSE(result.state);
+    REQUIRE(!result.request->is_valid());
 }
 
 TEST_CASE("space before header field", "[bad]") {
-    http::RequestParser request_parser;
+    RequestParser p;
     string raw =
         "\r\n"
         "GET / HTTP/1.0\r\n"
         " Host: host1\r\n"
         "\r\n";
-    auto res = request_parser.parse(raw);
-    REQUIRE_FALSE(res.state);
-    http::RequestSP request = res.request;
 
-    REQUIRE(!request->is_valid());
+    auto result = p.parse(raw);
+    REQUIRE_FALSE(result.state);
+    REQUIRE(!result.request->is_valid());
 }
 
 template <typename ParserFactory>
-static void test_unreal_digits_request(ParserFactory&& f) {
+static void test_unreal_digits_request (ParserFactory&& f) {
     string raws[] = {
         "POST /upload HTTP/1.1\r\n"
         "Content-Length: 100500999999999999099999999\r\n"
@@ -74,7 +70,7 @@ static void test_unreal_digits_request(ParserFactory&& f) {
 }
 
 template <typename ParserFactory>
-static void test_unreal_digits_response(ParserFactory&& f) {
+static void test_unreal_digits_response (ParserFactory&& f) {
     string raws[] = {
         "HTTP/1.1 200 OK\r\n"
         "Content-Length: 100500999999999999099999999\r\n"
@@ -92,23 +88,23 @@ static void test_unreal_digits_response(ParserFactory&& f) {
     }
 }
 
-TEST_CASE("unreal content lentgh request", "[parser]") {
+TEST_CASE ("unreal content length request", "[bad]") {
     test_unreal_digits_request([]() {
-        return http::RequestParser();
+        return RequestParser();
     });
 }
 
-TEST_CASE("unreal content lentgh response", "[parser]") {
+TEST_CASE("unreal content lentgh response", "[bad]") {
     test_unreal_digits_response([]() {
-        http::ResponseParser response_parser;
-        http::RequestSP request = new http::Request(http::Request::Method::GET, new uri::URI("http://dev/"), http::Header(), http::Body(), "1.1");
-        response_parser.append_request(request);
-        return response_parser;
+        ResponseParser p;
+        RequestSP req = new Request(Method::GET, new URI("http://dev/"), Header(), Body(), "1.1");
+        p.append_request(req);
+        return p;
     });
 }
 
 TEST_CASE("bad chunk size", "[bad]") {
-    http::RequestParser request_parser;
+    RequestParser p;
     string raw = GENERATE(
         string(
             "POST /upload HTTP/1.1\r\n"
@@ -130,10 +126,10 @@ TEST_CASE("bad chunk size", "[bad]") {
             "\r\n"
         )
     );
-    auto res = request_parser.parse(raw);
-    REQUIRE(!res.state);
-    http::RequestSP request = res.request;
+    auto result = p.parse(raw);
+    REQUIRE(!result.state);
 
-    REQUIRE(!request->is_valid());
-    REQUIRE(request->method == Method::POST);
+    auto req = result.request;
+    REQUIRE(!req->is_valid());
+    REQUIRE(req->method == Method::POST);
 }
