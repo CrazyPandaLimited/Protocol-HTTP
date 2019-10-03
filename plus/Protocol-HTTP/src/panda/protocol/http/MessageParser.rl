@@ -83,6 +83,7 @@
             state = State::error;
             fbreak;
         } else {
+            has_content_len = true;
             body_so_far = 0;
         }
     }

@@ -24,7 +24,7 @@ ResponseSP ResponseParser::create_message () {
 }
 
 ResponseParser::Result ResponseParser::eof() {
-    if (!current_message->keep_alive() && !content_len && !chunked) {
+    if (current_message && !current_message->keep_alive() && !content_len && !chunked) {
         state = State::done;
         return build_result(FinalFlag::RESET, 0);
     } else {
@@ -97,12 +97,15 @@ void ResponseParser::reset () {
 
 ResponseParser::Result ResponseParser::reset_and_build_result (bool is_valid, size_t position, const excepted<State, ParserError>& state) {
     auto message = current_message;
-    if (is_valid) message->set_valid();
-    RequestSP request = requests.back();
-    requests.pop_back();
+    if (is_valid && message) message->set_valid();
+
+    RequestSP request;
+    if (!requests.empty())  { // in case of unexpected eof without requests
+        request = requests.back();
+        requests.pop_back();
+    }
 
     MessageParser::reset();
-
     return {request, message, position, state};
 }
 

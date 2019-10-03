@@ -62,16 +62,20 @@
             state = State::done;
             current_message->set_body();;
         }
-        else if(content_len > 0) {
-            // we are between headers and body and there are no body yet
-            // current position is on LF
-            if(pe - fpc == 1) {
-                // set state and wait for the body in next calls
-                state = State::in_body;
+        else if(has_content_len) {
+            if(content_len > 0) {
+                // we are between headers and body and there are no body yet
+                // current position is on LF
+                if(pe - fpc == 1) {
+                    // set state and wait for the body in next calls
+                    state = State::in_body;
+                } else {
+                    // we have more buffer to process,
+                    // set position on the next character and proceed
+                    process_body(buffer, ++fpc, pe);
+                }
             } else {
-                // we have more buffer to process,
-                // set position on the next character and proceed
-                process_body(buffer, ++fpc, pe);
+                state = State::done;
             }
         } else if (!current_message->keep_alive()) { // Connection: close
             state = State::in_body;

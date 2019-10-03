@@ -1,7 +1,7 @@
 
 #line 1 "ResponseParser.rl"
 
-#line 90 "ResponseParser.rl"
+#line 94 "ResponseParser.rl"
 
 
 #if defined(MACHINE_DATA)
@@ -40,7 +40,7 @@ static const int http_response_parser_en_chunked_body = 112;
 static const int http_response_parser_en_main = 1;
 
 
-#line 96 "ResponseParser.rl"
+#line 100 "ResponseParser.rl"
 
 #endif
 
@@ -53,7 +53,7 @@ static const int http_response_parser_en_main = 1;
 	top = 0;
 	}
 
-#line 103 "ResponseParser.rl"
+#line 107 "ResponseParser.rl"
 
 #endif
 
@@ -2049,7 +2049,7 @@ case 115:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr138;
@@ -2144,7 +2144,7 @@ case 119:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr147;
@@ -2254,7 +2254,7 @@ case 126:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr160;
@@ -2461,7 +2461,7 @@ case 136:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 266: goto tr178;
@@ -2498,7 +2498,7 @@ case 161:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr160;
@@ -2531,7 +2531,7 @@ case 137:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr160;
@@ -2670,7 +2670,7 @@ case 144:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr193;
@@ -2983,7 +2983,7 @@ case 155:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 266: goto tr187;
@@ -3018,7 +3018,7 @@ case 156:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr211;
@@ -3079,7 +3079,7 @@ case 157:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 265: goto tr191;
@@ -3353,13 +3353,13 @@ f1:
     }
 	goto _again;
 f9:
-#line 90 "MessageParser.rl"
+#line 91 "MessageParser.rl"
 	{
         connection_close = true;
     }
 	goto _again;
 f11:
-#line 124 "MessageParser.rl"
+#line 125 "MessageParser.rl"
 	{
         chunked = true;
     }
@@ -3395,16 +3395,20 @@ f5:
             state = State::done;
             current_message->set_body();;
         }
-        else if(content_len > 0) {
-            // we are between headers and body and there are no body yet
-            // current position is on LF
-            if(pe - p == 1) {
-                // set state and wait for the body in next calls
-                state = State::in_body;
+        else if(has_content_len) {
+            if(content_len > 0) {
+                // we are between headers and body and there are no body yet
+                // current position is on LF
+                if(pe - p == 1) {
+                    // set state and wait for the body in next calls
+                    state = State::in_body;
+                } else {
+                    // we have more buffer to process,
+                    // set position on the next character and proceed
+                    process_body(buffer, ++p, pe);
+                }
             } else {
-                // we have more buffer to process,
-                // set position on the next character and proceed
-                process_body(buffer, ++p, pe);
+                state = State::done;
             }
         } else if (!current_message->keep_alive()) { // Connection: close
             state = State::in_body;
@@ -3422,7 +3426,7 @@ f15:
         mark = p - buffer_ptr;
         marked = true;
     }
-#line 94 "MessageParser.rl"
+#line 95 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -3462,7 +3466,7 @@ f8:
     }
 	goto _again;
 f10:
-#line 90 "MessageParser.rl"
+#line 91 "MessageParser.rl"
 	{
         connection_close = true;
     }
@@ -3475,7 +3479,7 @@ f10:
     }
 	goto _again;
 f13:
-#line 98 "MessageParser.rl"
+#line 99 "MessageParser.rl"
 	{
         string len_str;
         if(marked_buffer.empty()) {
@@ -3499,7 +3503,7 @@ f13:
     }
 	goto _again;
 f2:
-#line 128 "MessageParser.rl"
+#line 129 "MessageParser.rl"
 	{
         if(marked_buffer.empty()) {
             current_message->http_version = string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, p));
@@ -3604,6 +3608,7 @@ f12:
             state = State::error;
             {p++; goto _out; }
         } else {
+            has_content_len = true;
             body_so_far = 0;
         }
     }
@@ -3615,7 +3620,7 @@ f12:
     }
 	goto _again;
 f16:
-#line 114 "MessageParser.rl"
+#line 115 "MessageParser.rl"
 	{
         if(chunk_len > 0) {
             current_message->add_body_part( advance_buffer(buffer, p, false) );
@@ -3627,7 +3632,7 @@ f16:
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 94 "MessageParser.rl"
+#line 95 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -3640,7 +3645,7 @@ f14:
         mark = p - buffer_ptr;
         marked = true;
     }
-#line 114 "MessageParser.rl"
+#line 115 "MessageParser.rl"
 	{
         if(chunk_len > 0) {
             current_message->add_body_part( advance_buffer(buffer, p, false) );
@@ -3652,13 +3657,13 @@ f14:
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 94 "MessageParser.rl"
+#line 95 "MessageParser.rl"
 	{
         trailing_header = true;
     }
 	goto _again;
 f17:
-#line 114 "MessageParser.rl"
+#line 115 "MessageParser.rl"
 	{
         if(chunk_len > 0) {
             current_message->add_body_part( advance_buffer(buffer, p, false) );
@@ -3670,7 +3675,7 @@ f17:
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 94 "MessageParser.rl"
+#line 95 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -3683,7 +3688,7 @@ f17:
     }
 	goto _again;
 f19:
-#line 114 "MessageParser.rl"
+#line 115 "MessageParser.rl"
 	{
         if(chunk_len > 0) {
             current_message->add_body_part( advance_buffer(buffer, p, false) );
@@ -3695,7 +3700,7 @@ f19:
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 94 "MessageParser.rl"
+#line 95 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -3714,7 +3719,7 @@ f19:
     }
 	goto _again;
 f18:
-#line 114 "MessageParser.rl"
+#line 115 "MessageParser.rl"
 	{
         if(chunk_len > 0) {
             current_message->add_body_part( advance_buffer(buffer, p, false) );
@@ -3726,7 +3731,7 @@ f18:
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 94 "MessageParser.rl"
+#line 95 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -3771,13 +3776,13 @@ _again:
 goto _again;}
     }
 	break;
-#line 3775 "ResponseParserGenerated.cc"
+#line 3780 "ResponseParserGenerated.cc"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 110 "ResponseParser.rl"
+#line 114 "ResponseParser.rl"
 
 #endif

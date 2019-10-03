@@ -123,9 +123,10 @@ protected:
     State     state; // more general parser state, not used by Ragel
     size_t    content_len;
     size_t    body_so_far;
-    bool      chunked;
     size_t    chunk_len;
     size_t    chunk_so_far;
+    bool      chunked;
+    bool      has_content_len;
     bool      connection_close;
     bool      trailing_header;
     bool      marked;

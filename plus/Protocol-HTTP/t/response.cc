@@ -94,3 +94,22 @@ TEST_CASE("connection close priority", "[response]") {
     auto res = p.eof();
     CHECK_FALSE(res.state);
 }
+
+TEST_CASE("response eof after full message", "[response]") {
+    ResponseParser p;
+    RequestSP req = new Request();
+    req->method = Method::GET;
+    p.append_request(req);
+    string body = GENERATE(string(""), string("1"));
+    string raw =
+        "HTTP/1.1 200 OK\r\n"
+        "Host: host1\r\n"
+        "Connection: close\r\n"
+        "Content-Length: " + to_string(body.length()) + "\r\n"
+        "\r\n" + body;
+
+    auto fres = p.parse(raw);
+    CHECK(fres.state == ResponseParser::State::done);
+    auto res = p.eof();
+    CHECK(!res.state);
+}

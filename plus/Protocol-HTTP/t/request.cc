@@ -356,3 +356,15 @@ TEST_CASE("parsing pipelined requests", "[request]") {
     REQUIRE(s.empty());
 }
 
+TEST_CASE("request without length", "[response]") {
+    RequestParser p;
+    string body = GENERATE(string(""), string("1"));
+    string raw =
+        "GET / HTTP/1.1\r\n"
+        "Host: host1\r\n"
+        "\r\n" + body;
+
+    auto fres = p.parse(raw);
+    CHECK(fres.state == RequestParser::State::done);
+}
+
