@@ -22,14 +22,8 @@ struct Message : virtual Refcnt {
     bool keep_alive () const;
     void keep_alive (bool val) { val ? headers.connection("keep-alive") : headers.connection("close"); }
 
-    bool is_valid  () const { return _is_valid; }
-    void set_valid ()       { _is_valid = true; }
-
-    bool has_header () const { return _has_header; }
-    void set_header ()       { _has_header = true; }
-
-    bool has_body () const { return _has_body; }
-    void set_body ()       { _has_body = true; }
+    bool has_headers () const { return !headers.empty(); }
+    bool has_body    () const { return !body.empty(); }
 
     size_t buf_size () const {return _buf_size;}
 
@@ -37,9 +31,6 @@ struct Message : virtual Refcnt {
     virtual string              to_string () const = 0;
 
 protected:
-    bool   _is_valid;
-    bool   _has_header;
-    bool   _has_body;
     size_t _buf_size; // only for parser inner limits
 
     void prepare_tostr () {

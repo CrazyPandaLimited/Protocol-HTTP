@@ -1,16 +1,25 @@
 #pragma once
-#include "HeaderField.h"
 #include <vector>
+#include <iosfwd>
 #include <panda/string.h>
-#include <range/v3/core.hpp>
-#include <range/v3/view/filter.hpp>
 
 namespace panda { namespace protocol { namespace http {
 
 static int const DEFAULT_FIELDS_RESERVE = 20;
 
+inline bool iequals (string_view a, string_view b) {
+    return a.length() == b.length() && std::equal(a.begin(), a.end(), b.begin(), [](char a, char b) { return a == b || tolower(a) == tolower(b); });
+}
+
 struct Header {
-    using Container = std::vector<HeaderField>;
+    struct Field {
+        string name;
+        string value;
+        Field (const string& k, const string& v) : name(k), value(v) {}
+        bool operator== (const Field &rhs) const { return iequals(name, rhs.name) && value == rhs.value; }
+        bool operator!= (const Field& rhs) const { return !(*this == rhs); }
+    };
+    using Container = std::vector<Field>;
 
     Container fields;
 
@@ -20,7 +29,7 @@ struct Header {
 
     bool     has_field    (string_view key) const;
     string   get_field    (string_view key, const string& default_val = "") const;
-    Header&  add_field    (const string& key, const string& value) &;
+    Header&  add_field    (const string& key, const string& value) &  { fields.emplace_back(key, value); return *this; }
     Header&& add_field    (const string& key, const string& value) && { add_field(key, value); return std::move(*this); }
     void     set_field    (const string& key, const string& value);
     void     remove_field (string_view key);
@@ -53,24 +62,12 @@ struct Header {
     Header&  chunked    () &                        { return add_field("Transfer-Encoding", "chunked"); }
     Header&& chunked    () &&                       { return std::move(*this).add_field("Transfer-Encoding", "chunked"); }
 
-    Container::reverse_iterator       find (string_view key);
-    Container::const_reverse_iterator find (string_view key) const;
+    Container::iterator       find (string_view key);
+    Container::const_iterator find (string_view key) const;
 
     Container::reverse_iterator       end ()       { return fields.rend(); }
     Container::const_reverse_iterator end () const { return fields.rend(); }
 
-    struct Comparator {
-        string key;
-        bool operator()(const HeaderField& f) const {
-            return iequals(f.name, key);
-        }
-    };
-
-    using Range = decltype(std::declval<const Container&>() | ::ranges::view::filter(std::declval<Comparator>()));
-
-    Range equal_range (const string& key) const {
-        return fields | ::ranges::view::filter(Comparator{key});
-    }
 
     void write (string& s) {
         for (auto& field : fields) {
@@ -82,6 +79,7 @@ struct Header {
     }
 };
 
+std::ostream& operator<< (std::ostream&, const Header::Field&);
 std::ostream& operator<< (std::ostream&, const Header&);
 
 }}}

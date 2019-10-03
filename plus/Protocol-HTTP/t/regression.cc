@@ -41,9 +41,9 @@ TEST_CASE("google response 0", "[regression]") {
         "<A HREF=\"http://www.google.ru/?gfe_rd=cr&amp;dcr=0&amp;ei=dlSVWsfRFMiG7gT1wK8Q\">here</A>.\r\n"
         "</BODY></HTML>\r\n";
 
-    auto res = p.parse(raw).response;
-    REQUIRE(res->is_valid());
-    REQUIRE(res->http_version == "1.1");
+    auto result = p.parse(raw);
+    CHECK(result.state == ResponseParser::State::done);
+    REQUIRE(result.response->http_version == "1.1");
 }
 
 TEST_CASE("google response 1", "[regression]") {
@@ -52,16 +52,15 @@ TEST_CASE("google response 1", "[regression]") {
     req->method = Method::GET;
     p.append_request(req);
     
-    ResponseSP res;
-
+    ResponseParser::Result result;
     auto DIR = ROOT+"1";
     for (auto fname : read_directory(DIR)) {
+        CHECK(result.state != ResponseParser::State::done);
         std::ifstream file(DIR+"/"+fname, std::ios::binary);
         std::string str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-       
-        res = p.parse(string(str.c_str())).response;
+        result = p.parse(string(str.c_str()));
     }
+    CHECK(result.state == ResponseParser::State::done);
 
-    REQUIRE(res->is_valid());
-    REQUIRE(res->http_version == "1.1");
+    REQUIRE(result.response->http_version == "1.1");
 }

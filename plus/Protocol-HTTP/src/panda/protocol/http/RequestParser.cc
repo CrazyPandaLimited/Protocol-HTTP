@@ -5,7 +5,7 @@ namespace panda { namespace protocol { namespace http {
 
 namespace {
     #define MACHINE_DATA
-    #include "RequestParserGenerated.cc"
+    #include "RequestParserGenerated.icc"
 }
 
 RequestParser::RequestParser (const RequestFactorySP& fac) :
@@ -37,18 +37,18 @@ RequestParser::Result RequestParser::parse (const string& buffer) {
 
     // generated parser logic
     #define MACHINE_EXEC
-    #include "RequestParserGenerated.cc"
+    #include "RequestParserGenerated.icc"
 
     size_t position = p - buffer_ptr;
     if (state == State::error) {
-        return reset_and_build_result(false, position, make_unexpected(ParserError("http parsing semantic error")));
+        return reset_and_build_result(position, make_unexpected(ParserError("http parsing semantic error")));
     } else if (cs == http_request_parser_first_final) {
         if(state == State::in_body) {
             return build_result(FinalFlag::CONTINUE, position);
         }
         return build_result(FinalFlag::RESET, position);
     } else if (cs == http_request_parser_error) {
-        return reset_and_build_result(false, position, make_unexpected(ParserError("http parsing lexical error")));
+        return reset_and_build_result(position, make_unexpected(ParserError("http parsing lexical error")));
     } else {
         // append into current marked buffer everything which is unparsed yet
         if (marked) {
@@ -65,26 +65,25 @@ void RequestParser::reset () {
     current_message = new_request();
 }
 
-RequestParser::Result RequestParser::reset_and_build_result (bool is_valid, size_t position, const excepted<State, ParserError>& state) {
+RequestParser::Result RequestParser::reset_and_build_result (size_t position, const excepted<State, ParserError>& state) {
     MessageSP result = current_message;
-    if (is_valid) result->set_valid();
     reset();
     return {result, position, state};
 }
 
 RequestParser::Result RequestParser::build_result (FinalFlag flag, size_t position) {
     if (max_message_size != SIZE_UNLIMITED && current_message->buf_size() > max_message_size) {
-        return reset_and_build_result(false, position, make_unexpected(ParserError("message is bigger than max_message_size")));
+        return reset_and_build_result(position, make_unexpected(ParserError("message is bigger than max_message_size")));
     }
 
     // TODO: body->length() is linear, we need cache
     auto length = current_message->body.length();
     if (max_body_size == SIZE_PROHIBITED && length > 0) {
-        return reset_and_build_result(false, position, make_unexpected(ParserError("body is prohibited")));
+        return reset_and_build_result(position, make_unexpected(ParserError("body is prohibited")));
     } else if (max_body_size != SIZE_UNLIMITED && length > max_body_size) {
-        return reset_and_build_result(false, position, make_unexpected(ParserError("body is bigger than max_body_size")));
+        return reset_and_build_result(position, make_unexpected(ParserError("body is bigger than max_body_size")));
     } else if (flag == FinalFlag::RESET) {
-        return reset_and_build_result(true, position, state);
+        return reset_and_build_result(position, state);
     } else {
         return {current_message, position, state};
     }

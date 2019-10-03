@@ -35,7 +35,7 @@ private:
     RequestSP new_request () const { return request_factory ? request_factory->create() : make_iptr<Request>(); }
 
     Result build_result           (FinalFlag reset, size_t position);
-    Result reset_and_build_result (bool is_valid, size_t position, const excepted<State, ParserError>& state);
+    Result reset_and_build_result (size_t position, const excepted<State, ParserError>& state);
 };
 
 }}}

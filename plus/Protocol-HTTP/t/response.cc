@@ -10,10 +10,15 @@ TEST_CASE("trivial get response", "[response]") {
         "Host: host1\r\n"
         "\r\n";
 
-    auto res = p.parse(raw).response;
-    REQUIRE(res->is_valid());
+    auto result = p.parse(raw);
+    CHECK(result.state != ResponseParser::State::done);
+
+    auto res = result.response;
     REQUIRE(res->http_version == "1.0");
     REQUIRE(res->headers.get_field("Host") == "host1");
+
+    result = p.eof();
+    CHECK(result.state == ResponseParser::State::done);
 }
 
 TEST_CASE("trivial head response", "[response]") {
@@ -27,8 +32,10 @@ TEST_CASE("trivial head response", "[response]") {
         "Content-Length: 100500\r\n" // parser won't expect real body here for HEAD response
         "\r\n";
 
-    auto res = p.parse(raw).response;
-    REQUIRE(res->is_valid());
+    auto result = p.parse(raw);
+    CHECK(result.state == ResponseParser::State::done);
+
+    auto res = result.response;
     REQUIRE(res->http_version == "1.0");
     REQUIRE(res->headers.get_field("Host") == "host1");
 }
@@ -47,8 +54,10 @@ TEST_CASE("redirect response", "[response]") {
         "\r\n"
         "<html><head><title>Moved</title></head><body><h1>Moved</h1><p>This page has moved to <a href=\"http://localhost:35615\">http://localhost:35615</a>.</p></body></html>\r\n";
 
-    auto res = p.parse(raw).response;
-    REQUIRE(res->is_valid());
+    auto result = p.parse(raw);
+    CHECK(result.state == ResponseParser::State::done);
+
+    auto res = result.response;
     REQUIRE(res->http_version == "1.1");
     REQUIRE(res->headers.get_field("Location") == "http://localhost:35615");
     REQUIRE(res->headers.get_field("Date") == "Thu, 22 Mar 2018 16:25:43 GMT");
@@ -66,13 +75,17 @@ TEST_CASE("trivial connection close", "[response]") {
         "\r\n"
         "body";
 
-    auto fres = p.parse(raw);
-    auto res = p.eof();
-    CHECK(res.state == ResponseParser::State::done);
-    CHECK(res.response->is_valid());
-    CHECK(res.response->http_version == "1.1");
-    CHECK(res.response->headers.get_field("Host") == "host1");
-    CHECK(res.response->body.as_buffer() == "body");
+    auto result = p.parse(raw);
+    CHECK(result.state != ResponseParser::State::done);
+
+    auto res = result.response;
+    CHECK(res->http_version == "1.1");
+    CHECK(res->headers.get_field("Host") == "host1");
+    CHECK(res->body.as_buffer() == "body");
+
+    result = p.eof();
+    CHECK(result.state == ResponseParser::State::done);
+    CHECK(res->body.as_buffer() == "body");
 }
 
 TEST_CASE("connection close priority", "[response]") {
@@ -89,10 +102,10 @@ TEST_CASE("connection close priority", "[response]") {
         "\r\n"
         "1";
 
-    auto fres = p.parse(raw);
-    CHECK(fres.state);
-    auto res = p.eof();
-    CHECK_FALSE(res.state);
+    auto result = p.parse(raw);
+    CHECK(result.state);
+    result = p.eof();
+    CHECK_FALSE(result.state);
 }
 
 TEST_CASE("response eof after full message", "[response]") {
@@ -110,6 +123,5 @@ TEST_CASE("response eof after full message", "[response]") {
 
     auto fres = p.parse(raw);
     CHECK(fres.state == ResponseParser::State::done);
-    auto res = p.eof();
-    CHECK(!res.state);
+    CHECK_THROWS(p.eof());
 }

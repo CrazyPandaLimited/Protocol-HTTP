@@ -42,7 +42,6 @@
 
     action return {
         state = State::done;
-        current_message->set_body();
         fret;
     }
 

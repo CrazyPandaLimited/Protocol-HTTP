@@ -12,7 +12,6 @@ TEST_CASE("double first line", "[bad]") {
     REQUIRE_FALSE(result.state);
 
     auto req = result.request;
-    REQUIRE(!req->is_valid());
     REQUIRE(req->method == Method::GET);
     REQUIRE(req->http_version == "1.0");
 }
@@ -24,9 +23,7 @@ TEST_CASE("bad first line", "[bad]") {
         "GET / HTTP/1.0\r\n"
         "Host: host1\r\n"
         "\r\n";
-    auto result = p.parse(raw);
-    REQUIRE_FALSE(result.state);
-    REQUIRE(!result.request->is_valid());
+    REQUIRE_FALSE(p.parse(raw).state);
 }
 
 TEST_CASE("space before colon in header field", "[bad]") {
@@ -35,9 +32,7 @@ TEST_CASE("space before colon in header field", "[bad]") {
         "GET / HTTP/1.0\r\n"
         "Host : host1\r\n"
         "\r\n";
-    auto result = p.parse(raw);
-    REQUIRE_FALSE(result.state);
-    REQUIRE(!result.request->is_valid());
+    REQUIRE_FALSE(p.parse(raw).state);
 }
 
 TEST_CASE("space before header field", "[bad]") {
@@ -47,10 +42,7 @@ TEST_CASE("space before header field", "[bad]") {
         "GET / HTTP/1.0\r\n"
         " Host: host1\r\n"
         "\r\n";
-
-    auto result = p.parse(raw);
-    REQUIRE_FALSE(result.state);
-    REQUIRE(!result.request->is_valid());
+    REQUIRE_FALSE(p.parse(raw).state);
 }
 
 template <typename ParserFactory>
@@ -130,6 +122,5 @@ TEST_CASE("bad chunk size", "[bad]") {
     REQUIRE(!result.state);
 
     auto req = result.request;
-    REQUIRE(!req->is_valid());
     REQUIRE(req->method == Method::POST);
 }

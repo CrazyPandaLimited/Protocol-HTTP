@@ -23,8 +23,8 @@ struct ResponseParser : MessageParser<Response> {
 
     void append_request (const RequestSP& request);
 
-    Result eof ();
     Result parse (const string& buffer);
+    Result eof   ();
 
     void reset ();
 
@@ -34,7 +34,7 @@ private:
     ResponseSP create_message ();
 
     Result build_result           (FinalFlag reset, size_t position);
-    Result reset_and_build_result (bool is_valid, size_t position, const excepted<State, ParserError>& state);
+    Result reset_and_build_result (size_t position, const excepted<State, ParserError>& state);
 
     std::deque<RequestSP> requests;
 };

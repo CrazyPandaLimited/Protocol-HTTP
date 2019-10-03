@@ -108,7 +108,6 @@ protected:
 
             // there was the last body part
             state = State::done;
-            current_message->set_body();
             return true;
         }
     }

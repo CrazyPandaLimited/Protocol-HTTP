@@ -25,6 +25,7 @@ struct Body {
     }
 
     size_t length () const {
+        if (!parts.size()) return 0;
         uint64_t size = 0;
         for (auto& s : parts) size += s.length();
         return size;

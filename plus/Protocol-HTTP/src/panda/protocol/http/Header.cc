@@ -1,5 +1,5 @@
 #include "Header.h"
-#include <algorithm>
+#include <ostream>
 
 namespace panda { namespace protocol { namespace http {
 
@@ -11,38 +11,56 @@ Header::Header (const Container& fields) : fields(fields)            {}
 Header::Header (Container&& fields)      : fields(std::move(fields)) {}
 
 bool Header::has_field (string_view key) const {
-    return find(key) != fields.rend();
+    for (const auto& f : fields) if (iequals(f.name, key)) return true;
+    return false;
 }
 
-Header::Container::const_reverse_iterator Header::find (string_view key) const {
-    return std::find_if(fields.rbegin(), fields.rend(), [&](const HeaderField& f) {
-        return iequals(f.name, key);
-    });
+Header::Container::const_iterator Header::find (string_view key) const {
+    auto end = fields.crend();
+    for (auto it = fields.crbegin(); it != end; ++it) {
+        if (iequals(it->name, key)) return it.base()-1;
+    }
+    return fields.cend();
 }
 
-Header::Container::reverse_iterator Header::find (string_view key) {
-    return std::find_if(fields.rbegin(), fields.rend(), [&](const HeaderField& f) {
-        return iequals(f.name, key);
-    });
+Header::Container::iterator Header::find (string_view key) {
+    auto end = fields.rend();
+    for (auto it = fields.rbegin(); it != end; ++it) {
+        if (iequals(it->name, key)) return it.base()-1;
+    }
+    return fields.end();
 }
 
 string Header::get_field (string_view key, const string& default_val) const {
-    auto pos = find(key);
-    return pos != fields.rend() ? pos->value : default_val;
-}
-
-Header& Header::add_field (const string& key, const string& value) & {
-    fields.emplace_back(string(key.data(), key.size()), value);
-    return *this;
+    auto it = find(key);
+    return it == fields.cend() ? default_val : it->value;
 }
 
 void Header::set_field (const string& key, const string& value) {
-    remove_field(key);
-    add_field(key, value);
+    bool replaced = false;
+    for (auto it = fields.begin(); it != fields.end();) {
+        if (iequals(it->name, key)) {
+            if (replaced) it = fields.erase(it);
+            else {
+                replaced = true;
+                it->name  = key;
+                it->value = value;
+            }
+        }
+        else ++it;
+    }
 }
 
 void Header::remove_field (string_view key) {
-    fields.erase(std::remove_if(fields.begin(), fields.end(), Comparator{string(key.data(), key.size())}), fields.end());
+    for (auto it = fields.cbegin(); it != fields.end();) {
+        if (iequals(it->name, key)) it = fields.erase(it);
+        else ++it;
+    }
+}
+
+std::ostream& operator<< (std::ostream& os, const Header::Field& hf) {
+    os << hf.name << ": " << hf.value;
+    return os;
 }
 
 std::ostream& operator<< (std::ostream& os, const Header& h) {

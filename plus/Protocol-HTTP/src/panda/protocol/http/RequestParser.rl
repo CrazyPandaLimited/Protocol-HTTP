@@ -14,7 +14,6 @@
 
     action done {
         state = State::got_header;
-        current_message->set_header();
         if(chunked) {
             fcall chunked_body;
         }

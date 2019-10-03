@@ -41,7 +41,6 @@
 
     action done {
         state = State::got_header;
-        current_message->set_header();
 
         // Response to HEAD is the same as response to GET, but without body
         if(requests.empty()) {
@@ -60,7 +59,6 @@
         if(chunked) {
             fcall chunked_body;
             state = State::done;
-            current_message->set_body();;
         }
         else if(has_content_len) {
             if(content_len > 0) {

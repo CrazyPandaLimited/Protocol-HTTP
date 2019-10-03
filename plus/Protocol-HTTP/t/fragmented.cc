@@ -2,9 +2,8 @@
 
 TEST_CASE("parsing request with fragmented header", "[fragmented]") {
     RequestParser p;
-    RequestSP req;
 
-    std::vector<string> v = {
+    string v[] = {
         "GET / HTTP/1.0\r\n"
         "Heade", "r1: header1\r\n"
         "Header2: h", "eader2\r\n"
@@ -12,12 +11,14 @@ TEST_CASE("parsing request with fragmented header", "[fragmented]") {
         "\r\n"
     };
 
+    RequestParser::Result result;
     for (auto s : v) {
-        if (req) REQUIRE(!req->is_valid());
-        req = p.parse(s).request;
+        CHECK(result.state != RequestParser::State::done);
+        result = p.parse(s);
     }
+    CHECK(result.state == RequestParser::State::done);
 
-    REQUIRE(req->is_valid());
+    auto req = result.request;
     REQUIRE(req->method == Method::GET);
     REQUIRE(req->http_version == "1.0");
     REQUIRE(req->headers.get_field("Header1") == "header1");
@@ -27,9 +28,8 @@ TEST_CASE("parsing request with fragmented header", "[fragmented]") {
 
 TEST_CASE("parsing request with fragmented method", "[fragmented]") {
     RequestParser p;
-    RequestSP req;
 
-    std::vector<string> v = {
+    string v[] = {
         "G", "ET / HTTP/1", ".0\r\n"
         "Header1: header1\r\n"
         "Header2: header2\r\n"
@@ -37,12 +37,14 @@ TEST_CASE("parsing request with fragmented method", "[fragmented]") {
         "\r\n"
     };
 
+    RequestParser::Result result;
     for (auto s : v) {
-        if (req) REQUIRE(!req->is_valid());
-        req = p.parse(s).request;
+        CHECK(result.state != RequestParser::State::done);
+        result = p.parse(s);
     }
+    CHECK(result.state == RequestParser::State::done);
 
-    REQUIRE(req->is_valid());
+    auto req = result.request;
     REQUIRE(req->method == Method::GET);
     REQUIRE(req->http_version == "1.0");
     REQUIRE(req->headers.get_field("Header1") == "header1");
@@ -52,9 +54,8 @@ TEST_CASE("parsing request with fragmented method", "[fragmented]") {
 
 TEST_CASE("parsing request fragmented by lines", "[fragmented]") {
     RequestParser p;
-    RequestSP req;
 
-    std::vector<string> v = {
+    string v[] = {
         "GET / HTTP/1.0\r\n"
         "Header1: header1\r\n",
         "Header2: header2\r\n",
@@ -62,12 +63,14 @@ TEST_CASE("parsing request fragmented by lines", "[fragmented]") {
         "\r\n"
     };
 
+    RequestParser::Result result;
     for (auto s : v) {
-        if (req) REQUIRE(!req->is_valid());
-        req = p.parse(s).request;
+        CHECK(result.state != RequestParser::State::done);
+        result = p.parse(s);
     }
+    CHECK(result.state == RequestParser::State::done);
 
-    REQUIRE(req->is_valid());
+    auto req = result.request;
     REQUIRE(req->method == Method::GET);
     REQUIRE(req->http_version == "1.0");
     REQUIRE(req->headers.get_field("Header1") == "header1");
@@ -77,7 +80,6 @@ TEST_CASE("parsing request fragmented by lines", "[fragmented]") {
 
 TEST_CASE("parsing request byte by byte", "[fragmented]") {
     RequestParser p;
-    RequestSP req;
     string s =
         "GET /uri HTTP/1.0\r\n"
         "Header1: header1\r\n"
@@ -86,13 +88,15 @@ TEST_CASE("parsing request byte by byte", "[fragmented]") {
         "\r\n";
 
     const size_t CHUNK = GENERATE(1, 10);
+    RequestParser::Result result;
     while (s) {
-        if (req) REQUIRE(!req->is_valid());
-        req = p.parse(s.substr(0, CHUNK)).request;
+        CHECK(result.state != RequestParser::State::done);
+        result = p.parse(s.substr(0, CHUNK));
         s.offset(CHUNK < s.length() ? CHUNK : s.length());
     }
+    CHECK(result.state == RequestParser::State::done);
 
-    REQUIRE(req->is_valid());
+    auto req = result.request;
     REQUIRE(req->method == Method::GET);
     REQUIRE(req->http_version == "1.0");
     REQUIRE(req->headers.get_field("Header1") == "header1");
@@ -102,9 +106,7 @@ TEST_CASE("parsing request byte by byte", "[fragmented]") {
 
 TEST_CASE("parsing response byte by byte", "[fragmented]") {
     ResponseParser p;
-    RequestSP req = new Request(Method::GET, new URI("http://dev/"), Header(), Body(), "1.1");
-    p.append_request(req);
-    ResponseSP res;
+    p.append_request(new Request(Method::GET, new URI("http://dev/"), Header(), Body(), "1.1"));
 
     string s =
         "HTTP/1.1 101 Switching Protocols\r\n"
@@ -117,14 +119,16 @@ TEST_CASE("parsing response byte by byte", "[fragmented]") {
         "\r\n";
 
     const size_t CHUNK = GENERATE(1, 10);
+    ResponseParser::Result result;
     while (s) {
-        if (res) REQUIRE(!res->is_valid());
-        res = p.parse(s.substr(0, CHUNK)).response;
+        CHECK(result.state != ResponseParser::State::done);
+        result = p.parse(s.substr(0, CHUNK));
         s.offset(CHUNK < s.length() ? CHUNK : s.length());
     }
+    CHECK(result.state == ResponseParser::State::done);
 
+    auto res = result.response;
     REQUIRE(res);
-    REQUIRE(res->is_valid());
     REQUIRE(res->http_version == "1.1");
     CHECK(res->code == 101);
     CHECK(res->full_message() == "101 Switching Protocols");
@@ -135,8 +139,6 @@ TEST_CASE("parsing response byte by byte", "[fragmented]") {
 
 TEST_CASE("parsing request with fragmented chunks", "[fragmented]") {
     RequestParser p;
-    RequestSP req;
-    RequestParser::State final_state;
 
     std::vector<string> v = {
         "POST /upload HTTP/1.1\r\n"
@@ -156,15 +158,14 @@ TEST_CASE("parsing request with fragmented chunks", "[fragmented]") {
         "\r\n"
     };
 
+    RequestParser::Result result;
     for (auto s : v) {
-        if (req) REQUIRE(!req->is_valid());
-        auto res =  p.parse(s);
-        req = res.request;
-        final_state = res.state.value_or(RequestParser::State::not_yet);
+        CHECK(result.state != RequestParser::State::done);
+        result =  p.parse(s);
     }
+    CHECK(result.state == RequestParser::State::done);
 
-    REQUIRE(req->is_valid());
-    CHECK(final_state == RequestParser::State::done);
+    auto req = result.request;
     CHECK(req->method == Method::POST);
     CHECK(req->http_version == "1.1");
     CHECK(req->headers.get_field("Transfer-Encoding") == "chunked");
@@ -197,7 +198,7 @@ TEST_CASE("parsing 3 requests in a row", "[fragmented]") {
     auto req = result.request;
 
     REQUIRE(result.position == CHUNK_SIZE);
-    REQUIRE(req->is_valid());
+    CHECK(result.state == RequestParser::State::done);
     REQUIRE(req->method == Method::GET);
     REQUIRE(req->http_version == "1.0");
     REQUIRE(req->uri->to_string() == "/r1");
@@ -210,7 +211,7 @@ TEST_CASE("parsing 3 requests in a row", "[fragmented]") {
     req = result.request;
 
     REQUIRE(result.position == CHUNK_SIZE);
-    REQUIRE(req->is_valid());
+    CHECK(result.state == RequestParser::State::done);
     REQUIRE(req->method == Method::GET);
     REQUIRE(req->uri->to_string() == "/r2");
     REQUIRE(req->http_version == "1.0");
@@ -223,7 +224,7 @@ TEST_CASE("parsing 3 requests in a row", "[fragmented]") {
     req = result.request;
 
     REQUIRE(result.position == CHUNK_SIZE);
-    REQUIRE(req->is_valid());
+    CHECK(result.state == RequestParser::State::done);
     REQUIRE(req->method == Method::GET);
     REQUIRE(req->http_version == "1.0");
     REQUIRE(req->uri->to_string() == "/r3");
