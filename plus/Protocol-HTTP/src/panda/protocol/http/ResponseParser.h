@@ -23,6 +23,7 @@ struct ResponseParser : MessageParser<Response> {
 
     void append_request (const RequestSP& request);
 
+    Result eof ();
     Result parse (const string& buffer);
 
     void reset ();

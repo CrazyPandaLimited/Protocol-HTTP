@@ -53,3 +53,24 @@ TEST_CASE("redirect response", "[response]") {
     REQUIRE(res->headers.get_field("Location") == "http://localhost:35615");
     REQUIRE(res->headers.get_field("Date") == "Thu, 22 Mar 2018 16:25:43 GMT");
 }
+
+TEST_CASE("trivial connection close", "[response]") {
+    ResponseParser p;
+    RequestSP req = new Request();
+    req->method = Method::GET;
+    p.append_request(req);
+    string raw =
+        "HTTP/1.1 200 OK\r\n"
+        "Host: host1\r\n"
+        "Connection: close\r\n"
+        "\r\n"
+        "body";
+
+    auto fres = p.parse(raw);
+    auto res = p.eof();
+    CHECK(res.state == ResponseParser::State::done);
+    CHECK(res.response->is_valid());
+    CHECK(res.response->http_version == "1.1");
+    CHECK(res.response->headers.get_field("Host") == "host1");
+    CHECK(res.response->body.as_buffer() == "body");
+}

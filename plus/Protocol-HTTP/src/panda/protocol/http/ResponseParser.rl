@@ -73,6 +73,10 @@
                 // set position on the next character and proceed
                 process_body(buffer, ++fpc, pe);
             }
+        } else if (!current_message->keep_alive()) { // Connection: close
+            state = State::in_body;
+            current_message->add_body_part(string(fpc+1, pe - fpc - 1));
+            fpc = pe;
         }
         fbreak;
     }

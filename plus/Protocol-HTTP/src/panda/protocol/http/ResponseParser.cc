@@ -23,6 +23,16 @@ ResponseSP ResponseParser::create_message () {
     return current_message;
 }
 
+ResponseParser::Result ResponseParser::eof() {
+    if (!current_message->keep_alive() && !content_len && !chunked) {
+        state = State::done;
+        return build_result(FinalFlag::RESET, 0);
+    } else {
+        return reset_and_build_result(false, 0, make_unexpected(ParserError("http parsing error: unexpected EOF")));
+    }
+}
+
+
 ResponseParser::Result ResponseParser::parse (const string& buffer) {
     if (requests.empty()) {
         if (buffer.empty()) {

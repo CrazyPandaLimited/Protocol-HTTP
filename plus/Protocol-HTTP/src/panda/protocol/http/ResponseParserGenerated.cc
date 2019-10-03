@@ -1,7 +1,7 @@
 
 #line 1 "ResponseParser.rl"
 
-#line 86 "ResponseParser.rl"
+#line 90 "ResponseParser.rl"
 
 
 #if defined(MACHINE_DATA)
@@ -40,7 +40,7 @@ static const int http_response_parser_en_chunked_body = 112;
 static const int http_response_parser_en_main = 1;
 
 
-#line 92 "ResponseParser.rl"
+#line 96 "ResponseParser.rl"
 
 #endif
 
@@ -53,7 +53,7 @@ static const int http_response_parser_en_main = 1;
 	top = 0;
 	}
 
-#line 99 "ResponseParser.rl"
+#line 103 "ResponseParser.rl"
 
 #endif
 
@@ -3406,6 +3406,10 @@ f5:
                 // set position on the next character and proceed
                 process_body(buffer, ++p, pe);
             }
+        } else if (!current_message->keep_alive()) { // Connection: close
+            state = State::in_body;
+            current_message->add_body_part(string(p+1, pe - p - 1));
+            p = pe;
         }
         {p++; goto _out; }
     }
@@ -3767,13 +3771,13 @@ _again:
 goto _again;}
     }
 	break;
-#line 3771 "ResponseParserGenerated.cc"
+#line 3775 "ResponseParserGenerated.cc"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 106 "ResponseParser.rl"
+#line 110 "ResponseParser.rl"
 
 #endif
