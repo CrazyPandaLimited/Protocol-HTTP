@@ -74,3 +74,23 @@ TEST_CASE("trivial connection close", "[response]") {
     CHECK(res.response->headers.get_field("Host") == "host1");
     CHECK(res.response->body.as_buffer() == "body");
 }
+
+TEST_CASE("connection close priority", "[response]") {
+    ResponseParser p;
+    RequestSP req = new Request();
+    req->method = Method::GET;
+    p.append_request(req);
+    string additional = GENERATE(string("Content-Length: 4\r\n"), string("Transfer-Encoding: chunked\r\n"));
+    string raw =
+        "HTTP/1.1 200 OK\r\n"
+        "Host: host1\r\n"
+        + additional +
+        "Connection: close\r\n"
+        "\r\n"
+        "1";
+
+    auto fres = p.parse(raw);
+    CHECK(fres.state);
+    auto res = p.eof();
+    CHECK_FALSE(res.state);
+}
