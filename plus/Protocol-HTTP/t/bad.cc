@@ -89,8 +89,7 @@ TEST_CASE ("unreal content length request", "[bad]") {
 TEST_CASE("unreal content lentgh response", "[bad]") {
     test_unreal_digits_response([]() {
         ResponseParser p;
-        RequestSP req = new Request(Method::GET, new URI("http://dev/"), Header(), Body(), "1.1");
-        p.append_request(req);
+        p.set_request(new Request(Method::GET, new URI("http://dev/"), Header(), Body(), "1.1"));
         return p;
     });
 }

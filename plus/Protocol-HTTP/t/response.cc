@@ -4,7 +4,7 @@ TEST_CASE("trivial get response", "[response]") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
-    p.append_request(req);
+    p.set_request(req);
     string raw =
         "HTTP/1.0 200 OK\r\n"
         "Host: host1\r\n"
@@ -25,7 +25,7 @@ TEST_CASE("trivial head response", "[response]") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::HEAD;
-    p.append_request(req);
+    p.set_request(req);
     string raw =
         "HTTP/1.0 200 OK\r\n"
         "Host: host1\r\n"
@@ -44,7 +44,7 @@ TEST_CASE("redirect response", "[response]") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::HEAD;
-    p.append_request(req);
+    p.set_request(req);
     string raw =
         "HTTP/1.1 301 Moved Permanently\r\n"
         "Date: Thu, 22 Mar 2018 16:25:43 GMT\r\n"
@@ -67,7 +67,7 @@ TEST_CASE("trivial connection close", "[response]") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
-    p.append_request(req);
+    p.set_request(req);
     string raw =
         "HTTP/1.1 200 OK\r\n"
         "Host: host1\r\n"
@@ -92,7 +92,7 @@ TEST_CASE("connection close priority", "[response]") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
-    p.append_request(req);
+    p.set_request(req);
     string additional = GENERATE(string("Content-Length: 4\r\n"), string("Transfer-Encoding: chunked\r\n"));
     string raw =
         "HTTP/1.1 200 OK\r\n"
@@ -112,7 +112,7 @@ TEST_CASE("response eof after full message", "[response]") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
-    p.append_request(req);
+    p.set_request(req);
     string body = GENERATE(string(""), string("1"));
     string raw =
         "HTTP/1.1 200 OK\r\n"

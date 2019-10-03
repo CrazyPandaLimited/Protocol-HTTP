@@ -23,7 +23,7 @@ TEST_CASE("google response 0", "[regression]") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
-    p.append_request(req);
+    p.set_request(req);
     
     string raw =
         "HTTP/1.1 302 Found\r\n"
@@ -50,7 +50,7 @@ TEST_CASE("google response 1", "[regression]") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
-    p.append_request(req);
+    p.set_request(req);
     
     ResponseParser::Result result;
     auto DIR = ROOT+"1";

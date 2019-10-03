@@ -1,7 +1,7 @@
 
 #line 1 "ResponseParser.rl"
 
-#line 92 "ResponseParser.rl"
+#line 86 "ResponseParser.rl"
 
 
 #if defined(MACHINE_DATA)
@@ -40,7 +40,7 @@ static const int http_response_parser_en_chunked_body = 112;
 static const int http_response_parser_en_main = 1;
 
 
-#line 98 "ResponseParser.rl"
+#line 92 "ResponseParser.rl"
 
 #endif
 
@@ -53,7 +53,7 @@ static const int http_response_parser_en_main = 1;
 	top = 0;
 	}
 
-#line 105 "ResponseParser.rl"
+#line 99 "ResponseParser.rl"
 
 #endif
 
@@ -3376,15 +3376,9 @@ f5:
         state = State::got_header;
 
         // Response to HEAD is the same as response to GET, but without body
-        if(requests.empty()) {
-            throw ParserError("Cannot create response as there are no corresponding request");
-        }
+        if (!_request) throw_no_request();
 
-        if(requests.back()->method == Request::Method::HEAD
-           || current_message->code  < 200
-           || current_message->code == 203
-           || current_message->code == 304)
-        {
+        if (_request->method == Request::Method::HEAD || current_message->code  < 200 || current_message->code == 203 || current_message->code == 304) {
             state = State::done;
             {p++; goto _out; }
         }
@@ -3773,13 +3767,13 @@ _again:
 goto _again;}
     }
 	break;
-#line 3777 "ResponseParserGenerated.icc"
+#line 3771 "ResponseParserGenerated.icc"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 112 "ResponseParser.rl"
+#line 106 "ResponseParser.rl"
 
 #endif

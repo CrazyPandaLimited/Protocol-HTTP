@@ -43,15 +43,9 @@
         state = State::got_header;
 
         // Response to HEAD is the same as response to GET, but without body
-        if(requests.empty()) {
-            throw ParserError("Cannot create response as there are no corresponding request");
-        }
+        if (!_request) throw_no_request();
 
-        if(requests.back()->method == Request::Method::HEAD
-           || current_message->code  < 200
-           || current_message->code == 203
-           || current_message->code == 304)
-        {
+        if (_request->method == Request::Method::HEAD || current_message->code  < 200 || current_message->code == 203 || current_message->code == 304) {
             state = State::done;
             fbreak;
         }

@@ -3,7 +3,6 @@
 #include "Response.h"
 #include "ParserError.h"
 #include "MessageParser.h"
-#include <deque>
 #include <panda/excepted.h>
 
 namespace panda { namespace protocol { namespace http {
@@ -21,14 +20,15 @@ struct ResponseParser : MessageParser<Response> {
 
     virtual ~ResponseParser () {}
 
-    void append_request (const RequestSP& request);
+    void set_request (const RequestSP& request) {
+        if (_request) throw ParserError("can't set another request until response is done");
+        _request = request;
+    }
 
     Result parse (const string& buffer);
     Result eof   ();
 
     void reset ();
-
-    bool no_pending_requests () const { return requests.empty(); }
 
 private:
     ResponseSP create_message ();
@@ -36,7 +36,7 @@ private:
     Result build_result           (FinalFlag reset, size_t position);
     Result reset_and_build_result (size_t position, const excepted<State, ParserError>& state);
 
-    std::deque<RequestSP> requests;
+    RequestSP _request;
 };
 
 }}}

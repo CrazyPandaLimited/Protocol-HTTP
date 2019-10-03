@@ -106,7 +106,7 @@ TEST_CASE("parsing request byte by byte", "[fragmented]") {
 
 TEST_CASE("parsing response byte by byte", "[fragmented]") {
     ResponseParser p;
-    p.append_request(new Request(Method::GET, new URI("http://dev/"), Header(), Body(), "1.1"));
+    p.set_request(new Request(Method::GET, new URI("http://dev/"), Header(), Body(), "1.1"));
 
     string s =
         "HTTP/1.1 101 Switching Protocols\r\n"

@@ -8,23 +8,21 @@ namespace {
     #include "ResponseParserGenerated.icc"
 }
 
-ResponseParser::ResponseParser () : MessageParser<Response>(nullptr, http_response_parser_start) {}
+static void throw_no_request () { throw ParserError("Cannot create response as there are no corresponding request"); }
 
-void ResponseParser::append_request (const RequestSP& request) {
-    requests.emplace_front(request);
-}
+ResponseParser::ResponseParser () : MessageParser<Response>(nullptr, http_response_parser_start) {}
 
 ResponseSP ResponseParser::create_message () {
     // we need requests to parse some responses correctly (for example HEAD response)
     // so something is terribly wrong if we have no corresponding request
     assert(!current_message);
-    if (requests.empty()) throw ParserError("Cannot create response as there are no corresponding request");
-    current_message = requests.back()->response();
+    if (!_request) throw_no_request();
+    current_message = _request->response();
     return current_message;
 }
 
 ResponseParser::Result ResponseParser::eof () {
-    if (requests.empty()) throw ParserError("Cannot create response as there are no corresponding request");
+    if (!_request) throw_no_request();
     if (current_message && !current_message->keep_alive() && !content_len && !chunked) {
         state = State::done;
         return build_result(FinalFlag::RESET, 0);
@@ -34,13 +32,9 @@ ResponseParser::Result ResponseParser::eof () {
 }
 
 ResponseParser::Result ResponseParser::parse (const string& buffer) {
-    if (requests.empty()) {
-        if (buffer.empty()) {
-            // stop iteration
-            return { nullptr, nullptr, 0, State::not_yet };
-        } else {
-            throw ParserError("Cannot parse message as there are no corresponding request");
-        }
+    if (!_request) {
+        if (buffer.empty()) return { nullptr, nullptr, 0, State::not_yet }; // stop iteration
+        throw_no_request();
     }
 
     // pointer to current buffer, used by LEN, PTR_TO defines above
@@ -92,15 +86,15 @@ ResponseParser::Result ResponseParser::parse (const string& buffer) {
 
 void ResponseParser::reset () {
     MessageParser::reset();
-    requests.clear();
+    _request.reset();
 }
 
 ResponseParser::Result ResponseParser::reset_and_build_result (size_t position, const excepted<State, ParserError>& state) {
-    auto message = current_message;
-    RequestSP request = requests.back();
-    requests.pop_back();
+    auto res = current_message;
+    auto req = _request;
+    _request.reset();
     MessageParser::reset();
-    return {request, message, position, state};
+    return {req, res, position, state};
 }
 
 ResponseParser::Result ResponseParser::build_result (FinalFlag flag, size_t position) {
@@ -117,7 +111,7 @@ ResponseParser::Result ResponseParser::build_result (FinalFlag flag, size_t posi
     } else if (flag == FinalFlag::RESET) {
         return reset_and_build_result(position, state);
     } else {
-        return {requests.back(), current_message, position, state};
+        return {_request, current_message, position, state};
     }
 }
 
