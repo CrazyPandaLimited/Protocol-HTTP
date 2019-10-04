@@ -32,12 +32,13 @@ TEST_CASE("trivial head response", "[response]") {
         "Content-Length: 100500\r\n" // parser won't expect real body here for HEAD response
         "\r\n";
 
-    auto result = p.parse(raw);
+    auto result = p.parse_shift(raw);
     CHECK(result.state == ResponseParser::State::done);
 
     auto res = result.response;
     REQUIRE(res->http_version == "1.0");
     REQUIRE(res->headers.get_field("Host") == "host1");
+    CHECK(raw.empty());
 }
 
 TEST_CASE("redirect response", "[response]") {

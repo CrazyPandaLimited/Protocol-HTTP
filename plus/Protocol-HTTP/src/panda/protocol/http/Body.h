@@ -6,6 +6,8 @@
 namespace panda { namespace protocol { namespace http {
 
 struct Body {
+    std::vector<string> parts;
+
     Body () {}
     Body (const string& body) { parts.emplace_back(body); }
 
@@ -14,13 +16,13 @@ struct Body {
 
     Body& operator= (const string& str) {
         parts.clear();
-        parts.emplace_back(str);
+        if (str) parts.emplace_back(str);
         return *this;
     }
 
     Body& operator= (string&& str) {
         parts.clear();
-        parts.emplace_back(std::move(str));
+        if (str) parts.emplace_back(std::move(str));
         return *this;
     }
 
@@ -34,7 +36,7 @@ struct Body {
     string as_buffer () const;
     bool   empty     () const { return !length(); }
 
-    std::vector<string> parts;
+    void clear () { parts.clear(); }
 };
 
 std::ostream& operator<< (std::ostream&, const Body&);

@@ -10,7 +10,7 @@ struct Response : Message {
     string message;
 
     Response () : code() {}
-    Response (int code, const string& reason, Header&& header, Body&& body, const string& http_version, bool chunked = false);
+    Response (int code, const string& message, Header&& header, Body&& body, const string& http_version, bool chunked = false);
 
     string full_message () { return panda::to_string(code) + " " + message; }
 
@@ -34,18 +34,18 @@ struct Response::BuilderImpl : Message::Builder<T> {
         return this->self();
     }
 
-    T& reason (const string& reason) {
-        _reason = reason;
+    T& message (const string& message) {
+        _message = message;
         return this->self();
     }
 
     ResponseSP build () {
-        return new Response(_code, _reason, std::move(this->_headers), std::move(this->_body), this->_http_version, this->_chunked);
+        return new Response(_code, _message, std::move(this->_headers), std::move(this->_body), this->_http_version, this->_chunked);
     }
 
 protected:
     int    _code;
-    string _reason;
+    string _message;
 };
 struct Response::Builder : Response::BuilderImpl<Builder> {};
 

@@ -1,30 +1,65 @@
 #include "http.h"
 #include <cstring>
+#include <xs/uri.h>
 
 namespace xs { namespace protocol { namespace http {
 
 using panda::string;
 
-void http_packet_set_headers (Message* p, const Hash& hv) {
+static inline void make_message (const Hash& p, Message* m) {
+    Sv sv;
+    if ((sv = p.fetch("headers")))      set_headers(m, sv);
+    if ((sv = p.fetch("body")))         m->body         = xs::in<string>(sv);
+    if ((sv = p.fetch("http_version"))) m->http_version = xs::in<string>(sv);
+    if ((sv = p.fetch("chunked")))      m->chunked      = sv.is_true();
+}
+
+RequestSP make_request (const Hash& p, const RequestSP& dest) {
+    auto ret = dest ? dest : RequestSP(new Request());
+    make_message(p, ret.get());
+
+    Sv sv;
+    if ((sv = p.fetch("method")) && sv.defined()) set_method(ret.get(), sv);
+    if ((sv = p.fetch("uri"))) ret->uri = xs::in<URISP>(sv);
+
+    return ret;
+}
+
+ResponseSP make_response (const Hash& p, const ResponseSP& dest) {
+    auto ret = dest ? dest : ResponseSP(new Response());
+    make_message(p, ret.get());
+
+    Simple v;
+    if ((v = p.fetch("code")))    ret->code = v;
+    if ((v = p.fetch("message"))) ret->message = v.as_string();
+
+    return ret;
+}
+
+void set_headers (Message* p, const Hash& hv) {
     p->headers.clear();
     for (const auto& row : hv) p->headers.add_field(string(row.key()), xs::in<string>(row.value()));
 }
 
-void http_packet_set_body (Message* p, const Simple& sv) {
-    p->body.parts.clear();
-    auto newbody = xs::in<string>(sv);
-    if (newbody.length()) p->body.parts.push_back(newbody);
+void set_method (Request* req, const Sv& method) {
+    using Method = Request::Method;
+    int num = SvIV_nomg(method);
+    if (num < (int)Method::OPTIONS || num > (int)Method::CONNECT) throw panda::exception("invalid http method");
+    req->method = (Method)num;
 }
 
-Simple strings_to_sv (const string& s1, const string& s2) {
-    auto len = s1.length() + s2.length();
+Simple strings_to_sv (const std::vector<string>& v) {
+    size_t len = 0;
+    for (const auto& s : v) len += s.length();
     if (!len) return Simple::undef;
 
     auto ret = Simple::create(len);
-    char* dest = SvPVX(ret);
-    std::memcpy(dest, s1.data(), s1.length());
-    std::memcpy(dest + s1.length(), s2.data(), s2.length());
-    dest[len] = 0;
+    char* dest = ret.get<char*>();
+    for (const auto& s : v) {
+        memcpy(dest, s.data(), s.length());
+        dest += s.length();
+    }
+    *dest = 0;
     ret.length(len);
     return ret;
 }

@@ -13,7 +13,7 @@ struct Message : virtual Refcnt {
     string http_version;
     bool   chunked;
 
-    Message ();
+    Message () : chunked(), _buf_size() {}
     Message (Header&& header, Body&& body, const string& http_version, bool chunked);
 
     void add_header_field (const string& key, const string& value);

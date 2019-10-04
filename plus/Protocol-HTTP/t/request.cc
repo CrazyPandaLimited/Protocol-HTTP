@@ -370,9 +370,8 @@ TEST_CASE("parsing pipelined requests", "[request]") {
     REQUIRE(req->headers.get_field("Header5") == "header5");
     REQUIRE(req->headers.get_field("Header6") == "header6");
 
-    result = p.parse(s);
+    result = p.parse_shift(s);
     CHECK(result.state == RequestParser::State::done);
-    s.offset(result.position);
     req = result.request;
     REQUIRE(req->method == Method::GET);
     REQUIRE(req->http_version == "1.0");

@@ -9,23 +9,14 @@ using panda::uri::URI;
 using panda::uri::URISP;
 
 struct Request : Message {
-    enum class Method {
-        OPTIONS,
-        GET,
-        HEAD,
-        POST,
-        PUT,
-        DELETE,
-        TRACE,
-        CONNECT,
-    };
+    enum class Method {OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT};
 
     struct Builder; template <class T = void> struct BuilderImpl;
 
     Method method;
     URISP  uri;
 
-    Request () {}
+    Request () : method(Method::GET) {}
     Request (Method method, const URISP& uri, Header&& header, Body&& body, const string& http_version, bool chunked = false);
 
     ResponseSP response () const { return create_response(); }

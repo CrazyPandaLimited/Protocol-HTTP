@@ -23,7 +23,14 @@ struct RequestParser : MessageParser<Request> {
 
     virtual ~RequestParser () {}
 
-    Result parse (const string& buffer);
+    Result parse (const string&);
+
+    Result parse_shift (string& s) {
+        auto result = parse(s);
+        s.offset(result.position);
+        result.position = 0;
+        return result;
+    }
 
     void reset ();
 

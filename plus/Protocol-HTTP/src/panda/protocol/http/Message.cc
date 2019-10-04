@@ -3,8 +3,6 @@
 
 namespace panda { namespace protocol { namespace http {
 
-Message::Message () : chunked(), _buf_size() {}
-
 Message::Message (Header&& headers, Body&& body, const string& http_version, bool chunked) :
     headers(std::move(headers)), body(std::move(body)), http_version(http_version), chunked(chunked), _buf_size()
 {}

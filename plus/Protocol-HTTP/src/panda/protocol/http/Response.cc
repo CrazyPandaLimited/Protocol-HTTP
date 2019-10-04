@@ -2,8 +2,8 @@
 
 namespace panda { namespace protocol { namespace http {
 
-Response::Response (int code, const string& reason, Header&& header, Body&& body, const string& http_version, bool chunked) :
-    Message(std::move(header), std::move(body), http_version, chunked), code(code), message(reason)
+Response::Response (int code, const string& message, Header&& header, Body&& body, const string& http_version, bool chunked) :
+    Message(std::move(header), std::move(body), http_version, chunked), code(code), message(message)
 {}
 
 string Response::_http_header (size_t reserve) {
