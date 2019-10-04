@@ -1,7 +1,7 @@
 #pragma once
+#include "Error.h"
 #include "Request.h"
 #include "Response.h"
-#include "ParserError.h"
 #include "MessageParser.h"
 #include <panda/excepted.h>
 
@@ -12,7 +12,7 @@ struct ResponseParser : MessageParser<Response> {
         RequestSP  request;
         ResponseSP response;
         size_t     position;
-        excepted<State, ParserError> state;
+        excepted<State, std::error_code> state;
     };
     using ResultSP = iptr<Result>;
 
@@ -42,7 +42,7 @@ private:
     ResponseSP create_message ();
 
     Result build_result           (FinalFlag reset, size_t position);
-    Result reset_and_build_result (size_t position, const excepted<State, ParserError>& state);
+    Result reset_and_build_result (size_t position, const excepted<State, std::error_code>& state);
 
     RequestSP _request;
 };

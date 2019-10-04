@@ -27,7 +27,7 @@ ResponseParser::Result ResponseParser::eof () {
         state = State::done;
         return build_result(FinalFlag::RESET, 0);
     } else {
-        return reset_and_build_result(0, make_unexpected(ParserError("http parsing error: unexpected EOF")));
+        return reset_and_build_result(0, make_unexpected(errc::unexpected_eof));
     }
 }
 
@@ -65,14 +65,14 @@ ResponseParser::Result ResponseParser::parse (const string& buffer) {
     size_t position = p - buffer_ptr;
 
     if (state == State::error) {
-        return reset_and_build_result(position, make_unexpected(ParserError("http parsing error")));
+        return reset_and_build_result(position, make_unexpected(errc::semantic_error));
     } else if (cs == http_response_parser_first_final) {
         if (state == State::in_body) {
             return build_result(FinalFlag::CONTINUE, position);
         }
         return build_result(FinalFlag::RESET, position);
     } else if (cs == http_response_parser_error) {
-        return reset_and_build_result(position, make_unexpected(ParserError("http parsing error")));
+        return reset_and_build_result(position, make_unexpected(errc::lexical_error));
     } else {
         // append into current marked buffer everything which is unparsed yet
         if (marked) {
@@ -89,7 +89,7 @@ void ResponseParser::reset () {
     _request.reset();
 }
 
-ResponseParser::Result ResponseParser::reset_and_build_result (size_t position, const excepted<State, ParserError>& state) {
+ResponseParser::Result ResponseParser::reset_and_build_result (size_t position, const excepted<State, std::error_code>& state) {
     auto res = current_message;
     auto req = _request;
     _request.reset();
@@ -99,15 +99,15 @@ ResponseParser::Result ResponseParser::reset_and_build_result (size_t position, 
 
 ResponseParser::Result ResponseParser::build_result (FinalFlag flag, size_t position) {
     if (max_message_size != SIZE_UNLIMITED && current_message->buf_size() > max_message_size) {
-        return reset_and_build_result(position, make_unexpected(ParserError("message is bigger than max_message_size")));
+        return reset_and_build_result(position, make_unexpected(errc::message_too_large));
     }
 
     // TODO: body->length() is linear, we need cache
     auto length = current_message->body.length();
     if (max_body_size == SIZE_PROHIBITED && length > 0) {
-        return reset_and_build_result(position, make_unexpected(ParserError("body is prohibited")));
+        return reset_and_build_result(position, make_unexpected(errc::unexpected_body));
     } else  if (max_body_size != SIZE_UNLIMITED && length > max_body_size) {
-        return reset_and_build_result(position, make_unexpected(ParserError("body is bigger than max_body_size")));
+        return reset_and_build_result(position, make_unexpected(errc::body_too_large));
     } else if (flag == FinalFlag::RESET) {
         return reset_and_build_result(position, state);
     } else {
