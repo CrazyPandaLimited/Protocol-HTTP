@@ -4,9 +4,10 @@
 
 namespace panda { namespace protocol { namespace http {
 
-inline string rtrim (const string& str) {
-    string::size_type end = str.find_last_not_of(" ");
-    return end == string::npos ? string() : str.substr(0, end+1);
+inline void rtrim (string& str) {
+    if (str.back() != ' ') return;
+    auto end = str.find_last_not_of(" ");
+    end == string::npos ? str.clear() : str.offset(0, end+1);
 }
 
 }}}

@@ -2049,7 +2049,7 @@ case 115:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr138;
@@ -2144,7 +2144,7 @@ case 119:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr147;
@@ -2254,7 +2254,7 @@ case 126:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr160;
@@ -2461,7 +2461,7 @@ case 136:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 266: goto tr178;
@@ -2498,7 +2498,7 @@ case 161:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr160;
@@ -2531,7 +2531,7 @@ case 137:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr160;
@@ -2670,7 +2670,7 @@ case 144:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr193;
@@ -2983,7 +2983,7 @@ case 155:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 266: goto tr187;
@@ -3018,7 +3018,7 @@ case 156:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr211;
@@ -3079,7 +3079,7 @@ case 157:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 175 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 265: goto tr191;
@@ -3353,13 +3353,13 @@ f1:
     }
 	goto _again;
 f9:
-#line 90 "MessageParser.rl"
+#line 91 "MessageParser.rl"
 	{
         connection_close = true;
     }
 	goto _again;
 f11:
-#line 124 "MessageParser.rl"
+#line 125 "MessageParser.rl"
 	{
         chunked = true;
     }
@@ -3418,7 +3418,7 @@ f15:
         mark = p - buffer_ptr;
         marked = true;
     }
-#line 94 "MessageParser.rl"
+#line 95 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -3447,7 +3447,8 @@ f8:
             // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
             // separate buffer, which is not cheap
             // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl
-            current_message->add_header_field(current_field_buffer, rtrim(marked_buffer));
+            rtrim(marked_buffer);
+            current_message->add_header_field(current_field_buffer, marked_buffer);
         }
     }
 #line 55 "MessageParser.rl"
@@ -3458,7 +3459,7 @@ f8:
     }
 	goto _again;
 f10:
-#line 90 "MessageParser.rl"
+#line 91 "MessageParser.rl"
 	{
         connection_close = true;
     }
@@ -3471,7 +3472,7 @@ f10:
     }
 	goto _again;
 f13:
-#line 98 "MessageParser.rl"
+#line 99 "MessageParser.rl"
 	{
         string len_str;
         if(marked_buffer.empty()) {
@@ -3495,7 +3496,7 @@ f13:
     }
 	goto _again;
 f2:
-#line 128 "MessageParser.rl"
+#line 129 "MessageParser.rl"
 	{
         if(marked_buffer.empty()) {
             current_message->http_version = string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, p));
@@ -3569,7 +3570,8 @@ f7:
             // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
             // separate buffer, which is not cheap
             // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl
-            current_message->add_header_field(current_field_buffer, rtrim(marked_buffer));
+            rtrim(marked_buffer);
+            current_message->add_header_field(current_field_buffer, marked_buffer);
         }
     }
 #line 55 "MessageParser.rl"
@@ -3590,10 +3592,11 @@ f12:
             // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
             // separate buffer, which is not cheap
             // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl
-            current_message->add_header_field(current_field_buffer, rtrim(marked_buffer));
+            rtrim(marked_buffer);
+            current_message->add_header_field(current_field_buffer, marked_buffer);
         }
     }
-#line 79 "MessageParser.rl"
+#line 80 "MessageParser.rl"
 	{
         auto res = panda::from_chars(marked_buffer.data(), marked_buffer.data() + marked_buffer.length(), content_len);
         if (res.ec) {
@@ -3612,7 +3615,7 @@ f12:
     }
 	goto _again;
 f16:
-#line 114 "MessageParser.rl"
+#line 115 "MessageParser.rl"
 	{
         if(chunk_len > 0) {
             current_message->add_body_part( advance_buffer(buffer, p, false) );
@@ -3624,7 +3627,7 @@ f16:
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 94 "MessageParser.rl"
+#line 95 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -3637,7 +3640,7 @@ f14:
         mark = p - buffer_ptr;
         marked = true;
     }
-#line 114 "MessageParser.rl"
+#line 115 "MessageParser.rl"
 	{
         if(chunk_len > 0) {
             current_message->add_body_part( advance_buffer(buffer, p, false) );
@@ -3649,13 +3652,13 @@ f14:
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 94 "MessageParser.rl"
+#line 95 "MessageParser.rl"
 	{
         trailing_header = true;
     }
 	goto _again;
 f17:
-#line 114 "MessageParser.rl"
+#line 115 "MessageParser.rl"
 	{
         if(chunk_len > 0) {
             current_message->add_body_part( advance_buffer(buffer, p, false) );
@@ -3667,7 +3670,7 @@ f17:
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 94 "MessageParser.rl"
+#line 95 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -3680,7 +3683,7 @@ f17:
     }
 	goto _again;
 f19:
-#line 114 "MessageParser.rl"
+#line 115 "MessageParser.rl"
 	{
         if(chunk_len > 0) {
             current_message->add_body_part( advance_buffer(buffer, p, false) );
@@ -3692,7 +3695,7 @@ f19:
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 94 "MessageParser.rl"
+#line 95 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -3706,12 +3709,13 @@ f19:
             // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
             // separate buffer, which is not cheap
             // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl
-            current_message->add_header_field(current_field_buffer, rtrim(marked_buffer));
+            rtrim(marked_buffer);
+            current_message->add_header_field(current_field_buffer, marked_buffer);
         }
     }
 	goto _again;
 f18:
-#line 114 "MessageParser.rl"
+#line 115 "MessageParser.rl"
 	{
         if(chunk_len > 0) {
             current_message->add_body_part( advance_buffer(buffer, p, false) );
@@ -3723,7 +3727,7 @@ f18:
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 94 "MessageParser.rl"
+#line 95 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -3744,7 +3748,8 @@ f18:
             // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
             // separate buffer, which is not cheap
             // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl
-            current_message->add_header_field(current_field_buffer, rtrim(marked_buffer));
+            rtrim(marked_buffer);
+            current_message->add_header_field(current_field_buffer, marked_buffer);
         }
     }
 	goto _again;
@@ -3767,7 +3772,7 @@ _again:
 goto _again;}
     }
 	break;
-#line 3771 "ResponseParserGenerated.icc"
+#line 3776 "ResponseParserGenerated.icc"
 	}
 	}
 

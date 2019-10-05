@@ -64,3 +64,16 @@ void _benchmark_heavy_headers () {
         p.parse(buf);
     }
 }
+
+void bench2 () {
+    RequestParser p;
+    string buf =
+        "GET /49652gatedesc.xml HTTP/1.0\r\n"
+        "Host: 192.168.100.1:49652\r\n"
+        "User-Agent: Go-http-client/1.1\r\n"
+        "Accept-Encoding: gzip\r\n"
+        "\r\n";
+    for (auto i = 0; i < 1000000; ++i) {
+        p.parse(buf);
+    }
+}

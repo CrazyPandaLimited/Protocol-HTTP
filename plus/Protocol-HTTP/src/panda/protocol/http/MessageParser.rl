@@ -72,7 +72,8 @@
             // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
             // separate buffer, which is not cheap
             // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl
-            current_message->add_header_field(current_field_buffer, rtrim(marked_buffer));
+            rtrim(marked_buffer);
+            current_message->add_header_field(current_field_buffer, marked_buffer);
         }
     }
 
