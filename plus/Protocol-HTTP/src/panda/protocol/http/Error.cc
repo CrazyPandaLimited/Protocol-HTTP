@@ -2,7 +2,7 @@
 
 namespace panda { namespace protocol { namespace http {
 
-ErrorCategory error_category;
+const ErrorCategory error_category;
 
 const char* ErrorCategory::name () const throw() { return "protocol-http"; }
 

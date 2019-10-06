@@ -17,7 +17,7 @@ struct ErrorCategory : std::error_category {
     const char* name () const throw() override;
     std::string message (int condition) const throw() override;
 };
-extern ErrorCategory error_category;
+extern const ErrorCategory error_category;
 
 struct ParserError : panda::exception {
     using exception::exception;

@@ -1,5 +1,5 @@
 #pragma once
-#include <xs.h>
+#include <xs/uri.h>
 #include <panda/protocol/http/RequestParser.h>
 #include <panda/protocol/http/ResponseParser.h>
 

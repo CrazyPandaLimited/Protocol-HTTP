@@ -1,6 +1,5 @@
 #include "http.h"
 #include <cstring>
-#include <xs/uri.h>
 
 namespace xs { namespace protocol { namespace http {
 
