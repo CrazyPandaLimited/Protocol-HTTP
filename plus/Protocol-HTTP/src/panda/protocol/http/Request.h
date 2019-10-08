@@ -9,6 +9,7 @@ using panda::uri::URI;
 using panda::uri::URISP;
 
 struct Request : Message {
+    using State = Message::State;
     enum class Method {OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT};
 
     struct Builder; template <class T = void> struct BuilderImpl;

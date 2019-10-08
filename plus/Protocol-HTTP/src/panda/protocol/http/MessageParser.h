@@ -11,14 +11,7 @@ namespace panda { namespace protocol { namespace http {
 template <class T>
 struct MessageParser {
     using MessageSP = iptr<T>;
-
-    enum class State {
-        not_yet,
-        got_header,
-        in_body,
-        done,
-        error
-    };
+    using State = Message::State;
 
     enum SizeLimit : size_t {
         SIZE_UNLIMITED = 0,

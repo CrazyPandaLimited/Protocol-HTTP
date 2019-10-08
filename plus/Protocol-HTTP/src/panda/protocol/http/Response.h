@@ -4,6 +4,7 @@
 namespace panda { namespace protocol { namespace http {
 
 struct Response : Message {
+    using State = Message::State;
     struct Builder; template <class T> struct BuilderImpl;
 
     int    code;

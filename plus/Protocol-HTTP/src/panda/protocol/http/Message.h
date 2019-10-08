@@ -8,6 +8,8 @@ namespace panda { namespace protocol { namespace http {
 struct Message : virtual Refcnt {
     template <class T> struct Builder;
 
+    enum class State {not_yet, got_header, in_body, done, error};
+
     Header headers;
     Body   body;
     string http_version;
