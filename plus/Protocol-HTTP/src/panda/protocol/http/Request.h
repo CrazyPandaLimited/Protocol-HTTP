@@ -18,12 +18,15 @@ struct Request : Message {
     URISP  uri;
 
     Request () : method(Method::GET) {}
-    Request (Method method, const URISP& uri, Header&& header, Body&& body, const string& http_version, bool chunked = false);
+
+    Request (Method method, const URISP& uri, Header&& header, Body&& body, const string& http_version, bool chunked) :
+        Message(std::move(header), std::move(body), http_version, chunked), method(method), uri(uri)
+    {}
 
     ResponseSP response () const { return create_response(); }
 
-    std::vector<string> to_vector () const override;
-    string              to_string () const override;
+    std::vector<string> to_vector ();
+    string              to_string ();
 
 protected:
     ~Request () {} // restrict stack allocation

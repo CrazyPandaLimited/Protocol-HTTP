@@ -1,6 +1,7 @@
 #pragma once
 #include "Body.h"
 #include "Header.h"
+#include <array>
 #include <panda/refcnt.h>
 
 namespace panda { namespace protocol { namespace http {
@@ -18,32 +19,38 @@ struct Message : virtual Refcnt {
     Message () : chunked(), _buf_size() {}
     Message (Header&& header, Body&& body, const string& http_version, bool chunked);
 
-    void add_header_field (const string& key, const string& value);
-    void add_body_part    (const string& body_part);
-
     bool keep_alive () const;
     void keep_alive (bool val) { val ? headers.connection("keep-alive") : headers.connection("close"); }
 
-    bool has_headers () const { return !headers.empty(); }
-    bool has_body    () const { return !body.empty(); }
+    std::array<string, 3> make_chunk (const string& str) { return {string::from_number(buf.length(), 16) + "\r\n", str, "\r\n"}; }
+
+    string end_chunk () { return "0\r\n\r\n"; }
 
     size_t buf_size () const {return _buf_size;}
 
-    virtual std::vector<string> to_vector () const = 0;
-    virtual string              to_string () const = 0;
-
 protected:
-    size_t _buf_size; // only for parser inner limits
+    size_t _buf_size;
+
+    void add_header_field (const string& key, const string& value);
+    void add_body_part    (const string& body_part);
+
+    size_t body_length () {
+        auto l = body.length();
+        if (!chunked || !l) return l;
+        return l + body.size() * 8 + 5;
+    }
 
     void prepare_tostr () {
-        if (!http_version) http_version = "1.1";
-        auto blen = body.length();
-        if (blen) {
-            headers.add_field("Content-Length", panda::to_string(blen));
-            if (!headers.has_field("Content-Type")) headers.add_field("Content-Type", "text/plain");
-        }
-        else if (chunked) {
+        if (chunked) {
+            http_version = "1.1";
             headers.add_field("Transfer-Encoding", "chunked");
+        }
+        else {
+            auto blen = body.length();
+            if (blen) {
+                headers.add_field("Content-Length", panda::to_string(blen));
+                if (!headers.has_field("Content-Type")) headers.add_field("Content-Type", "text/plain");
+            }
         }
     }
 };

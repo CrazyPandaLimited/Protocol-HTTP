@@ -21,6 +21,19 @@ void _benchmark () {
     }
 }
 
+void _benchmark_min () {
+    RequestParser p;
+    string buf =
+        "GET / HTTP/1.1\r\n"
+        "Host: ya.ru\r\n"
+        "\r\n";
+    
+    for (auto i = 0; i < 1000; ++i) {
+        p.parse(buf);
+    }
+}
+
+
 void _benchmark_body () {
     RequestParser p;
     string buf =

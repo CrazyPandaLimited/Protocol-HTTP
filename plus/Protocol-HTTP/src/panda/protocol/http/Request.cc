@@ -2,9 +2,7 @@
 
 namespace panda { namespace protocol { namespace http {
 
-Request::Request (Method method, const URISP& uri, Header&& header, Body&& body, const string& http_version, bool chunked) :
-    Message(std::move(header), std::move(body), http_version, chunked), method(method), uri(uri)
-{}
+
 
 static inline string _method_str (Request::Method rm) {
     using Method = Request::Method;
@@ -25,6 +23,7 @@ string Request::_http_header (size_t reserve) {
     prepare_tostr();
     auto meth = _method_str(method);
     auto reluri  = uri->relative();
+    if (!http_version) http_version = "1.1";
 
     if (http_version == "1.1" && !headers.has_field("Host")) {
         // Host field builder
@@ -57,19 +56,42 @@ string Request::_http_header (size_t reserve) {
     return s;
 }
 
-std::vector<string> Request::to_vector () const {
-    std::vector<string> result;
-    result.reserve(1 + body.parts.size());
+std::vector<string> Request::to_vector () {
+    auto hdr = _http_header(0);
+    auto sz = body.size();
+    if (!sz) return {hdr};
 
-    result.emplace_back(const_cast<Request*>(this)->_http_header(0));
-    for (auto& part : body.parts) result.emplace_back(part);
+    std::vector<string> result;
+    if (chunked) {
+        result.reserve(1 + sz * 3 + 1);
+        result.emplace_back(hdr);
+        for (auto& part : body.parts) {
+            auto ss = make_chunk(part);
+            for (auto& s : ss) result.emplace_back(s);
+        }
+        result.emplace_back(end_chunk());
+    } else {
+        result.reserve(1 + sz);
+        result.emplace_back(hdr);
+        for (auto& part : body.parts) result.emplace_back(part);
+    }
 
     return result;
 }
 
-string Request::to_string () const {
-    auto ret = const_cast<Request*>(this)->_http_header(body.length());
-    for (auto& part : body.parts) ret += part;
+string Request::to_string () {
+    auto blen = body_length();
+    auto ret = _http_header(blen);
+    if (!blen) return ret;
+
+    if (chunked) {
+        for (auto& part : body.parts) {
+            auto ss = make_chunk(part);
+            for (auto& s : ss) ret += s;
+        }
+        ret += end_chunk();
+    }
+    else for (auto& part : body.parts) ret += part;
 
     return ret;
 }

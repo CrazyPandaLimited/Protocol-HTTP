@@ -3,6 +3,8 @@
 
 namespace panda { namespace protocol { namespace http {
 
+struct Request;
+
 struct Response : Message {
     using State = Message::State;
     struct Builder; template <class T> struct BuilderImpl;
@@ -15,14 +17,14 @@ struct Response : Message {
 
     string full_message () { return panda::to_string(code) + " " + message; }
 
-    std::vector<string> to_vector () const override;
-    string              to_string () const override;
+    std::vector<string> to_vector (const Request* = nullptr);
+    string              to_string (const Request* = nullptr);
 
 protected:
     ~Response () {}
 
 private:
-    string _http_header (size_t);
+    string _http_header (const Request*, size_t);
 };
 using ResponseSP = iptr<Response>;
 
