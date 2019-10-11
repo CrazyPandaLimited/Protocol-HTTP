@@ -24,6 +24,8 @@ protected:
     ~Response () {}
 
 private:
+    friend struct ResponseParser;
+
     string _http_header (const Request*, size_t);
 };
 using ResponseSP = iptr<Response>;

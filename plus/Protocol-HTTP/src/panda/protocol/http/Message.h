@@ -22,13 +22,15 @@ struct Message : virtual Refcnt {
     bool keep_alive () const;
     void keep_alive (bool val) { val ? headers.connection("keep-alive") : headers.connection("close"); }
 
-    std::array<string, 3> make_chunk (const string& str) { return {string::from_number(buf.length(), 16) + "\r\n", str, "\r\n"}; }
+    std::array<string, 3> make_chunk (const string& s) { return {string::from_number(s.length(), 16) + "\r\n", s, "\r\n"}; }
 
     string end_chunk () { return "0\r\n\r\n"; }
 
     size_t buf_size () const {return _buf_size;}
 
 protected:
+    template <class T> friend struct MessageParser;
+
     size_t _buf_size;
 
     void add_header_field (const string& key, const string& value);
@@ -37,10 +39,10 @@ protected:
     size_t body_length () {
         auto l = body.length();
         if (!chunked || !l) return l;
-        return l + body.size() * 8 + 5;
+        return l + body.parts.size() * 8 + 5;
     }
 
-    void prepare_tostr () {
+    inline void _compile_prepare () {
         if (chunked) {
             http_version = "1.1";
             headers.add_field("Transfer-Encoding", "chunked");
@@ -49,9 +51,53 @@ protected:
             auto blen = body.length();
             if (blen) {
                 headers.add_field("Content-Length", panda::to_string(blen));
-                if (!headers.has_field("Content-Type")) headers.add_field("Content-Type", "text/plain");
+                //if (!headers.has_field("Content-Type")) headers.add_field("Content-Type", "text/plain");
             }
         }
+    }
+
+    template <class T>
+    inline std::vector<string> _to_vector (const T& f) {
+        _compile_prepare();
+        auto hdr = f();
+        auto sz = body.parts.size();
+        if (!sz) return {hdr};
+
+        std::vector<string> result;
+        if (chunked) {
+            result.reserve(1 + sz * 3 + 1);
+            result.emplace_back(hdr);
+            for (auto& part : body.parts) {
+                auto ss = make_chunk(part);
+                for (auto& s : ss) result.emplace_back(s);
+            }
+            result.emplace_back(end_chunk());
+        } else {
+            result.reserve(1 + sz);
+            result.emplace_back(hdr);
+            for (auto& part : body.parts) result.emplace_back(part);
+        }
+
+        return result;
+    }
+
+    template <class T>
+    inline string _to_string (const T& f) {
+        _compile_prepare();
+        auto blen = body_length();
+        auto ret = f(blen);
+        if (!blen) return ret;
+
+        if (chunked) {
+            for (auto& part : body.parts) {
+                auto ss = make_chunk(part);
+                for (auto& s : ss) ret += s;
+            }
+            ret += end_chunk();
+        }
+        else for (auto& part : body.parts) ret += part;
+
+        return ret;
     }
 };
 
@@ -96,7 +142,5 @@ protected:
 
     T& self () { return static_cast<T&>(*this); }
 };
-
-std::ostream& operator<< (std::ostream&, const Message&);
 
 }}}

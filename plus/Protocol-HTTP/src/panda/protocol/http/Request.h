@@ -19,7 +19,7 @@ struct Request : Message {
 
     Request () : method(Method::GET) {}
 
-    Request (Method method, const URISP& uri, Header&& header, Body&& body, const string& http_version, bool chunked) :
+    Request (Method method, const URISP& uri, Header&& header, Body&& body, const string& http_version, bool chunked = false) :
         Message(std::move(header), std::move(body), http_version, chunked), method(method), uri(uri)
     {}
 
@@ -34,6 +34,8 @@ protected:
     virtual ResponseSP create_response () const { return make_iptr<Response>(); }
 
 private:
+    friend struct RequestParser;
+
     string _http_header (size_t);
 };
 using RequestSP = iptr<Request>;

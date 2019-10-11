@@ -20,7 +20,6 @@ static inline string _method_str (Request::Method rm) {
 }
 
 string Request::_http_header (size_t reserve) {
-    prepare_tostr();
     auto meth = _method_str(method);
     auto reluri  = uri->relative();
     if (!http_version) http_version = "1.1";
@@ -56,44 +55,7 @@ string Request::_http_header (size_t reserve) {
     return s;
 }
 
-std::vector<string> Request::to_vector () {
-    auto hdr = _http_header(0);
-    auto sz = body.size();
-    if (!sz) return {hdr};
-
-    std::vector<string> result;
-    if (chunked) {
-        result.reserve(1 + sz * 3 + 1);
-        result.emplace_back(hdr);
-        for (auto& part : body.parts) {
-            auto ss = make_chunk(part);
-            for (auto& s : ss) result.emplace_back(s);
-        }
-        result.emplace_back(end_chunk());
-    } else {
-        result.reserve(1 + sz);
-        result.emplace_back(hdr);
-        for (auto& part : body.parts) result.emplace_back(part);
-    }
-
-    return result;
-}
-
-string Request::to_string () {
-    auto blen = body_length();
-    auto ret = _http_header(blen);
-    if (!blen) return ret;
-
-    if (chunked) {
-        for (auto& part : body.parts) {
-            auto ss = make_chunk(part);
-            for (auto& s : ss) ret += s;
-        }
-        ret += end_chunk();
-    }
-    else for (auto& part : body.parts) ret += part;
-
-    return ret;
-}
+std::vector<string> Request::to_vector () { return _to_vector([this]{ return _http_header(0); }); }
+string              Request::to_string () { return _to_string([this](size_t r){ return _http_header(r); }); }
 
 }}}

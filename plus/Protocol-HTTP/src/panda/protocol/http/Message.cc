@@ -23,8 +23,4 @@ bool Message::keep_alive () const {
     else                       return iequals(conn, "keep-alive");
 }
 
-std::ostream& operator<< (std::ostream& os, const Message& message) {
-    return os << message.to_string();
-}
-
 }}}
