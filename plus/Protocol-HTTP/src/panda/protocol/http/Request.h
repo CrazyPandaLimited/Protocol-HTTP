@@ -9,7 +9,6 @@ using panda::uri::URI;
 using panda::uri::URISP;
 
 struct Request : Message {
-    using State = Message::State;
     enum class Method {OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT};
 
     struct Builder; template <class T = void> struct BuilderImpl;
@@ -19,7 +18,7 @@ struct Request : Message {
 
     Request () : method(Method::GET) {}
 
-    Request (Method method, const URISP& uri, Header&& header, Body&& body, const string& http_version, bool chunked = false) :
+    Request (Method method, const URISP& uri, Header&& header, Body&& body, HttpVersion http_version = HttpVersion::any, bool chunked = false) :
         Message(std::move(header), std::move(body), http_version, chunked), method(method), uri(uri)
     {}
 

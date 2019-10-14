@@ -3,21 +3,17 @@
 
 namespace panda { namespace protocol { namespace http {
 
-Response::Response (int code, const string& message, Header&& header, Body&& body, const string& http_version, bool chunked) :
-    Message(std::move(header), std::move(body), http_version, chunked), code(code), message(message)
-{}
-
 string Response::_http_header (const Request* req, size_t reserve) {
     if (req) {
-        if (!http_version) http_version = req->http_version;
+        if (http_version == HttpVersion::any) http_version = req->http_version;
         if (!headers.has_field("Connection")) headers.add_field("Connection", req->keep_alive() ? string("keep-alive") : string("close"));
     }
 
-    string s(5 + http_version.length() + 5 + message.length() + 2 + headers.length() + 2 + reserve);
+    string s(5 + 4 + 4 + message.length() + 2 + headers.length() + 2 + reserve);
 
     s += "HTTP/";
-    s += http_version;
-    s += ' ';
+    if (http_version == HttpVersion::v1_1) s += "1.1 ";
+    else                                   s += "1.0 ";
     s += panda::to_string(code);
     s += ' ';
     s += message;

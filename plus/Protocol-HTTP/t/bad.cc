@@ -13,7 +13,7 @@ TEST_CASE("double first line", "[bad]") {
 
     auto req = result.request;
     REQUIRE(req->method == Method::GET);
-    REQUIRE(req->http_version == "1.0");
+    REQUIRE(req->http_version == HttpVersion::v1_0);
 }
 
 TEST_CASE("bad first line", "[bad]") {
@@ -89,7 +89,7 @@ TEST_CASE ("unreal content length request", "[bad]") {
 TEST_CASE("unreal content lentgh response", "[bad]") {
     test_unreal_digits_response([]() {
         ResponseParser p;
-        p.set_request(new Request(Method::GET, new URI("http://dev/"), Header(), Body(), "1.1"));
+        p.set_request(new Request(Method::GET, new URI("http://dev/"), Header(), Body()));
         return p;
     });
 }

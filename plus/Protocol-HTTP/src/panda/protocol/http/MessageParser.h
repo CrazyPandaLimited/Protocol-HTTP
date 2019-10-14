@@ -11,7 +11,6 @@ namespace panda { namespace protocol { namespace http {
 template <class T>
 struct MessageParser {
     using MessageSP = iptr<T>;
-    using State = Message::State;
 
     enum SizeLimit : size_t {
         SIZE_UNLIMITED = 0,
@@ -37,7 +36,6 @@ protected:
         chunked = false;
         chunk_len = 0;
         chunk_so_far = 0;
-        connection_close = false;
         trailing_header = false;
         marked = false;
         copy_headers = false;
@@ -119,7 +117,6 @@ protected:
     size_t    chunk_so_far;
     bool      chunked;
     bool      has_content_len;
-    bool      connection_close;
     bool      trailing_header;
     bool      marked;
     bool      copy_headers;

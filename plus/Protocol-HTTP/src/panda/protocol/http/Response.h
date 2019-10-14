@@ -6,14 +6,16 @@ namespace panda { namespace protocol { namespace http {
 struct Request;
 
 struct Response : Message {
-    using State = Message::State;
     struct Builder; template <class T> struct BuilderImpl;
 
     int    code;
     string message;
 
     Response () : code() {}
-    Response (int code, const string& message, Header&& header, Body&& body, const string& http_version, bool chunked = false);
+
+    Response (int code, const string& message, Header&& header, Body&& body, HttpVersion http_version = HttpVersion::any, bool chunked = false) :
+        Message(std::move(header), std::move(body), http_version, chunked), code(code), message(message)
+    {}
 
     string full_message () { return panda::to_string(code) + " " + message; }
 

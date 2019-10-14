@@ -10,7 +10,7 @@ TEST_CASE("keep-alive", "[basic]") {
     RequestSP req = new Request();
 
     SECTION("1.0") {
-        req->http_version = "1.0";
+        req->http_version = HttpVersion::v1_0;
         SECTION("yes1") {
             req->headers.connection("Keep-Alive");
             CHECK(req->keep_alive());
@@ -37,7 +37,7 @@ TEST_CASE("keep-alive", "[basic]") {
     }
 
     SECTION("1.1") {
-        req->http_version = "1.1";
+        req->http_version = HttpVersion::v1_1;
         SECTION("yes 1") {
             CHECK(req->keep_alive());
         }

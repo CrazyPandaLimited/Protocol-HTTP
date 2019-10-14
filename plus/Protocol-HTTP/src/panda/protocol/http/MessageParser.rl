@@ -88,10 +88,6 @@
         }
     }
 
-    action write_connection_close {
-        connection_close = true;
-    }
-
     action write_trailing_header {
         trailing_header = true;
     }
@@ -126,13 +122,12 @@
         chunked = true;
     }
 
-    action http_version {
-        if(marked_buffer.empty()) {
-            current_message->http_version = string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc));
-        } else {
-            marked_buffer.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, fpc)));
-            current_message->http_version = marked_buffer;
-        }
+    action http_version1_0 {
+        current_message->http_version = HttpVersion::v1_0;
+    }
+
+    action http_version1_1 {
+        current_message->http_version = HttpVersion::v1_1;
     }
 
 #### HTTP PROTOCOL GRAMMAR
@@ -149,7 +144,9 @@
                      | "{" | "}" | " " | "\t"
                      ) ;
 
-    http_version = "HTTP/" ( "1." ("0" | "1") ) >mark %http_version %unmark;
+    http_version1_0 = "HTTP/1.0" %http_version1_0;
+    http_version1_1 = "HTTP/1.1" %http_version1_1;
+    http_version = http_version1_1 | http_version1_0;
 
     token = ascii -- ( http_ctl | http_separator ) ;
 
@@ -162,12 +159,10 @@
     content_length = (/Content-Length/i >mark %write_field %unmark ":" space *
             digit+ >mark %write_value %write_content_len %unmark) crlf;
 
-    conn_close = (/Connection/i ":" space* /close/i) crlf %write_connection_close;
-
     transfer_encoding_chunked = (/Transfer-Encoding/i >mark %write_field %unmark
             ":" space* /chunked/i >mark %write_value %unmark) crlf @trans_chunked;
 
-    message_header = transfer_encoding_chunked | conn_close | content_length | fields;
+    message_header = transfer_encoding_chunked | content_length | fields;
 
     chunk_ext_val = token+;
     chunk_ext_name = token+;

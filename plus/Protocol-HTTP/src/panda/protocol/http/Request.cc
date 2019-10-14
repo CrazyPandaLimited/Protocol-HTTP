@@ -2,8 +2,6 @@
 
 namespace panda { namespace protocol { namespace http {
 
-
-
 static inline string _method_str (Request::Method rm) {
     using Method = Request::Method;
     switch (rm) {
@@ -22,9 +20,9 @@ static inline string _method_str (Request::Method rm) {
 string Request::_http_header (size_t reserve) {
     auto meth = _method_str(method);
     auto reluri  = uri->relative();
-    if (!http_version) http_version = "1.1";
+    if (http_version == HttpVersion::any) http_version = HttpVersion::v1_1;
 
-    if (http_version == "1.1" && !headers.has_field("Host")) {
+    if (http_version == HttpVersion::v1_1 && !headers.has_field("Host")) {
         // Host field builder
         // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Host
         auto host = uri->host();
@@ -41,14 +39,14 @@ string Request::_http_header (size_t reserve) {
         "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36 PandaHTTP/1.0.1"
     );
 
-    string s(meth.length() + 1 + reluri.length() + 6 + http_version.length() + 2 + headers.length() + 2 + reserve);
+    string s(meth.length() + 1 + reluri.length() + 6 + 5 + headers.length() + 2 + reserve);
 
     s += meth;
     s += ' ';
     s += reluri;
     s += " HTTP/";
-    s += http_version;
-    s += "\r\n";
+    if (http_version == HttpVersion::v1_1) s += "1.1\r\n";
+    else                                   s += "1.0\r\n";
     headers.write(s);
     s += "\r\n";
 

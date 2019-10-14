@@ -8,11 +8,11 @@ TEST_CASE("trivial get request", "[request]") {
         "\r\n";
 
     auto result = p.parse(raw);
-    CHECK(result.state == RequestParser::State::done);
+    CHECK(result.state == State::done);
 
     auto req = result.request;
     REQUIRE(req->method == Method::GET);
-    REQUIRE(req->http_version == "1.0");
+    REQUIRE(req->http_version == HttpVersion::v1_0);
     REQUIRE(req->headers.get_field("Host") == "host1");
 }
 
@@ -26,11 +26,11 @@ TEST_CASE("trivial post request", "[request]") {
         ;
 
     auto result = p.parse(raw);
-    CHECK(result.state == RequestParser::State::done);
+    CHECK(result.state == State::done);
 
     auto req = result.request;
     REQUIRE(req->method == Method::POST);
-    REQUIRE(req->http_version == "1.1");
+    REQUIRE(req->http_version == HttpVersion::v1_1);
     REQUIRE(req->headers.fields.size() == 1);
     REQUIRE(req->headers.get_field("Content-Length") == "23");
     REQUIRE(req->body.as_buffer() == "Wikipedia in\r\n\r\nchunks.");
@@ -55,11 +55,11 @@ TEST_CASE("trivial chunked post request", "[request]") {
         ;
 
     auto result = p.parse(raw);
-    CHECK(result.state == RequestParser::State::done);
+    CHECK(result.state == State::done);
 
     auto req = result.request;
     REQUIRE(req->method == Method::POST);
-    REQUIRE(req->http_version == "1.1");
+    REQUIRE(req->http_version == HttpVersion::v1_1);
     REQUIRE(req->headers.fields.size() == 1);
     REQUIRE(req->headers.get_field("Transfer-Encoding") == "chunked");
     REQUIRE(req->body.parts.size() == 3);
@@ -85,11 +85,11 @@ TEST_CASE("chunked post request with extension", "[request]") {
         ;
 
     auto result = p.parse(raw);
-    CHECK(result.state == RequestParser::State::done);
+    CHECK(result.state == State::done);
 
     auto req = result.request;
     REQUIRE(req->method == Method::POST);
-    REQUIRE(req->http_version == "1.1");
+    REQUIRE(req->http_version == HttpVersion::v1_1);
     REQUIRE(req->headers.fields.size() == 1);
     REQUIRE(req->headers.get_field("Transfer-Encoding") == "chunked");
     REQUIRE(req->body.parts.size() == 3);
@@ -117,11 +117,11 @@ TEST_CASE("chunked post request with trailer header", "[request]") {
         ;
 
     auto result = p.parse(raw);
-    CHECK(result.state == RequestParser::State::done);
+    CHECK(result.state == State::done);
 
     auto req = result.request;
     REQUIRE(req->method == Method::POST);
-    REQUIRE(req->http_version == "1.1");
+    REQUIRE(req->http_version == HttpVersion::v1_1);
     REQUIRE(req->headers.fields.size() == 2);
     REQUIRE(req->headers.get_field("Transfer-Encoding") == "chunked");
     REQUIRE(req->body.parts.size() == 3);
@@ -136,11 +136,11 @@ TEST_CASE("trimming spaces from header value", "[request]") {
         "\r\n";
 
     auto result = p.parse(raw);
-    CHECK(result.state == RequestParser::State::done);
+    CHECK(result.state == State::done);
 
     auto req = result.request;
     REQUIRE(req->method == Method::GET);
-    REQUIRE(req->http_version == "1.0");
+    REQUIRE(req->http_version == HttpVersion::v1_0);
     REQUIRE(req->headers.fields.size() == 1);
     REQUIRE(req->headers.get_field("Host") == "host");
 }
@@ -153,11 +153,11 @@ TEST_CASE("no space after header field", "[request]") {
         "\r\n";
 
     auto result = p.parse(raw);
-    CHECK(result.state == RequestParser::State::done);
+    CHECK(result.state == State::done);
 
     auto req = result.request;
     REQUIRE(req->method == Method::GET);
-    REQUIRE(req->http_version == "1.0");
+    REQUIRE(req->http_version == HttpVersion::v1_0);
     REQUIRE(req->headers.get_field("Host") == "host");
     REQUIRE(req->headers.fields.size() == 1);
 }
@@ -169,11 +169,11 @@ TEST_CASE("no header at all", "[request]") {
         "\r\n";
 
     auto result = p.parse(raw);
-    CHECK(result.state == RequestParser::State::done);
+    CHECK(result.state == State::done);
 
     auto req = result.request;
     REQUIRE(req->method == Method::GET);
-    REQUIRE(req->http_version == "1.0");
+    REQUIRE(req->http_version == HttpVersion::v1_0);
     REQUIRE(req->headers.fields.size() == 0);
 }
 
@@ -185,11 +185,11 @@ TEST_CASE("space in header value", "[request]") {
         "\r\n";
 
     auto result = p.parse(raw);
-    CHECK(result.state == RequestParser::State::done);
+    CHECK(result.state == State::done);
 
     auto req = result.request;
     REQUIRE(req->method == Method::GET);
-    REQUIRE(req->http_version == "1.0");
+    REQUIRE(req->http_version == HttpVersion::v1_0);
     REQUIRE(req->headers.get_field("Host") == "ho  st");
     REQUIRE(req->headers.fields.size() == 1);
 }
@@ -202,11 +202,11 @@ TEST_CASE("colon 1", "[request]") {
         "\r\n";
 
     auto result = p.parse(raw);
-    CHECK(result.state == RequestParser::State::done);
+    CHECK(result.state == State::done);
 
     auto req = result.request;
     REQUIRE(req->method == Method::GET);
-    REQUIRE(req->http_version == "1.0");
+    REQUIRE(req->http_version == HttpVersion::v1_0);
     REQUIRE(req->headers.get_field("Host") == ": host");
     REQUIRE(req->headers.fields.size() == 1);
 }
@@ -219,11 +219,11 @@ TEST_CASE("colon 2", "[request]") {
         "\r\n";
 
     auto result = p.parse(raw);
-    CHECK(result.state == RequestParser::State::done);
+    CHECK(result.state == State::done);
 
     auto req = result.request;
     REQUIRE(req->method == Method::GET);
-    REQUIRE(req->http_version == "1.0");
+    REQUIRE(req->http_version == HttpVersion::v1_0);
     REQUIRE(req->headers.get_field("Host") == "h:ost");
     REQUIRE(req->headers.fields.size() == 1);
 }
@@ -236,11 +236,11 @@ TEST_CASE("multiple spaces", "[request]") {
         "\r\n";
 
     auto result = p.parse(raw);
-    CHECK(result.state == RequestParser::State::done);
+    CHECK(result.state == State::done);
 
     auto req = result.request;
     REQUIRE(req->method == Method::GET);
-    REQUIRE(req->http_version == "1.0");
+    REQUIRE(req->http_version == HttpVersion::v1_0);
     REQUIRE(req->headers.get_field("Host") == "hh oo ss tt");
     REQUIRE(req->headers.fields.size() == 1);
 }
@@ -254,11 +254,11 @@ TEST_CASE("duplicated header field", "[request]") {
         "\r\n";
 
     auto result = p.parse(raw);
-    CHECK(result.state == RequestParser::State::done);
+    CHECK(result.state == State::done);
 
     auto req = result.request;
     REQUIRE(req->method == Method::GET);
-    REQUIRE(req->http_version == "1.0");
+    REQUIRE(req->http_version == HttpVersion::v1_0);
     REQUIRE(req->headers.get_field("Host") == "host2");
     REQUIRE(req->headers.fields.size() == 2);
 }
@@ -272,11 +272,11 @@ TEST_CASE("case insensitive content-length", "[request]") {
         "1";
 
     auto result = p.parse(raw);
-    CHECK(result.state == RequestParser::State::done);
+    CHECK(result.state == State::done);
 
     auto req = result.request;
     REQUIRE(req->method == Method::GET);
-    REQUIRE(req->http_version == "1.0");
+    REQUIRE(req->http_version == HttpVersion::v1_0);
     REQUIRE(req->headers.fields.size() == 1);
     REQUIRE(req->body.as_buffer() == "1");
 }
@@ -349,32 +349,32 @@ TEST_CASE("parsing pipelined requests", "[request]") {
         "\r\n";
 
     auto result = p.parse(s);
-    CHECK(result.state == RequestParser::State::done);
+    CHECK(result.state == State::done);
     s.offset(result.position);
     auto req = result.request;
     REQUIRE(req->method == Method::GET);
-    REQUIRE(req->http_version == "1.0");
+    REQUIRE(req->http_version == HttpVersion::v1_0);
     REQUIRE(req->uri->to_string() == "/r1");
     REQUIRE(req->headers.get_field("Header1") == "header1");
     REQUIRE(req->headers.get_field("Header2") == "header2");
     REQUIRE(req->headers.get_field("Header3") == "header3");
 
     result = p.parse(s);
-    CHECK(result.state == RequestParser::State::done);
+    CHECK(result.state == State::done);
     s.offset(result.position);
     req = result.request;
     REQUIRE(req->method == Method::GET);
     REQUIRE(req->uri->to_string() == "/r2");
-    REQUIRE(req->http_version == "1.0");
+    REQUIRE(req->http_version == HttpVersion::v1_0);
     REQUIRE(req->headers.get_field("Header4") == "header4");
     REQUIRE(req->headers.get_field("Header5") == "header5");
     REQUIRE(req->headers.get_field("Header6") == "header6");
 
     result = p.parse_shift(s);
-    CHECK(result.state == RequestParser::State::done);
+    CHECK(result.state == State::done);
     req = result.request;
     REQUIRE(req->method == Method::GET);
-    REQUIRE(req->http_version == "1.0");
+    REQUIRE(req->http_version == HttpVersion::v1_0);
     REQUIRE(req->uri->to_string() == "/r3");
     REQUIRE(req->headers.get_field("Header7") == "header7");
     REQUIRE(req->headers.get_field("Header8") == "header8");
@@ -392,6 +392,6 @@ TEST_CASE("request without length", "[response]") {
         "\r\n" + body;
 
     auto fres = p.parse(raw);
-    CHECK(fres.state == RequestParser::State::done);
+    CHECK(fres.state == State::done);
 }
 

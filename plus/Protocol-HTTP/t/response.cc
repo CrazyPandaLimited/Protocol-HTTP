@@ -11,14 +11,14 @@ TEST_CASE("trivial get response", "[response]") {
         "\r\n";
 
     auto result = p.parse(raw);
-    CHECK(result.state != ResponseParser::State::done);
+    CHECK(result.state != State::done);
 
     auto res = result.response;
-    REQUIRE(res->http_version == "1.0");
+    REQUIRE(res->http_version == HttpVersion::v1_0);
     REQUIRE(res->headers.get_field("Host") == "host1");
 
     result = p.eof();
-    CHECK(result.state == ResponseParser::State::done);
+    CHECK(result.state == State::done);
 }
 
 TEST_CASE("trivial head response", "[response]") {
@@ -33,10 +33,10 @@ TEST_CASE("trivial head response", "[response]") {
         "\r\n";
 
     auto result = p.parse_shift(raw);
-    CHECK(result.state == ResponseParser::State::done);
+    CHECK(result.state == State::done);
 
     auto res = result.response;
-    REQUIRE(res->http_version == "1.0");
+    REQUIRE(res->http_version == HttpVersion::v1_0);
     REQUIRE(res->headers.get_field("Host") == "host1");
     CHECK(raw.empty());
 }
@@ -56,10 +56,10 @@ TEST_CASE("redirect response", "[response]") {
         "<html><head><title>Moved</title></head><body><h1>Moved</h1><p>This page has moved to <a href=\"http://localhost:35615\">http://localhost:35615</a>.</p></body></html>\r\n";
 
     auto result = p.parse(raw);
-    CHECK(result.state == ResponseParser::State::done);
+    CHECK(result.state == State::done);
 
     auto res = result.response;
-    REQUIRE(res->http_version == "1.1");
+    REQUIRE(res->http_version == HttpVersion::v1_1);
     REQUIRE(res->headers.get_field("Location") == "http://localhost:35615");
     REQUIRE(res->headers.get_field("Date") == "Thu, 22 Mar 2018 16:25:43 GMT");
 }
@@ -77,15 +77,15 @@ TEST_CASE("trivial connection close", "[response]") {
         "body";
 
     auto result = p.parse(raw);
-    CHECK(result.state != ResponseParser::State::done);
+    CHECK(result.state != State::done);
 
     auto res = result.response;
-    CHECK(res->http_version == "1.1");
+    CHECK(res->http_version == HttpVersion::v1_1);
     CHECK(res->headers.get_field("Host") == "host1");
     CHECK(res->body.as_buffer() == "body");
 
     result = p.eof();
-    CHECK(result.state == ResponseParser::State::done);
+    CHECK(result.state == State::done);
     CHECK(res->body.as_buffer() == "body");
 }
 
@@ -123,6 +123,6 @@ TEST_CASE("response eof after full message", "[response]") {
         "\r\n" + body;
 
     auto fres = p.parse(raw);
-    CHECK(fres.state == ResponseParser::State::done);
+    CHECK(fres.state == State::done);
     CHECK_THROWS(p.eof());
 }
