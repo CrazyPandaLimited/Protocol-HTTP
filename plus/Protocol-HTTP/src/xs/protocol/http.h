@@ -13,6 +13,7 @@ namespace xs { namespace protocol { namespace http {
     void set_method  (Request* req, const Sv& method);
 
     Simple strings_to_sv (const std::vector<panda::string>&);
+    Simple strings_to_sv (const boost::container::small_vector_base<panda::string>&);
 
     inline HttpVersion sv_to_http_version (const Simple& sv) {
         if (!sv.defined()) return HttpVersion::any;

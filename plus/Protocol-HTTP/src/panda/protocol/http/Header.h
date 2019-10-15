@@ -3,9 +3,11 @@
 #include <iosfwd>
 #include <panda/string.h>
 
+#include <boost/container/small_vector.hpp>
+
 namespace panda { namespace protocol { namespace http {
 
-static int const DEFAULT_FIELDS_RESERVE = 20;
+static constexpr int const DEFAULT_FIELDS_RESERVE = 10;
 
 inline bool iequals (string_view a, string_view b) {
     return a.length() == b.length() && std::equal(a.begin(), a.end(), b.begin(), [](char a, char b) { return a == b || tolower(a) == tolower(b); });
@@ -19,7 +21,7 @@ struct Header {
         bool operator== (const Field &rhs) const { return iequals(name, rhs.name) && value == rhs.value; }
         bool operator!= (const Field& rhs) const { return !(*this == rhs); }
     };
-    using Container = std::vector<Field>;
+    using Container = boost::container::small_vector<Field, DEFAULT_FIELDS_RESERVE>;
 
     Container fields;
 

@@ -2,11 +2,13 @@
 #include <vector>
 #include <iosfwd>
 #include <panda/string.h>
+#include <boost/container/small_vector.hpp>
+
 
 namespace panda { namespace protocol { namespace http {
 
 struct Body {
-    std::vector<string> parts;
+    boost::container::small_vector<string, 2> parts;
 
     Body () {}
     Body (const string& body) { parts.emplace_back(body); }
