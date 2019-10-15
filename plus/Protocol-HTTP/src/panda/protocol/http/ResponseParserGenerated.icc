@@ -1552,7 +1552,7 @@ case 88:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 171 "MessageParser.rl"
+#line 170 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr106;
@@ -1647,7 +1647,7 @@ case 92:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 171 "MessageParser.rl"
+#line 170 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr115;
@@ -1757,7 +1757,7 @@ case 99:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 171 "MessageParser.rl"
+#line 170 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr128;
@@ -1964,7 +1964,7 @@ case 109:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 171 "MessageParser.rl"
+#line 170 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 266: goto tr146;
@@ -2001,7 +2001,7 @@ case 134:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 171 "MessageParser.rl"
+#line 170 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr128;
@@ -2034,7 +2034,7 @@ case 110:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 171 "MessageParser.rl"
+#line 170 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr128;
@@ -2173,7 +2173,7 @@ case 117:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 171 "MessageParser.rl"
+#line 170 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr161;
@@ -2486,7 +2486,7 @@ case 128:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 171 "MessageParser.rl"
+#line 170 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 266: goto tr155;
@@ -2521,7 +2521,7 @@ case 129:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 171 "MessageParser.rl"
+#line 170 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr179;
@@ -2582,7 +2582,7 @@ case 130:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 171 "MessageParser.rl"
+#line 170 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 265: goto tr159;
@@ -2824,19 +2824,19 @@ f2:
     }
 	goto _again;
 f10:
-#line 121 "MessageParser.rl"
+#line 120 "MessageParser.rl"
 	{
         chunked = true;
     }
 	goto _again;
 f1:
-#line 125 "MessageParser.rl"
+#line 124 "MessageParser.rl"
 	{
         current_message->http_version = HttpVersion::v1_0;
     }
 	goto _again;
 f11:
-#line 129 "MessageParser.rl"
+#line 128 "MessageParser.rl"
 	{
         current_message->http_version = HttpVersion::v1_1;
     }
@@ -2895,7 +2895,7 @@ f14:
         mark = p - buffer_ptr;
         marked = true;
     }
-#line 91 "MessageParser.rl"
+#line 90 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -2903,8 +2903,7 @@ f14:
 f6:
 #line 61 "MessageParser.rl"
 	{
-        marked_buffer = advance_buffer(buffer, p, copy_headers);
-        current_field_buffer = marked_buffer;
+        current_field_buffer = advance_buffer(buffer, p);
     }
 #line 55 "MessageParser.rl"
 	{
@@ -2914,12 +2913,12 @@ f6:
     }
 	goto _again;
 f8:
-#line 66 "MessageParser.rl"
+#line 65 "MessageParser.rl"
 	{
         // ignore trailing header
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
         if(!trailing_header) {
-            marked_buffer = advance_buffer(buffer, p, copy_headers);
+            marked_buffer = advance_buffer(buffer, p);
 
             // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
             // separate buffer, which is not cheap
@@ -2936,7 +2935,7 @@ f8:
     }
 	goto _again;
 f12:
-#line 95 "MessageParser.rl"
+#line 94 "MessageParser.rl"
 	{
         string len_str;
         if(marked_buffer.empty()) {
@@ -3007,12 +3006,12 @@ f7:
         mark = p - buffer_ptr;
         marked = true;
     }
-#line 66 "MessageParser.rl"
+#line 65 "MessageParser.rl"
 	{
         // ignore trailing header
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
         if(!trailing_header) {
-            marked_buffer = advance_buffer(buffer, p, copy_headers);
+            marked_buffer = advance_buffer(buffer, p);
 
             // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
             // separate buffer, which is not cheap
@@ -3029,12 +3028,12 @@ f7:
     }
 	goto _again;
 f9:
-#line 66 "MessageParser.rl"
+#line 65 "MessageParser.rl"
 	{
         // ignore trailing header
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
         if(!trailing_header) {
-            marked_buffer = advance_buffer(buffer, p, copy_headers);
+            marked_buffer = advance_buffer(buffer, p);
 
             // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
             // separate buffer, which is not cheap
@@ -3043,7 +3042,7 @@ f9:
             current_message->add_header_field(current_field_buffer, marked_buffer);
         }
     }
-#line 80 "MessageParser.rl"
+#line 79 "MessageParser.rl"
 	{
         auto res = panda::from_chars(marked_buffer.data(), marked_buffer.data() + marked_buffer.length(), content_len);
         if (res.ec) {
@@ -3062,10 +3061,10 @@ f9:
     }
 	goto _again;
 f15:
-#line 111 "MessageParser.rl"
+#line 110 "MessageParser.rl"
 	{
         if(chunk_len > 0) {
-            current_message->add_body_part( advance_buffer(buffer, p, false) );
+            current_message->add_body_part( advance_buffer(buffer, p) );
         }
     }
 #line 55 "MessageParser.rl"
@@ -3074,7 +3073,7 @@ f15:
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 91 "MessageParser.rl"
+#line 90 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -3087,10 +3086,10 @@ f13:
         mark = p - buffer_ptr;
         marked = true;
     }
-#line 111 "MessageParser.rl"
+#line 110 "MessageParser.rl"
 	{
         if(chunk_len > 0) {
-            current_message->add_body_part( advance_buffer(buffer, p, false) );
+            current_message->add_body_part( advance_buffer(buffer, p) );
         }
     }
 #line 55 "MessageParser.rl"
@@ -3099,16 +3098,16 @@ f13:
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 91 "MessageParser.rl"
+#line 90 "MessageParser.rl"
 	{
         trailing_header = true;
     }
 	goto _again;
 f16:
-#line 111 "MessageParser.rl"
+#line 110 "MessageParser.rl"
 	{
         if(chunk_len > 0) {
-            current_message->add_body_part( advance_buffer(buffer, p, false) );
+            current_message->add_body_part( advance_buffer(buffer, p) );
         }
     }
 #line 55 "MessageParser.rl"
@@ -3117,7 +3116,7 @@ f16:
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 91 "MessageParser.rl"
+#line 90 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -3130,10 +3129,10 @@ f16:
     }
 	goto _again;
 f18:
-#line 111 "MessageParser.rl"
+#line 110 "MessageParser.rl"
 	{
         if(chunk_len > 0) {
-            current_message->add_body_part( advance_buffer(buffer, p, false) );
+            current_message->add_body_part( advance_buffer(buffer, p) );
         }
     }
 #line 55 "MessageParser.rl"
@@ -3142,16 +3141,16 @@ f18:
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 91 "MessageParser.rl"
+#line 90 "MessageParser.rl"
 	{
         trailing_header = true;
     }
-#line 66 "MessageParser.rl"
+#line 65 "MessageParser.rl"
 	{
         // ignore trailing header
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
         if(!trailing_header) {
-            marked_buffer = advance_buffer(buffer, p, copy_headers);
+            marked_buffer = advance_buffer(buffer, p);
 
             // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
             // separate buffer, which is not cheap
@@ -3162,10 +3161,10 @@ f18:
     }
 	goto _again;
 f17:
-#line 111 "MessageParser.rl"
+#line 110 "MessageParser.rl"
 	{
         if(chunk_len > 0) {
-            current_message->add_body_part( advance_buffer(buffer, p, false) );
+            current_message->add_body_part( advance_buffer(buffer, p) );
         }
     }
 #line 55 "MessageParser.rl"
@@ -3174,7 +3173,7 @@ f17:
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 91 "MessageParser.rl"
+#line 90 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -3185,12 +3184,12 @@ f17:
         mark = p - buffer_ptr;
         marked = true;
     }
-#line 66 "MessageParser.rl"
+#line 65 "MessageParser.rl"
 	{
         // ignore trailing header
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
         if(!trailing_header) {
-            marked_buffer = advance_buffer(buffer, p, copy_headers);
+            marked_buffer = advance_buffer(buffer, p);
 
             // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
             // separate buffer, which is not cheap
@@ -3219,7 +3218,7 @@ _again:
 goto _again;}
     }
 	break;
-#line 3223 "ResponseParserGenerated.icc"
+#line 3222 "ResponseParserGenerated.icc"
 	}
 	}
 
