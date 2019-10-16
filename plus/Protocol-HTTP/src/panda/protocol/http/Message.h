@@ -26,7 +26,10 @@ struct Message : virtual Refcnt {
     bool keep_alive () const;
     void keep_alive (bool val) { val ? headers.connection("keep-alive") : headers.connection("close"); }
 
-    std::array<string, 3> make_chunk (const string& s) { return {string::from_number(s.length(), 16) + "\r\n", s, "\r\n"}; }
+    std::array<string, 3> make_chunk (const string& s) {
+        if (!s) return {"", "", ""};
+        return {string::from_number(s.length(), 16) + "\r\n", s, "\r\n"};
+    }
 
     string end_chunk () { return "0\r\n\r\n"; }
 
