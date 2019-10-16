@@ -104,9 +104,9 @@ TEST_CASE("connection close priority", "[response]") {
         "1";
 
     auto result = p.parse(raw);
-    CHECK(result.state);
+    CHECK_FALSE(result.error);
     result = p.eof();
-    CHECK_FALSE(result.state);
+    CHECK(result.error);
 }
 
 TEST_CASE("response eof after full message", "[response]") {

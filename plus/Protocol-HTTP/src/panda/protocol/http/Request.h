@@ -2,13 +2,14 @@
 #include "Message.h"
 #include "Response.h"
 #include <panda/uri/URI.h>
+#include <panda/memory.h>
 
 namespace panda { namespace protocol { namespace http {
 
 using panda::uri::URI;
 using panda::uri::URISP;
 
-struct Request : Message {
+struct Request : Message, AllocatedObject<Request> {
     enum class Method {OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT};
 
     struct Builder; template <class T = void> struct BuilderImpl;

@@ -4,7 +4,6 @@
 namespace panda { namespace protocol { namespace http {
 
 Header::Header () {
-    fields.reserve(DEFAULT_FIELDS_RESERVE);
 }
 
 Header::Header (const Container& fields) : fields(fields)            {}

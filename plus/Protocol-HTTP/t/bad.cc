@@ -9,7 +9,7 @@ TEST_CASE("double first line", "[bad]") {
         "\r\n";
 
     auto result = p.parse(raw);
-    REQUIRE_FALSE(result.state);
+    REQUIRE(result.error);
 
     auto req = result.request;
     REQUIRE(req->method == Method::GET);
@@ -23,7 +23,7 @@ TEST_CASE("bad first line", "[bad]") {
         "GET / HTTP/1.0\r\n"
         "Host: host1\r\n"
         "\r\n";
-    REQUIRE_FALSE(p.parse(raw).state);
+    REQUIRE(p.parse(raw).error);
 }
 
 TEST_CASE("space before colon in header field", "[bad]") {
@@ -32,7 +32,7 @@ TEST_CASE("space before colon in header field", "[bad]") {
         "GET / HTTP/1.0\r\n"
         "Host : host1\r\n"
         "\r\n";
-    REQUIRE_FALSE(p.parse(raw).state);
+    REQUIRE(p.parse(raw).error);
 }
 
 TEST_CASE("space before header field", "[bad]") {
@@ -42,7 +42,7 @@ TEST_CASE("space before header field", "[bad]") {
         "GET / HTTP/1.0\r\n"
         " Host: host1\r\n"
         "\r\n";
-    REQUIRE_FALSE(p.parse(raw).state);
+    REQUIRE(p.parse(raw).error);
 }
 
 template <typename ParserFactory>
@@ -57,7 +57,7 @@ static void test_unreal_digits_request (ParserFactory&& f) {
     };
     for (auto raw : raws) {
         auto parser = f();
-        CHECK_FALSE(parser.parse(raw).state);
+        CHECK(parser.parse(raw).error);
     }
 }
 
@@ -76,7 +76,7 @@ static void test_unreal_digits_response (ParserFactory&& f) {
     };
     for (auto raw : raws) {
         auto parser = f();
-        CHECK_FALSE(parser.parse(raw).state);
+        CHECK(parser.parse(raw).error);
     }
 }
 
@@ -118,7 +118,7 @@ TEST_CASE("bad chunk size", "[bad]") {
         )
     );
     auto result = p.parse(raw);
-    REQUIRE(!result.state);
+    REQUIRE(result.error);
 
     auto req = result.request;
     REQUIRE(req->method == Method::POST);

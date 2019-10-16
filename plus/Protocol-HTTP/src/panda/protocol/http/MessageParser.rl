@@ -59,15 +59,14 @@
     }
 
     action write_field {
-        marked_buffer = advance_buffer(buffer, fpc, copy_headers);
-        current_field_buffer = marked_buffer;
+        current_field_buffer = advance_buffer(buffer, fpc);
     }
 
     action write_value {
         // ignore trailing header
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
         if(!trailing_header) {
-            marked_buffer = advance_buffer(buffer, fpc, copy_headers);
+            marked_buffer = advance_buffer(buffer, fpc);
 
             // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
             // separate buffer, which is not cheap
@@ -110,12 +109,12 @@
 
     action chunk_data {
         if(chunk_len > 0) {
-            current_message->add_body_part( advance_buffer(buffer, fpc, false) );
+            current_message->add_body_part( advance_buffer(buffer, fpc) );
         }
     }
 
     action body_data {
-        current_message->add_body_part( advance_buffer(buffer, fpc, false) );
+        current_message->add_body_part( advance_buffer(buffer, fpc) );
     }
 
     action trans_chunked {

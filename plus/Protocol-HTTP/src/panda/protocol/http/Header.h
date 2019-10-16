@@ -3,9 +3,12 @@
 #include <iosfwd>
 #include <panda/string.h>
 
+#include <boost/container/small_vector.hpp>
+#include <range/v3/view/filter.hpp>
+
 namespace panda { namespace protocol { namespace http {
 
-static int const DEFAULT_FIELDS_RESERVE = 20;
+static constexpr int const DEFAULT_FIELDS_RESERVE = 10;
 
 inline bool iequals (string_view a, string_view b) {
     return a.length() == b.length() && std::equal(a.begin(), a.end(), b.begin(), [](char a, char b) { return a == b || tolower(a) == tolower(b); });
@@ -19,7 +22,7 @@ struct Header {
         bool operator== (const Field &rhs) const { return iequals(name, rhs.name) && value == rhs.value; }
         bool operator!= (const Field& rhs) const { return !(*this == rhs); }
     };
-    using Container = std::vector<Field>;
+    using Container = boost::container::small_vector<Field, DEFAULT_FIELDS_RESERVE>;
 
     Container fields;
 
@@ -65,8 +68,8 @@ struct Header {
     Container::iterator       find (string_view key);
     Container::const_iterator find (string_view key) const;
 
-    Container::reverse_iterator       end ()       { return fields.rend(); }
-    Container::const_reverse_iterator end () const { return fields.rend(); }
+    Container::iterator       end ()       { return fields.end(); }
+    Container::const_iterator end () const { return fields.end(); }
 
 
     void write (string& s) {
@@ -77,6 +80,11 @@ struct Header {
             s += "\r\n";
         }
     }
+
+    auto equal_range (const string& key) const {
+        return fields | ::ranges::view::filter([key](const Field& f){return iequals(f.name, key);});
+    }
+
 };
 
 std::ostream& operator<< (std::ostream&, const Header::Field&);

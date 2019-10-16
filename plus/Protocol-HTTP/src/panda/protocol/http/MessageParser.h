@@ -38,7 +38,6 @@ protected:
         chunk_so_far = 0;
         trailing_header = false;
         marked = false;
-        copy_headers = false;
         mark = 0;
 
         max_body_size = SIZE_UNLIMITED;
@@ -57,14 +56,9 @@ protected:
     }
 
     // append buffer starting with 'mark', use substr if 'copy' is false.
-    // 'copy' is always false when parsing body and set to 'copy_headers' when parsing headers
-    inline string advance_buffer (const string& buffer, const char* fpc, bool copy) {
+    inline string advance_buffer (const string& buffer, const char* fpc) {
         if (marked_buffer.empty()) {
-            if (copy) {
-                return string(buffer.data() + mark, fpc - buffer.data() - mark);
-            } else {
-                return buffer.substr(mark, fpc - buffer.data() - mark);
-            }
+            return buffer.substr(mark, fpc - buffer.data() - mark);
         } else {
             marked_buffer.append(buffer.substr(0, fpc - buffer.data()));
         }
@@ -80,7 +74,7 @@ protected:
             body_so_far += (pe - fpc);
             fpc = pe;
 
-            current_message->add_body_part( advance_buffer(buffer, fpc, false) );
+            current_message->add_body_part( advance_buffer(buffer, fpc) );
             // append into current marked buffer everything which is unparsed yet
             if(marked) {
                 marked_buffer.append(buffer.substr(mark));
@@ -94,7 +88,7 @@ protected:
             fpc += (content_len - body_so_far);
             body_so_far = content_len;
 
-            current_message->add_body_part( advance_buffer(buffer, fpc, false) );
+            current_message->add_body_part( advance_buffer(buffer, fpc) );
             unmark();
 
             // there was the last body part
@@ -119,7 +113,6 @@ protected:
     bool      has_content_len;
     bool      trailing_header;
     bool      marked;
-    bool      copy_headers;
     size_t    mark;
     const int cs_initial_state; // initial state, set by specific parser implementation
     // internal variables used by Ragel, see guide 5.1 "Variables Used by Ragel"
