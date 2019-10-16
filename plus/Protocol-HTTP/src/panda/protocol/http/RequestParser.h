@@ -12,10 +12,11 @@ struct IRequestFactory {
 
 struct RequestParser : MessageParser<Request> {
     struct Result {
-        RequestSP request;
-        size_t    position;
-        State     state;
-        std::error_code error;
+        RequestSP request  = nullptr;
+        size_t    position = 0;
+        State     state    = State::not_yet;
+
+        std::error_code error = {};
     };
 
     RequestParser (IRequestFactory* = nullptr);
