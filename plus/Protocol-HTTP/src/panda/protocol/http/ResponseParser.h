@@ -9,10 +9,12 @@ namespace panda { namespace protocol { namespace http {
 
 struct ResponseParser : MessageParser<Response> {
     struct Result {
-        RequestSP  request;
-        ResponseSP response;
-        size_t     position;
-        excepted<State, std::error_code> state;
+        RequestSP  request  = nullptr;
+        ResponseSP response = nullptr;
+        size_t     position = 0;
+        State      state    = State::not_yet;
+
+        std::error_code error = {};
     };
     using ResultSP = iptr<Result>;
 
@@ -42,7 +44,7 @@ private:
     ResponseSP create_message ();
 
     Result build_result           (FinalFlag reset, size_t position);
-    Result reset_and_build_result (size_t position, const excepted<State, std::error_code>& state);
+    Result reset_and_build_result (size_t position, const std::error_code& error = {});
 
     RequestSP _request;
 };

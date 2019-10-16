@@ -291,7 +291,7 @@ TEST_CASE("max_{message,body}_size", "[request]") {
         "\r\n"
         "1234567890"
         ;
-    CHECK_FALSE(p.parse(raw).state);
+    CHECK(p.parse(raw).error);
 }
 
 TEST_CASE("max_body_size prohibited", "[request]") {
@@ -303,7 +303,7 @@ TEST_CASE("max_body_size prohibited", "[request]") {
         "\r\n"
         "1"
         ;
-    CHECK_FALSE(p.parse(raw).state);
+    CHECK(p.parse(raw).error);
 }
 
 TEST_CASE("max_body_size chunked", "[request]") {
@@ -325,7 +325,7 @@ TEST_CASE("max_body_size chunked", "[request]") {
         "\r\n"
         ;
 
-    REQUIRE_FALSE(p.parse(raw).state);
+    REQUIRE(p.parse(raw).error);
 }
 
 TEST_CASE("parsing pipelined requests", "[request]") {

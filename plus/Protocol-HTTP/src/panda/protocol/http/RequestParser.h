@@ -14,9 +14,9 @@ struct RequestParser : MessageParser<Request> {
     struct Result {
         RequestSP request;
         size_t    position;
-        excepted<State, std::error_code> state;
+        State     state;
+        std::error_code error;
     };
-    using ResultSP = iptr<Result>;
 
     RequestParser (IRequestFactory* = nullptr);
 
@@ -41,7 +41,7 @@ private:
     RequestSP new_request () const { return request_factory ? request_factory->create_request() : make_iptr<Request>(); }
 
     Result build_result           (FinalFlag reset, size_t position);
-    Result reset_and_build_result (size_t position, const excepted<State, std::error_code>& state);
+    Result reset_and_build_result (size_t position, State state, std::error_code error = {});
 };
 
 }}}
