@@ -44,9 +44,13 @@ void Header::set_field (const string& key, const string& value) {
                 replaced = true;
                 it->name  = key;
                 it->value = value;
+                ++it;
             }
         }
         else ++it;
+    }
+    if (!replaced) {
+        add_field(key, value);
     }
 }
 
