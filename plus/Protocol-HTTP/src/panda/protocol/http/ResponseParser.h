@@ -9,12 +9,11 @@ namespace panda { namespace protocol { namespace http {
 
 struct ResponseParser : MessageParser<Response> {
     struct Result {
-        RequestSP  request  = nullptr;
-        ResponseSP response = nullptr;
-        size_t     position = 0;
-        State      state    = State::not_yet;
-
-        std::error_code error = {};
+        RequestSP       request;
+        ResponseSP      response;
+        size_t          position = 0;
+        State           state    = State::not_yet;
+        std::error_code error;
     };
     using ResultSP = iptr<Result>;
 
