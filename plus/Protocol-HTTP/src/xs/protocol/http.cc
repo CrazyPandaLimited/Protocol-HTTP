@@ -47,29 +47,4 @@ void set_method (Request* req, const Sv& method) {
     req->method = (Method)num;
 }
 
-template <typename T>
-Simple strings_to_sv_impl (const T& v) {
-    size_t len = 0;
-    for (const auto& s : v) len += s.length();
-    if (!len) return Simple::undef;
-
-    auto ret = Simple::create(len);
-    char* dest = ret.get<char*>();
-    for (const auto& s : v) {
-        memcpy(dest, s.data(), s.length());
-        dest += s.length();
-    }
-    *dest = 0;
-    ret.length(len);
-    return ret;
-}
-
-Simple strings_to_sv (const std::vector<string>& v) {
-    return strings_to_sv_impl(v);
-}
-
-Simple strings_to_sv (const boost::container::small_vector_base<string>& v) {
-    return strings_to_sv_impl(v);
-}
-
 }}}

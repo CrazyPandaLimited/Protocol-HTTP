@@ -12,8 +12,22 @@ namespace xs { namespace protocol { namespace http {
     void set_headers (Message* p, const Hash& headers);
     void set_method  (Request* req, const Sv& method);
 
-    Simple strings_to_sv (const std::vector<panda::string>&);
-    Simple strings_to_sv (const boost::container::small_vector_base<panda::string>&);
+    template <typename T>
+    Simple strings_to_sv (const T& v) {
+        size_t len = 0;
+        for (const auto& s : v) len += s.length();
+        if (!len) return Simple::undef;
+
+        auto ret = Simple::create(len);
+        char* dest = ret.get<char*>();
+        for (const auto& s : v) {
+            memcpy(dest, s.data(), s.length());
+            dest += s.length();
+        }
+        *dest = 0;
+        ret.length(len);
+        return ret;
+    }
 
     inline HttpVersion sv_to_http_version (const Simple& sv) {
         if (!sv.defined()) return HttpVersion::any;
