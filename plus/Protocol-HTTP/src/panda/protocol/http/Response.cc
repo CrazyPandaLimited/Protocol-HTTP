@@ -12,8 +12,12 @@ string Response::_http_header (const Request* req, size_t reserve) {
     string s(5 + 4 + 4 + message.length() + 2 + headers.length() + 2 + reserve);
 
     s += "HTTP/";
-    if (http_version == HttpVersion::v1_1) s += "1.1 ";
-    else                                   s += "1.0 ";
+    switch(http_version) {
+    case HttpVersion::any:
+    case HttpVersion::v1_1: s += "1.1 "; break;
+    case HttpVersion::v1_0: s += "1.0 "; break;
+    default: assert(false && "invalid int in http version");
+    }
     s += panda::to_string(code);
     s += ' ';
     s += message;
