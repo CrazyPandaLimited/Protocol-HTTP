@@ -31,7 +31,7 @@ struct Message : virtual Refcnt {
         return {string::from_number(s.length(), 16) + "\r\n", s, "\r\n"};
     }
 
-    string end_chunk () { return "0\r\n\r\n"; }
+    string final_chunk () { return "0\r\n\r\n"; }
 
     size_t buf_size () const {return _buf_size;}
 
@@ -78,7 +78,7 @@ protected:
                 auto ss = make_chunk(part);
                 for (auto& s : ss) result.emplace_back(s);
             }
-            result.emplace_back(end_chunk());
+            result.emplace_back(final_chunk());
         } else {
             result.reserve(1 + sz);
             result.emplace_back(hdr);
@@ -100,7 +100,7 @@ protected:
                 auto ss = make_chunk(part);
                 for (auto& s : ss) ret += s;
             }
-            ret += end_chunk();
+            ret += final_chunk();
         }
         else for (auto& part : body.parts) ret += part;
 
