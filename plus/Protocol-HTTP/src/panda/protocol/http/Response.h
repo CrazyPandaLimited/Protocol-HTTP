@@ -13,8 +13,8 @@ struct Response : Message {
 
     Response () : code() {}
 
-    Response (int code, const string& message = "", Header&& header = Header(), Body&& body = Body(), HttpVersion http_version = HttpVersion::any, bool chunked = false) :
-        Message(std::move(header), std::move(body), http_version, chunked), code(code), message(message)
+    Response (int code, Header&& header = Header(), Body&& body = Body(), bool chunked = false, HttpVersion http_version = HttpVersion::any, const string& message = {}) :
+        Message(std::move(header), std::move(body), chunked, http_version), code(code), message(message)
     {}
 
     string full_message () { return panda::to_string(code) + " " + message; }
@@ -49,7 +49,7 @@ struct Response::BuilderImpl : Message::Builder<T> {
     }
 
     ResponseSP build () {
-        return new Response(_code, _message, std::move(this->_headers), std::move(this->_body), this->_http_version, this->_chunked);
+        return new Response(_code, std::move(this->_headers), std::move(this->_body), this->_chunked, this->_http_version, _message);
     }
 
 protected:

@@ -14,13 +14,13 @@ struct Message : virtual Refcnt {
 
     Header      headers;
     Body        body;
-    HttpVersion http_version;
     bool        chunked;
+    HttpVersion http_version;
 
-    Message () : http_version(HttpVersion::any), chunked(), _buf_size() {}
+    Message () : chunked(), http_version(HttpVersion::any), _buf_size() {}
 
-    Message (Header&& headers, Body&& body, HttpVersion http_version = HttpVersion::any, bool chunked = false) :
-        headers(std::move(headers)), body(std::move(body)), http_version(http_version), chunked(chunked), _buf_size()
+    Message (Header&& headers, Body&& body, bool chunked = false, HttpVersion http_version = HttpVersion::any) :
+        headers(std::move(headers)), body(std::move(body)), chunked(chunked), http_version(http_version), _buf_size()
     {}
 
     bool keep_alive () const;

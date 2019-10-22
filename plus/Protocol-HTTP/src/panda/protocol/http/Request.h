@@ -19,8 +19,8 @@ struct Request : Message, AllocatedObject<Request> {
 
     Request () : method(Method::GET) {}
 
-    Request (Method method, const URISP& uri, Header&& header, Body&& body, HttpVersion http_version = HttpVersion::any, bool chunked = false) :
-        Message(std::move(header), std::move(body), http_version, chunked), method(method), uri(uri)
+    Request (Method method, const URISP& uri, Header&& header = Header(), Body&& body = Body(), bool chunked = false, HttpVersion http_version = HttpVersion::any) :
+        Message(std::move(header), std::move(body), chunked, http_version), method(method), uri(uri)
     {}
 
     ResponseSP response () const { return create_response(); }
@@ -60,7 +60,7 @@ struct Request::BuilderImpl : Message::Builder<T> {
     }
 
     RequestSP build () {
-        return new Request(_method, _uri, std::move(this->_headers), std::move(this->_body), this->_http_version, this->_chunked);
+        return new Request(_method, _uri, std::move(this->_headers), std::move(this->_body), this->_chunked, this->_http_version);
     }
 
 protected:
