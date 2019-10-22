@@ -383,7 +383,7 @@ TEST_CASE("parsing pipelined requests", "[request]") {
     REQUIRE(s.empty());
 }
 
-TEST_CASE("request without length", "[response]") {
+TEST_CASE("request without length", "[request]") {
     RequestParser p;
     string body = GENERATE(string(""), string("1"));
     string raw =
@@ -395,3 +395,17 @@ TEST_CASE("request without length", "[response]") {
     CHECK(fres.state == State::done);
 }
 
+TEST_CASE("correct result position in requests with body", "[request]") {
+    RequestParser p;
+    string s =
+        "POST / HTTP/1.1\r\n"
+        "Content-length: 8\r\n"
+        "\r\n"
+        "epta nah111";
+    auto fres = p.parse(s);
+    auto req  = fres.request;
+    CHECK(fres.state == State::done);
+    CHECK(fres.position == 46);
+    CHECK(req->headers.get_field("Content-Length") == "8");
+    CHECK(req->body.length() == 8);
+}

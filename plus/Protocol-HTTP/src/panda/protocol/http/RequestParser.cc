@@ -14,15 +14,10 @@ RequestParser::RequestParser (IRequestFactory* fac) :
 {}
 
 RequestParser::Result RequestParser::parse (const string& buffer) {
-    // pointer to current buffer, used by LEN, PTR_TO defines above
-    const char *buffer_ptr = buffer.data();
-
-    // start parsing from the beginning pointer
-    const char *p = buffer_ptr;
-    // to the end pointer
-    const char *pe = buffer_ptr + buffer.size();
-    //
-    const char *eof = pe;
+    const char* buffer_ptr = buffer.data(); // pointer to current buffer, used by LEN, PTR_TO defines above
+    const char* p          = buffer_ptr; // start parsing from the beginning pointer
+    const char* pe         = buffer_ptr + buffer.size(); // to the end pointer
+    const char* eof        = pe;
 
     if (state == State::in_body) {
         bool is_completed = process_body(buffer, p, pe);

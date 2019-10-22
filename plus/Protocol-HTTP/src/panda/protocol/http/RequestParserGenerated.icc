@@ -1,7 +1,7 @@
 
 #line 1 "RequestParser.rl"
 
-#line 53 "RequestParser.rl"
+#line 54 "RequestParser.rl"
 
 
 #if defined(MACHINE_DATA)
@@ -40,7 +40,7 @@ static const int http_request_parser_en_chunked_body = 115;
 static const int http_request_parser_en_main = 1;
 
 
-#line 59 "RequestParser.rl"
+#line 60 "RequestParser.rl"
 
 #endif
 
@@ -53,7 +53,7 @@ static const int http_request_parser_en_main = 1;
 	top = 0;
 	}
 
-#line 66 "RequestParser.rl"
+#line 67 "RequestParser.rl"
 
 #endif
 
@@ -3029,6 +3029,7 @@ f4:
                 // we have more buffer to process,
                 // set position on the next character and proceed
                 process_body(buffer, ++p, pe);
+                --p;
             }
         }
         else {
@@ -3038,35 +3039,35 @@ f4:
     }
 	goto _again;
 f14:
-#line 38 "RequestParser.rl"
+#line 39 "RequestParser.rl"
 	{current_message->method = Request::Method::OPTIONS; }
 	goto _again;
 f12:
-#line 39 "RequestParser.rl"
+#line 40 "RequestParser.rl"
 	{current_message->method = Request::Method::GET; }
 	goto _again;
 f13:
-#line 40 "RequestParser.rl"
+#line 41 "RequestParser.rl"
 	{current_message->method = Request::Method::HEAD; }
 	goto _again;
 f15:
-#line 41 "RequestParser.rl"
+#line 42 "RequestParser.rl"
 	{current_message->method = Request::Method::POST; }
 	goto _again;
 f16:
-#line 42 "RequestParser.rl"
+#line 43 "RequestParser.rl"
 	{current_message->method = Request::Method::PUT; }
 	goto _again;
 f11:
-#line 43 "RequestParser.rl"
+#line 44 "RequestParser.rl"
 	{current_message->method = Request::Method::DELETE; }
 	goto _again;
 f17:
-#line 44 "RequestParser.rl"
+#line 45 "RequestParser.rl"
 	{current_message->method = Request::Method::TRACE; }
 	goto _again;
 f0:
-#line 45 "RequestParser.rl"
+#line 46 "RequestParser.rl"
 	{current_message->method = Request::Method::CONNECT; }
 	goto _again;
 f20:
@@ -3377,13 +3378,13 @@ _again:
 goto _again;}
     }
 	break;
-#line 3381 "RequestParserGenerated.icc"
+#line 3382 "RequestParserGenerated.icc"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 73 "RequestParser.rl"
+#line 74 "RequestParser.rl"
 
 #endif

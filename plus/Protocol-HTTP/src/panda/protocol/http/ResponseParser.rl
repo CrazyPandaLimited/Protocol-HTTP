@@ -65,6 +65,7 @@
                     // we have more buffer to process,
                     // set position on the next character and proceed
                     process_body(buffer, ++fpc, pe);
+                    --fpc;
                 }
             } else {
                 state = State::done;

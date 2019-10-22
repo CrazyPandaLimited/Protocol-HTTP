@@ -126,3 +126,21 @@ TEST_CASE("response eof after full message", "[response]") {
     CHECK(fres.state == State::done);
     CHECK_THROWS(p.eof());
 }
+
+TEST_CASE("correct result position in response with body", "[response]") {
+    ResponseParser p;
+    RequestSP req = new Request();
+    req->method = Method::GET;
+    p.set_request(req);
+    string s =
+        "HTTP/1.1 200 OK\r\n"
+        "Content-length: 8\r\n"
+        "\r\n"
+        "epta nah111";
+    auto fres = p.parse(s);
+    auto res  = fres.response;
+    CHECK(fres.state == State::done);
+    CHECK(fres.position == 46);
+    CHECK(res->headers.get_field("Content-Length") == "8");
+    CHECK(res->body.length() == 8);
+}
