@@ -9,7 +9,7 @@
     }
 
     action reason_phrase {
-        if(marked_buffer.empty()) {
+        if (marked_buffer.empty()) {
             current_message->message = string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc));
         } else {
             marked_buffer.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, fpc)));
@@ -33,7 +33,7 @@
     }
 
     action append_mark {
-        if(marked_buffer.empty()) {
+        if (marked_buffer.empty()) {
         } else {
             marked_buffer.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, fpc)));
         }
@@ -50,15 +50,15 @@
             fbreak;
         }
 
-        if(chunked) {
+        if (current_message->chunked) {
             fcall chunked_body;
             state = State::done;
         }
-        else if(has_content_len) {
-            if(content_len > 0) {
+        else if (has_content_len) {
+            if (content_len > 0) {
                 // we are between headers and body and there are no body yet
                 // current position is on LF
-                if(pe - fpc == 1) {
+                if (pe - fpc == 1) {
                     // set state and wait for the body in next calls
                     state = State::in_body;
                 } else {

@@ -23,7 +23,7 @@ ResponseSP ResponseParser::create_message () {
 
 ResponseParser::Result ResponseParser::eof () {
     if (!_request) throw_no_request();
-    if (current_message && !current_message->keep_alive() && !content_len && !chunked) {
+    if (current_message && !current_message->keep_alive() && !content_len && !current_message->chunked && state >= State::got_header) {
         state = State::done;
         return build_result(FinalFlag::RESET, 0);
     } else {

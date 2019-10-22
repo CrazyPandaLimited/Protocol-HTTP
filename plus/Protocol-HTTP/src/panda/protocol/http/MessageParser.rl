@@ -118,7 +118,7 @@
     }
 
     action trans_chunked {
-        chunked = true;
+        current_message->chunked = true;
     }
 
     action http_version1_0 {

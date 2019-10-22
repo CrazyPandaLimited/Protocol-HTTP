@@ -33,7 +33,6 @@ protected:
 
         content_len = 0;
         body_so_far = 0;
-        chunked = false;
         chunk_len = 0;
         chunk_so_far = 0;
         trailing_header = false;
@@ -109,7 +108,6 @@ protected:
     size_t    body_so_far;
     size_t    chunk_len;
     size_t    chunk_so_far;
-    bool      chunked;
     bool      has_content_len;
     bool      trailing_header;
     bool      marked;

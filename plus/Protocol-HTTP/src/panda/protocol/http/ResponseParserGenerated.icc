@@ -2826,7 +2826,7 @@ f2:
 f10:
 #line 120 "MessageParser.rl"
 	{
-        chunked = true;
+        current_message->chunked = true;
     }
 	goto _again;
 f1:
@@ -2860,15 +2860,15 @@ f5:
             {p++; goto _out; }
         }
 
-        if(chunked) {
+        if (current_message->chunked) {
             {stack[top++] = cs; cs = 85;goto _again;}
             state = State::done;
         }
-        else if(has_content_len) {
-            if(content_len > 0) {
+        else if (has_content_len) {
+            if (content_len > 0) {
                 // we are between headers and body and there are no body yet
                 // current position is on LF
-                if(pe - p == 1) {
+                if (pe - p == 1) {
                     // set state and wait for the body in next calls
                     state = State::in_body;
                 } else {
@@ -2964,7 +2964,7 @@ f12:
 f4:
 #line 11 "ResponseParser.rl"
 	{
-        if(marked_buffer.empty()) {
+        if (marked_buffer.empty()) {
             current_message->message = string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, p));
         } else {
             marked_buffer.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, p)));

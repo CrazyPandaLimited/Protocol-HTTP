@@ -144,3 +144,26 @@ TEST_CASE("correct result position in response with body", "[response]") {
     CHECK(res->headers.get_field("Content-Length") == "8");
     CHECK(res->body.length() == 8);
 }
+
+TEST_CASE("response with chunks", "[response]") {
+    ResponseParser p;
+    RequestSP req = new Request();
+    req->method = Method::GET;
+    p.set_request(req);
+    string s =
+        "HTTP/1.1 200 OK\r\n"
+        "Transfer-Encoding: chunked\r\n"
+        "Connection: keep-alive\r\n"
+        "\r\n"
+        "8\r\n"
+        "epta raz\r\n"
+        "8\r\n"
+        "epta dva\r\n"
+        "0\r\n\r\n";
+    auto fres = p.parse(s);
+    auto res  = fres.response;
+    CHECK(fres.state == State::done);
+    CHECK(res->body.length() == 16);
+    CHECK(res->body.to_string() == "epta razepta dva");
+    CHECK(res->chunked);
+}

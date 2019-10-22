@@ -4,7 +4,7 @@
     include http_message_parser "MessageParser.rl";
 
     action request_uri {
-        if(marked_buffer.empty()) {
+        if (marked_buffer.empty()) {
             current_message->uri = make_iptr<uri::URI>(string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc)));
         } else {
             marked_buffer.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, fpc)));
@@ -14,13 +14,13 @@
 
     action done {
         state = State::got_header;
-        if(chunked) {
+        if (current_message->chunked) {
             fcall chunked_body;
         }
-        else if(content_len > 0) {
+        else if (content_len > 0) {
             // we are between headers and body and there are no body yet
             // current position is on LF
-            if(pe - fpc == 1) {
+            if (pe - fpc == 1) {
                 // set state and wait for the body in next calls
                 state = State::in_body;
             } else {

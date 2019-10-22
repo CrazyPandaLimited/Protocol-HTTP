@@ -64,6 +64,7 @@ TEST_CASE("trivial chunked post request", "[request]") {
     REQUIRE(req->headers.get_field("Transfer-Encoding") == "chunked");
     REQUIRE(req->body.parts.size() == 3);
     REQUIRE(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
+    REQUIRE(req->chunked);
 }
 
 TEST_CASE("chunked post request with extension", "[request]") {
