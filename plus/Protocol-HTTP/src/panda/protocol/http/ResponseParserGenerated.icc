@@ -1,7 +1,7 @@
 
 #line 1 "ResponseParser.rl"
 
-#line 87 "ResponseParser.rl"
+#line 89 "ResponseParser.rl"
 
 
 #if defined(MACHINE_DATA)
@@ -36,7 +36,7 @@ static const int http_response_parser_en_chunked_body = 85;
 static const int http_response_parser_en_main = 1;
 
 
-#line 93 "ResponseParser.rl"
+#line 95 "ResponseParser.rl"
 
 #endif
 
@@ -49,7 +49,7 @@ static const int http_response_parser_en_main = 1;
 	top = 0;
 	}
 
-#line 100 "ResponseParser.rl"
+#line 102 "ResponseParser.rl"
 
 #endif
 
@@ -2880,7 +2880,9 @@ f5:
             } else {
                 state = State::done;
             }
-        } else if (!current_message->keep_alive()) { // Connection: close
+        } else if (current_message->keep_alive()) { // KA without CLEN & TE header -> assume length=0
+            state = State::done;
+        } else { // not KA without CLEN -> eat body till connection closes
             state = State::in_body;
             current_message->add_body_part(string(p+1, pe - p - 1));
             p = pe;
@@ -3219,13 +3221,13 @@ _again:
 goto _again;}
     }
 	break;
-#line 3223 "ResponseParserGenerated.icc"
+#line 3225 "ResponseParserGenerated.icc"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 107 "ResponseParser.rl"
+#line 109 "ResponseParser.rl"
 
 #endif

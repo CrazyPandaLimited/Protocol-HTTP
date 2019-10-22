@@ -17,7 +17,7 @@ struct Response : Message {
         Message(std::move(header), std::move(body), chunked, http_version), code(code), message(message)
     {}
 
-    string full_message () { return panda::to_string(code) + " " + message; }
+    string full_message () { return panda::to_string(code) + " " + (message ? message : message_for_code(code)); }
 
     std::vector<string> to_vector (const Request* = nullptr);
     string              to_string (const Request* = nullptr);
