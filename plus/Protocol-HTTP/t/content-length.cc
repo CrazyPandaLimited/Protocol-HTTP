@@ -18,7 +18,7 @@ TEST_CASE("post with content-length content as single buffer", "[content-length]
     REQUIRE(req->http_version == HttpVersion::v1_1);
     REQUIRE(req->headers.fields.size() == 1);
     REQUIRE(req->headers.get_field("Content-Length") == "23");
-    REQUIRE(req->body.as_buffer() == "Wikipedia in\r\n\r\nchunks.");
+    REQUIRE(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
 }
 
 TEST_CASE("post with content-length content in parts", "[content-length]") {
@@ -47,7 +47,7 @@ TEST_CASE("post with content-length content in parts", "[content-length]") {
     REQUIRE(req->http_version == HttpVersion::v1_1);
     REQUIRE(req->headers.fields.size() == 1);
     REQUIRE(req->headers.get_field("Content-Length") == "23");
-    REQUIRE(req->body.as_buffer() == "Wikipedia in\r\n\r\nchunks.");
+    REQUIRE(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
 }
 
 TEST_CASE("post with zero content-length", "[content-length]") {
@@ -66,7 +66,7 @@ TEST_CASE("post with zero content-length", "[content-length]") {
     REQUIRE(req->http_version == HttpVersion::v1_1);
     REQUIRE(req->headers.fields.size() == 1);
     REQUIRE(req->headers.get_field("Content-Length") == "0");
-    REQUIRE(req->body.as_buffer() == "");
+    REQUIRE(req->body.to_string() == "");
 }
 
 TEST_CASE("post single request", "[content-length]") {
@@ -91,7 +91,7 @@ TEST_CASE("post single request", "[content-length]") {
     REQUIRE(req->http_version == HttpVersion::v1_1);
     REQUIRE(req->headers.fields.size() == 1);
     REQUIRE(req->headers.get_field("Content-Length") == "2");
-    REQUIRE(req->body.as_buffer() == "XX");
+    REQUIRE(req->body.to_string() == "XX");
 }
 
 TEST_CASE("post iterator multiple messages", "[content-length]") {
@@ -116,7 +116,7 @@ TEST_CASE("post iterator multiple messages", "[content-length]") {
     REQUIRE(req1->http_version == HttpVersion::v1_1);
     REQUIRE(req1->headers.fields.size() == 1);
     REQUIRE(req1->headers.get_field("Content-Length") == "2");
-    REQUIRE(req1->body.as_buffer() == "XX");
+    REQUIRE(req1->body.to_string() == "XX");
 
     // parse nto the second result with the same iterator
     auto result2 = p.parse(raw);
@@ -130,8 +130,8 @@ TEST_CASE("post iterator multiple messages", "[content-length]") {
     REQUIRE(req2->http_version == HttpVersion::v1_1);
     REQUIRE(req2->headers.fields.size() == 1);
     REQUIRE(req2->headers.get_field("Content-Length") == "2");
-    REQUIRE(req2->body.as_buffer() == "YY");
+    REQUIRE(req2->body.to_string() == "YY");
    
     // ensure that the first request is not modified 
-    REQUIRE(req1->body.as_buffer() == "XX");
+    REQUIRE(req1->body.to_string() == "XX");
 }

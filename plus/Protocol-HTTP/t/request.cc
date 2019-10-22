@@ -33,7 +33,7 @@ TEST_CASE("trivial post request", "[request]") {
     REQUIRE(req->http_version == HttpVersion::v1_1);
     REQUIRE(req->headers.fields.size() == 1);
     REQUIRE(req->headers.get_field("Content-Length") == "23");
-    REQUIRE(req->body.as_buffer() == "Wikipedia in\r\n\r\nchunks.");
+    REQUIRE(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
 }
 
 TEST_CASE("trivial chunked post request", "[request]") {
@@ -63,7 +63,7 @@ TEST_CASE("trivial chunked post request", "[request]") {
     REQUIRE(req->headers.fields.size() == 1);
     REQUIRE(req->headers.get_field("Transfer-Encoding") == "chunked");
     REQUIRE(req->body.parts.size() == 3);
-    REQUIRE(req->body.as_buffer() == "Wikipedia in\r\n\r\nchunks.");
+    REQUIRE(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
 }
 
 TEST_CASE("chunked post request with extension", "[request]") {
@@ -93,7 +93,7 @@ TEST_CASE("chunked post request with extension", "[request]") {
     REQUIRE(req->headers.fields.size() == 1);
     REQUIRE(req->headers.get_field("Transfer-Encoding") == "chunked");
     REQUIRE(req->body.parts.size() == 3);
-    REQUIRE(req->body.as_buffer() == "Wikipedia in\r\n\r\nchunks.");
+    REQUIRE(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
 }
 
 TEST_CASE("chunked post request with trailer header", "[request]") {
@@ -125,7 +125,7 @@ TEST_CASE("chunked post request with trailer header", "[request]") {
     REQUIRE(req->headers.fields.size() == 2);
     REQUIRE(req->headers.get_field("Transfer-Encoding") == "chunked");
     REQUIRE(req->body.parts.size() == 3);
-    REQUIRE(req->body.as_buffer() == "Wikipedia in\r\n\r\nchunks.");
+    REQUIRE(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
 }
 
 TEST_CASE("trimming spaces from header value", "[request]") {
@@ -278,7 +278,7 @@ TEST_CASE("case insensitive content-length", "[request]") {
     REQUIRE(req->method == Method::GET);
     REQUIRE(req->http_version == HttpVersion::v1_0);
     REQUIRE(req->headers.fields.size() == 1);
-    REQUIRE(req->body.as_buffer() == "1");
+    REQUIRE(req->body.to_string() == "1");
 }
 
 TEST_CASE("max_{message,body}_size", "[request]") {

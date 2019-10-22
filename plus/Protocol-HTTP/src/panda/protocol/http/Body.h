@@ -35,7 +35,7 @@ struct Body {
         return size;
     }
 
-    string as_buffer () const;
+    string to_string () const;
     bool   empty     () const { return !length(); }
 
     void clear () { parts.clear(); }

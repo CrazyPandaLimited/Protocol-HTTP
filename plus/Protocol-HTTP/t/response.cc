@@ -82,11 +82,11 @@ TEST_CASE("trivial connection close", "[response]") {
     auto res = result.response;
     CHECK(res->http_version == HttpVersion::v1_1);
     CHECK(res->headers.get_field("Host") == "host1");
-    CHECK(res->body.as_buffer() == "body");
+    CHECK(res->body.to_string() == "body");
 
     result = p.eof();
     CHECK(result.state == State::done);
-    CHECK(res->body.as_buffer() == "body");
+    CHECK(res->body.to_string() == "body");
 }
 
 TEST_CASE("connection close priority", "[response]") {

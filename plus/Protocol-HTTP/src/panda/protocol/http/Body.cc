@@ -3,7 +3,7 @@
 
 namespace panda { namespace protocol { namespace http {
 
-string Body::as_buffer () const {
+string Body::to_string () const {
     if (!parts.size()) return "";
     if (parts.size() == 1) return parts[0];
     string ret(length() + 1); // speedup possible c_str()

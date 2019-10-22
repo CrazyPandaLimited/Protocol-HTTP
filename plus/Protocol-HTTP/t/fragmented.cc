@@ -170,7 +170,7 @@ TEST_CASE("parsing request with fragmented chunks", "[fragmented]") {
     CHECK(req->http_version == HttpVersion::v1_1);
     CHECK(req->headers.get_field("Transfer-Encoding") == "chunked");
     CHECK(req->headers.get_field("Trailer") == "Expires");
-    CHECK(req->body.as_buffer() == "Wikipedia in\r\n\r\nchunks.");
+    CHECK(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
 }
 
 TEST_CASE("parsing 3 requests in a row", "[fragmented]") {
