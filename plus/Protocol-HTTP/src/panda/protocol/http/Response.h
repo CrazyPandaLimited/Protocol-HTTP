@@ -13,7 +13,7 @@ struct Response : Message {
 
     Response () : code() {}
 
-    Response (int code, const string& message, Header&& header, Body&& body, HttpVersion http_version = HttpVersion::any, bool chunked = false) :
+    Response (int code, const string& message = "", Header&& header = Header(), Body&& body = Body(), HttpVersion http_version = HttpVersion::any, bool chunked = false) :
         Message(std::move(header), std::move(body), http_version, chunked), code(code), message(message)
     {}
 
@@ -21,6 +21,8 @@ struct Response : Message {
 
     std::vector<string> to_vector (const Request* = nullptr);
     string              to_string (const Request* = nullptr);
+
+    static string message_for_code (int code);
 
 protected:
     ~Response () {}
