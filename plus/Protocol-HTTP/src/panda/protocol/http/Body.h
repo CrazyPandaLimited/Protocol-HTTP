@@ -13,6 +13,8 @@ struct Body {
     Body () {}
     Body (const string& body) { parts.emplace_back(body); }
 
+    Body (const std::initializer_list<string>& l) { for (auto& s : l) parts.emplace_back(s); }
+
     Body (const Body&) = default;
     Body (Body&& oth)  = default;
 
