@@ -6,7 +6,8 @@ namespace panda { namespace protocol { namespace http {
 string Response::_http_header (const Request* req, size_t reserve) {
     if (req) {
         if (http_version == HttpVersion::any) http_version = req->http_version;
-        if (!headers.has_field("Connection")) headers.add_field("Connection", req->keep_alive() ? string("keep-alive") : string("close"));
+        if (!req->keep_alive()) headers.set_field("Connection", "close");
+        else if (!headers.has_field("Connection")) headers.add_field("Connection", "keep-alive");
     }
     if (!message) message = message_for_code(code);
 
