@@ -124,7 +124,12 @@ TEST_CASE("response eof after full message", "[response]") {
 
     auto fres = p.parse(raw);
     CHECK(fres.state == State::done);
-    CHECK_THROWS(p.eof());
+
+    fres = p.eof();
+    CHECK(!fres.request);
+    CHECK(!fres.response);
+    CHECK(!fres.position);
+    CHECK(fres.state == State::not_yet);
 }
 
 TEST_CASE("correct result position in response with body", "[response]") {

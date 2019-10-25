@@ -58,11 +58,11 @@
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
 
-    action write_field {
+    action write_hdr_name {
         current_field_buffer = advance_buffer(buffer, fpc);
     }
 
-    action write_value {
+    action write_hdr_value {
         // ignore trailing header
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
         if(!trailing_header) {
@@ -75,18 +75,28 @@
             current_message->add_header_field(current_field_buffer, marked_buffer);
         }
     }
-
-    action write_content_len {
-        auto res = panda::from_chars(marked_buffer.data(), marked_buffer.data() + marked_buffer.length(), content_len);
-        if (res.ec) {
+    
+    action hdr_clen_start {
+        if (has_content_len) {
             state = State::error;
             fbreak;
-        } else {
-            has_content_len = true;
-            body_so_far = 0;
         }
+        has_content_len = true;
     }
-
+    
+    action hdr_clen_chunk {
+        if (content_len > 1000000000000000000) {
+            state = State::error;
+            fbreak;
+        }
+        content_len *= 10;
+        content_len += fc - '0';
+    }
+    
+    action hdr_te_chunked {
+        current_message->chunked = true;
+    }
+    
     action write_trailing_header {
         trailing_header = true;
     }
@@ -117,18 +127,14 @@
         current_message->add_body_part( advance_buffer(buffer, fpc) );
     }
 
-    action trans_chunked {
-        current_message->chunked = true;
-    }
-
-    action http_version1_0 {
+    action http_version10 {
         current_message->http_version = HttpVersion::v1_0;
     }
 
-    action http_version1_1 {
+    action http_version11 {
         current_message->http_version = HttpVersion::v1_1;
     }
-
+    
 #### HTTP PROTOCOL GRAMMAR
     crlf = "\r\n" ;
     lws = crlf? (" " | "\t")+ ;
@@ -143,25 +149,24 @@
                      | "{" | "}" | " " | "\t"
                      ) ;
 
-    http_version1_0 = "HTTP/1.0" %http_version1_0;
-    http_version1_1 = "HTTP/1.1" %http_version1_1;
-    http_version = http_version1_1 | http_version1_0;
+    http_version10 = "HTTP/1.0" %http_version10;
+    http_version11 = "HTTP/1.1" %http_version11;
+    http_version = http_version11 | http_version10;
 
     token = ascii -- ( http_ctl | http_separator ) ;
 
-    field_name = token+ >mark %write_field %unmark;
+    field_name = token+ >mark %write_hdr_name %unmark;
 
-    field_value = (vchar (vchar | lws)*)? >mark %write_value %unmark;
+    field_value = (vchar (vchar | lws)*)? >mark %write_hdr_value %unmark;
 
     fields = field_name ":" space* field_value :> crlf;
 
-    content_length = (/Content-Length/i >mark %write_field %unmark ":" space *
-            digit+ >mark %write_value %write_content_len %unmark) crlf;
+    hdr_clen       = (/Content-Length/i ":" space * digit+ >hdr_clen_start $hdr_clen_chunk) crlf;
+    #hdr_conn_close = (/Connection/i ":" space* /close/i) crlf @hdr_conn_close;
+    #hdr_conn_ka    = (/Connection/i ":" space* /keep-alive/i) crlf @hdr_conn_ka;
+    hdr_te_chunked = (/Transfer-Encoding/i ":" space* /chunked/i) crlf @hdr_te_chunked;
 
-    transfer_encoding_chunked = (/Transfer-Encoding/i >mark %write_field %unmark
-            ":" space* /chunked/i >mark %write_value %unmark) crlf @trans_chunked;
-
-    message_header = transfer_encoding_chunked | content_length | fields;
+    message_header = hdr_clen | hdr_te_chunked | fields;
 
     chunk_ext_val = token+;
     chunk_ext_name = token+;

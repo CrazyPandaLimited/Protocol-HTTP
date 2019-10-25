@@ -70,9 +70,8 @@
             } else {
                 state = State::done;
             }
-        } else if (current_message->keep_alive()) { // KA without CLEN & TE header -> assume length=0
-            state = State::done;
-        } else { // not KA without CLEN -> eat body till connection closes
+        } else { // no TE or CLEN -> eat body till connection closes
+            current_message->headers.set_field("Connection", "close");
             state = State::in_body;
             current_message->add_body_part(string(fpc+1, pe - fpc - 1));
             fpc = pe;

@@ -54,12 +54,8 @@ protected:
             http_version = HttpVersion::v1_1;
             headers.add_field("Transfer-Encoding", "chunked");
         }
-        else {
-            auto blen = body.length();
-            if (blen) {
-                headers.add_field("Content-Length", panda::to_string(blen));
-                //if (!headers.has_field("Content-Type")) headers.add_field("Content-Type", "text/plain");
-            }
+        else if (!headers.has_field("Content-Length")) {
+            headers.add_field("Content-Length", panda::to_string(body.length()));
         }
     }
 

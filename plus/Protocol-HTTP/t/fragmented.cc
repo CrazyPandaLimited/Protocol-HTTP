@@ -142,7 +142,7 @@ TEST_CASE("parsing request with fragmented chunks", "[fragmented]") {
 
     std::vector<string> v = {
         "POST /upload HTTP/1.1\r\n"
-        "Transfer-Encoding", ": chunked\r\n"
+        "Transfer-Enco", "ding", ": chu", "nked\r\n"
         "Trailer: Expires\r\n"
         "\r\n"
         "4;chunkex", "tension=somevalue\r\n"

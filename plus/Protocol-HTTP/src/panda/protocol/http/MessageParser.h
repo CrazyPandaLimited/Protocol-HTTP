@@ -34,6 +34,7 @@ protected:
         content_len = 0;
         body_so_far = 0;
         chunk_len = 0;
+        has_content_len = false;
         chunk_so_far = 0;
         trailing_header = false;
         marked = false;
@@ -104,7 +105,7 @@ protected:
     string    current_field_buffer;
     MessageSP current_message;
     State     state; // more general parser state, not used by Ragel
-    size_t    content_len;
+    uint64_t  content_len;
     size_t    body_so_far;
     size_t    chunk_len;
     size_t    chunk_so_far;

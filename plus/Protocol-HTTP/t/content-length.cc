@@ -103,35 +103,35 @@ TEST_CASE("post iterator multiple messages", "[content-length]") {
         ;
 
     auto result1 = p.parse(raw);
-    REQUIRE(result1.state == State::in_body);
+    CHECK(result1.state == State::in_body);
 
     result1 = p.parse("X");
-    REQUIRE(result1.state == State::in_body);
+    CHECK(result1.state == State::in_body);
 
-    result1 = p.parse("X" + raw);
-    REQUIRE(result1.state == State::done);
+    result1 = p.parse("X");
+    CHECK(result1.state == State::done);
 
     auto req1 = result1.request;
-    REQUIRE(req1->method == Method::POST);
-    REQUIRE(req1->http_version == HttpVersion::v1_1);
-    REQUIRE(req1->headers.fields.size() == 1);
-    REQUIRE(req1->headers.get_field("Content-Length") == "2");
-    REQUIRE(req1->body.to_string() == "XX");
+    CHECK(req1->method == Method::POST);
+    CHECK(req1->http_version == HttpVersion::v1_1);
+    CHECK(req1->headers.fields.size() == 1);
+    CHECK(req1->headers.get_field("Content-Length") == "2");
+    CHECK(req1->body.to_string() == "XX");
 
     // parse nto the second result with the same iterator
     auto result2 = p.parse(raw);
-    REQUIRE(result2.state == State::in_body);
+    CHECK(result2.state == State::in_body);
 
     result2 = p.parse("YY");
-    REQUIRE(result2.state == State::done);
+    CHECK(result2.state == State::done);
 
     auto req2 = result2.request;
-    REQUIRE(req2->method == Method::POST);
-    REQUIRE(req2->http_version == HttpVersion::v1_1);
-    REQUIRE(req2->headers.fields.size() == 1);
-    REQUIRE(req2->headers.get_field("Content-Length") == "2");
-    REQUIRE(req2->body.to_string() == "YY");
+    CHECK(req2->method == Method::POST);
+    CHECK(req2->http_version == HttpVersion::v1_1);
+    CHECK(req2->headers.fields.size() == 1);
+    CHECK(req2->headers.get_field("Content-Length") == "2");
+    CHECK(req2->body.to_string() == "YY");
    
     // ensure that the first request is not modified 
-    REQUIRE(req1->body.to_string() == "XX");
+    CHECK(req1->body.to_string() == "XX");
 }

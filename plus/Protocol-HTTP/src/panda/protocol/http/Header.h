@@ -26,9 +26,9 @@ struct Header {
 
     Container fields;
 
-    Header ();
-    Header (const Container& fields);
-    Header (Container&& fields);
+    Header () {}
+    Header (const Container& fields) : fields(fields) {}
+    Header (Container&& fields)      : fields(std::move(fields)) {}
 
     bool     has_field    (string_view key) const;
     string   get_field    (string_view key, const string& default_val = "") const;

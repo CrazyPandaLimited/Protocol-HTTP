@@ -3,12 +3,6 @@
 
 namespace panda { namespace protocol { namespace http {
 
-Header::Header () {
-}
-
-Header::Header (const Container& fields) : fields(fields)            {}
-Header::Header (Container&& fields)      : fields(std::move(fields)) {}
-
 bool Header::has_field (string_view key) const {
     for (const auto& f : fields) if (iequals(f.name, key)) return true;
     return false;
