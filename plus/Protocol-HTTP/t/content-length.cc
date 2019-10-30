@@ -1,6 +1,8 @@
 #include "lib/test.h"
 
-TEST_CASE("post with content-length content as single buffer", "[content-length]") {
+#define TEST(name) TEST_CASE("content-length: " name, "[content-length]")
+
+TEST("content as single buffer") {
     RequestParser p;
     string raw =
         "POST /upload HTTP/1.1\r\n"
@@ -10,47 +12,43 @@ TEST_CASE("post with content-length content as single buffer", "[content-length]
         ;
 
     auto result = p.parse(raw);
-    REQUIRE(result.state == State::done);
+    CHECK(result.state == State::done);
     
     auto req = result.request;
     
-    REQUIRE(req->method == Method::POST);
-    REQUIRE(req->http_version == HttpVersion::v1_1);
-    REQUIRE(req->headers.fields.size() == 1);
-    REQUIRE(req->headers.get_field("Content-Length") == "23");
-    REQUIRE(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
+    CHECK(req->headers.fields.size() == 1);
+    CHECK(req->headers.get_field("Content-Length") == "23");
+    CHECK(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
 }
 
-TEST_CASE("post with content-length content in parts", "[content-length]") {
+TEST("content in parts") {
     RequestParser p;
 
     auto result = p.parse("POST /upload HTTP/1.1\r\nContent-Length: 23\r\n\r");
-    REQUIRE(result.state == State::not_yet);
+    CHECK(result.state == State::not_yet);
 
     result = p.parse("\n");
-    REQUIRE(result.state == State::in_body);
+    CHECK(result.state == State::in_body);
 
     result = p.parse("W");
-    REQUIRE(result.state == State::in_body);
+    CHECK(result.state == State::in_body);
     
     result = p.parse("i");
-    REQUIRE(result.state == State::in_body);
+    CHECK(result.state == State::in_body);
     
     result = p.parse("kipedia in\r\n");
-    REQUIRE(result.state == State::in_body);
+    CHECK(result.state == State::in_body);
     
     result = p.parse("\r\nchunks.");
-    REQUIRE(result.state == State::done);
+    CHECK(result.state == State::done);
 
     auto req = result.request;
-    REQUIRE(req->method == Method::POST);
-    REQUIRE(req->http_version == HttpVersion::v1_1);
-    REQUIRE(req->headers.fields.size() == 1);
-    REQUIRE(req->headers.get_field("Content-Length") == "23");
-    REQUIRE(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
+    CHECK(req->headers.fields.size() == 1);
+    CHECK(req->headers.get_field("Content-Length") == "23");
+    CHECK(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
 }
 
-TEST_CASE("post with zero content-length", "[content-length]") {
+TEST("zero content-length") {
     RequestParser p;
     string raw =
         "POST /upload HTTP/1.1\r\n"
@@ -59,79 +57,57 @@ TEST_CASE("post with zero content-length", "[content-length]") {
         ;
 
     auto result = p.parse(raw);
-    REQUIRE(result.state == State::done);
+    CHECK(result.state == State::done);
     
     auto req = result.request;
-    REQUIRE(req->method == Method::POST);
-    REQUIRE(req->http_version == HttpVersion::v1_1);
-    REQUIRE(req->headers.fields.size() == 1);
-    REQUIRE(req->headers.get_field("Content-Length") == "0");
-    REQUIRE(req->body.to_string() == "");
+    CHECK(req->headers.fields.size() == 1);
+    CHECK(req->headers.get_field("Content-Length") == "0");
+    CHECK(req->body.to_string() == "");
 }
 
-TEST_CASE("post single request", "[content-length]") {
+TEST("case insensitive") {
     RequestParser p;
     string raw =
-        "POST /upload HTTP/1.1\r\n"
-        "Content-Length: 2\r\n"
+        "GET / HTTP/1.0\r\n"
+        "content-length: 1\r\n"
         "\r\n"
-        ;
+        "1";
 
     auto result = p.parse(raw);
-    REQUIRE(result.state == State::in_body);
-
-    result = p.parse("X");
-    REQUIRE(result.state == State::in_body);
-
-    result = p.parse("X");
-    REQUIRE(result.state == State::done);
+    CHECK(result.state == State::done);
 
     auto req = result.request;
-    REQUIRE(req->method == Method::POST);
-    REQUIRE(req->http_version == HttpVersion::v1_1);
-    REQUIRE(req->headers.fields.size() == 1);
-    REQUIRE(req->headers.get_field("Content-Length") == "2");
-    REQUIRE(req->body.to_string() == "XX");
+    CHECK(req->headers.fields.size() == 1);
+    CHECK(req->headers.get_field("Content-LENGTH") == "1");
+    CHECK(req->body.to_string() == "1");
 }
 
-TEST_CASE("post iterator multiple messages", "[content-length]") {
-    RequestParser p;
-    string raw =
-        "POST /upload HTTP/1.1\r\n"
-        "Content-Length: 2\r\n"
+TEST("unreal content length request") {
+    string raw = GENERATE(
+        string("POST /upload HTTP/1.1\r\n"
+        "Content-Length: 100500999999999999099999999\r\n"
         "\r\n"
-        ;
+        "1234567890")
+    );
 
-    auto result1 = p.parse(raw);
-    CHECK(result1.state == State::in_body);
+    RequestParser p;
+    CHECK(p.parse(raw).error);
+}
 
-    result1 = p.parse("X");
-    CHECK(result1.state == State::in_body);
+TEST("unreal content lentgh response") {
+    string raw = GENERATE(
+        string("HTTP/1.1 200 OK\r\n"
+        "Content-Length: 100500999999999999099999999\r\n"
+        "\r\n"
+        "1234567890")
+        ,
+        string("HTTP/1.1 11111 OK\r\n"
+        "Content-Length: 10\r\n"
+        "\r\n"
+        "1234567890")
+    );
 
-    result1 = p.parse("X");
-    CHECK(result1.state == State::done);
-
-    auto req1 = result1.request;
-    CHECK(req1->method == Method::POST);
-    CHECK(req1->http_version == HttpVersion::v1_1);
-    CHECK(req1->headers.fields.size() == 1);
-    CHECK(req1->headers.get_field("Content-Length") == "2");
-    CHECK(req1->body.to_string() == "XX");
-
-    // parse nto the second result with the same iterator
-    auto result2 = p.parse(raw);
-    CHECK(result2.state == State::in_body);
-
-    result2 = p.parse("YY");
-    CHECK(result2.state == State::done);
-
-    auto req2 = result2.request;
-    CHECK(req2->method == Method::POST);
-    CHECK(req2->http_version == HttpVersion::v1_1);
-    CHECK(req2->headers.fields.size() == 1);
-    CHECK(req2->headers.get_field("Content-Length") == "2");
-    CHECK(req2->body.to_string() == "YY");
-   
-    // ensure that the first request is not modified 
-    CHECK(req1->body.to_string() == "XX");
+    ResponseParser p;
+    p.set_request(new Request(Method::GET, new URI("http://dev/"), Header(), Body()));
+    CHECK(p.parse(raw).error);
 }

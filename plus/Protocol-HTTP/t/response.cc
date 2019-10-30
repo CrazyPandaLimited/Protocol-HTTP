@@ -1,6 +1,8 @@
 #include "lib/test.h"
 
-TEST_CASE("trivial get response", "[response]") {
+#define TEST(name) TEST_CASE("response: " name, "[response]")
+
+TEST("trivial get response") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
@@ -14,14 +16,16 @@ TEST_CASE("trivial get response", "[response]") {
     CHECK(result.state != State::done);
 
     auto res = result.response;
-    REQUIRE(res->http_version == HttpVersion::v1_0);
-    REQUIRE(res->headers.get_field("Host") == "host1");
+    CHECK(res->http_version == HttpVersion::v1_0);
+    CHECK(res->code == 200);
+    CHECK(res->message == "OK");
+    CHECK(res->headers.get_field("Host") == "host1");
 
     result = p.eof();
     CHECK(result.state == State::done);
 }
 
-TEST_CASE("trivial head response", "[response]") {
+TEST("trivial head response") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::HEAD;
@@ -36,12 +40,14 @@ TEST_CASE("trivial head response", "[response]") {
     CHECK(result.state == State::done);
 
     auto res = result.response;
-    REQUIRE(res->http_version == HttpVersion::v1_0);
-    REQUIRE(res->headers.get_field("Host") == "host1");
+    CHECK(res->http_version == HttpVersion::v1_0);
+    CHECK(res->code == 200);
+    CHECK(res->message == "OK");
+    CHECK(res->headers.get_field("Host") == "host1");
     CHECK(raw.empty());
 }
 
-TEST_CASE("redirect response", "[response]") {
+TEST("redirect response") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::HEAD;
@@ -60,11 +66,13 @@ TEST_CASE("redirect response", "[response]") {
 
     auto res = result.response;
     REQUIRE(res->http_version == HttpVersion::v1_1);
-    REQUIRE(res->headers.get_field("Location") == "http://localhost:35615");
-    REQUIRE(res->headers.get_field("Date") == "Thu, 22 Mar 2018 16:25:43 GMT");
+    CHECK(res->code == 301);
+    CHECK(res->message == "Moved Permanently");
+    CHECK(res->headers.get_field("Location") == "http://localhost:35615");
+    CHECK(res->headers.get_field("Date") == "Thu, 22 Mar 2018 16:25:43 GMT");
 }
 
-TEST_CASE("trivial connection close", "[response]") {
+TEST("trivial connection close") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
@@ -89,7 +97,7 @@ TEST_CASE("trivial connection close", "[response]") {
     CHECK(res->body.to_string() == "body");
 }
 
-TEST_CASE("connection close priority", "[response]") {
+TEST("connection close priority") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
@@ -109,7 +117,7 @@ TEST_CASE("connection close priority", "[response]") {
     CHECK(result.error);
 }
 
-TEST_CASE("response eof after full message", "[response]") {
+TEST("eof after full message") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
@@ -132,25 +140,7 @@ TEST_CASE("response eof after full message", "[response]") {
     CHECK(fres.state == State::not_yet);
 }
 
-TEST_CASE("correct result position in response with body", "[response]") {
-    ResponseParser p;
-    RequestSP req = new Request();
-    req->method = Method::GET;
-    p.set_request(req);
-    string s =
-        "HTTP/1.1 200 OK\r\n"
-        "Content-length: 8\r\n"
-        "\r\n"
-        "epta nah111";
-    auto fres = p.parse(s);
-    auto res  = fres.response;
-    CHECK(fres.state == State::done);
-    CHECK(fres.position == 46);
-    CHECK(res->headers.get_field("Content-Length") == "8");
-    CHECK(res->body.length() == 8);
-}
-
-TEST_CASE("response with chunks", "[response]") {
+TEST("response with chunks") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
@@ -171,4 +161,37 @@ TEST_CASE("response with chunks", "[response]") {
     CHECK(res->body.length() == 16);
     CHECK(res->body.to_string() == "epta razepta dva");
     CHECK(res->chunked);
+}
+
+TEST("parsing response byte by byte") {
+    ResponseParser p;
+    p.set_request(new Request(Method::GET, new URI("http://dev/"), Header(), Body()));
+
+    string s =
+        "HTTP/1.1 101 Switching Protocols\r\n"
+        "Upgrade: websocket\r\n"
+        "Connection: Upgrade\r\n"
+        "Sec-WebSocket-Protocol: killme\r\n"
+        "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
+        "Server: Panda-WebSocket\r\n"
+        "Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits=15\r\n"
+        "\r\n";
+
+    const size_t CHUNK = GENERATE(1, 10);
+    ResponseParser::Result result;
+    while (s) {
+        CHECK(result.state != State::done);
+        result = p.parse(s.substr(0, CHUNK));
+        s.offset(CHUNK < s.length() ? CHUNK : s.length());
+    }
+    CHECK(result.state == State::done);
+
+    auto res = result.response;
+    REQUIRE(res);
+    REQUIRE(res->http_version == HttpVersion::v1_1);
+    CHECK(res->code == 101);
+    CHECK(res->full_message() == "101 Switching Protocols");
+    CHECK(res->headers.get_field("Upgrade") == "websocket");
+    CHECK(res->headers.get_field("Connection") == "Upgrade");
+    CHECK(res->headers.get_field("Sec-WebSocket-Extensions") == "permessage-deflate; client_max_window_bits=15");
 }

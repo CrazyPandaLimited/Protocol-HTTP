@@ -1,4 +1,4 @@
 use 5.012;
 use lib 't/lib';
 use MyTest;
-use Test::Catch '[basic]';
+use Test::Catch '[chunks]';

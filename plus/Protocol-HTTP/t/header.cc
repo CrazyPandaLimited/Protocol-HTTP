@@ -1,6 +1,14 @@
 #include "lib/test.h"
 
-TEST_CASE("http::Header", "[header]") {
+#define TEST(name) TEST_CASE("header: " name, "[header]")
+
+TEST("case insensitive") {
+    Header h;
+    h.add_field("Aa", "value");
+    CHECK(h.get_field("AA") == "value");
+}
+
+TEST("basic") {
     Header h;
     CHECK(h.length() == 0);
     CHECK(h.get_field("Content-Length", "default") == "default");

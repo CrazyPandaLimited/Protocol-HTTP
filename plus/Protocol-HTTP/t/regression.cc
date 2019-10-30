@@ -5,6 +5,8 @@
 #include <dirent.h>
 #include <sys/types.h>
 
+#define TEST(name) TEST_CASE("regression: " name, "[regression]")
+
 const string ROOT = "t/regression/";
 
 inline std::set<string> read_directory (const string& name = ".") {
@@ -19,7 +21,60 @@ inline std::set<string> read_directory (const string& name = ".") {
     return v;
 }
 
-TEST_CASE("google response 0", "[regression]") {
+TEST("additional final chunk before other chunks") {
+    RequestParser p;
+    string raw =
+        "GET / HTTP/1.1\r\n"
+        "Transfer-Encoding: chunked\r\n"
+        "Connection: keep-alive\r\n"
+        "\r\n"
+        "0\r\n"
+        "\r\n"
+        "2\r\n"
+        "12\r\n"
+        "2\r\n"
+        "34\r\n"
+        "2\r\n"
+        "56\r\n"
+        "0\r\n"
+        "\r\n"
+    ;
+    auto result = p.parse(raw);
+    auto req = result.request;
+    CHECK(result.state == State::done);
+    CHECK_FALSE(result.error);
+    CHECK(result.position == 75); //stoped at first final chunk
+    CHECK(req->body.to_string() == "");
+}
+
+TEST("response chunks #1") {
+    ResponseParser p;
+    RequestSP req = new Request();
+    req->method = Method::GET;
+    p.set_request(req);
+
+    std::vector<string> v = {
+        "HTTP/1.1 200 OK\r\n"
+        "Transfer-Encoding: chunked\r\n"
+        "Connection: keep-alive\r\n"
+        "\r\n",
+        "4\r\n"
+        "ans1\r\n",
+        "0\r\n"
+        "\r\n"
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Length: 4\r\n"
+        "Connection: close\r\n"
+        "\r\n"
+        "ans2"
+    };
+
+    auto result = p.parse_shift(v[0]);
+    CHECK(result.state == State::got_header);
+    CHECK(!v[0]);
+}
+
+TEST("google response 0") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
@@ -46,7 +101,7 @@ TEST_CASE("google response 0", "[regression]") {
     REQUIRE(result.response->http_version == HttpVersion::v1_1);
 }
 
-TEST_CASE("google response 1", "[regression]") {
+TEST("google response 1") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
