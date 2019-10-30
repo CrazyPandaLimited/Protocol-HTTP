@@ -1747,7 +1747,7 @@ case 101:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 180 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr126;
@@ -1857,7 +1857,7 @@ case 108:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 180 "MessageParser.rl"
+#line 176 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr140;
@@ -2171,21 +2171,20 @@ f14:
     }
 	goto _again;
 f16:
-#line 124 "MessageParser.rl"
+#line 121 "MessageParser.rl"
 	{
-        printf("chunk finale\n");
         state = State::done;
         {p++; goto _out; }
     }
 	goto _again;
 f1:
-#line 134 "MessageParser.rl"
+#line 130 "MessageParser.rl"
 	{
         current_message->http_version = HttpVersion::v1_0;
     }
 	goto _again;
 f13:
-#line 138 "MessageParser.rl"
+#line 134 "MessageParser.rl"
 	{
         current_message->http_version = HttpVersion::v1_1;
     }
@@ -2307,7 +2306,6 @@ f15:
 f17:
 #line 99 "MessageParser.rl"
 	{
-        printf("chunk size\n");
         string len_str;
         if(marked_buffer.empty()) {
             len_str = string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, p));
@@ -2317,7 +2315,6 @@ f17:
         }
         auto len = len_str.length();
         if (len > 16 || panda::from_chars(len_str.data(), len_str.data() + len, chunk_len, 16).ec) {
-            printf("wrong chunk size\n");
             state = State::error;
             {p++; goto _out; }
         }
@@ -2426,9 +2423,8 @@ f9:
     }
 	goto _again;
 f19:
-#line 117 "MessageParser.rl"
+#line 115 "MessageParser.rl"
 	{
-        printf("chunk data\n");
         if(chunk_len > 0) {
             current_message->add_body_part( advance_buffer(buffer, p) );
         }
@@ -2452,9 +2448,8 @@ f18:
         mark = p - buffer_ptr;
         marked = true;
     }
-#line 117 "MessageParser.rl"
+#line 115 "MessageParser.rl"
 	{
-        printf("chunk data\n");
         if(chunk_len > 0) {
             current_message->add_body_part( advance_buffer(buffer, p) );
         }
@@ -2471,9 +2466,8 @@ f18:
     }
 	goto _again;
 f20:
-#line 117 "MessageParser.rl"
+#line 115 "MessageParser.rl"
 	{
-        printf("chunk data\n");
         if(chunk_len > 0) {
             current_message->add_body_part( advance_buffer(buffer, p) );
         }

@@ -97,7 +97,6 @@
     }
 
     action chunk_size {
-        printf("chunk size\n");
         string len_str;
         if(marked_buffer.empty()) {
             len_str = string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc));
@@ -107,7 +106,6 @@
         }
         auto len = len_str.length();
         if (len > 16 || panda::from_chars(len_str.data(), len_str.data() + len, chunk_len, 16).ec) {
-            printf("wrong chunk size\n");
             state = State::error;
             fbreak;
         }
@@ -115,14 +113,12 @@
     }
 
     action chunk_data {
-        printf("chunk data\n");
         if(chunk_len > 0) {
             current_message->add_body_part( advance_buffer(buffer, fpc) );
         }
     }
     
     action final_chunk {
-        printf("chunk finale\n");
         state = State::done;
         fbreak;
     }
