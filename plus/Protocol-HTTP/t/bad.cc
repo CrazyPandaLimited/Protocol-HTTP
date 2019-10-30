@@ -123,3 +123,29 @@ TEST_CASE("bad chunk size", "[bad]") {
     auto req = result.request;
     REQUIRE(req->method == Method::POST);
 }
+
+TEST_CASE("bug test: additional final chunk before other chunks", "[bad]") {
+    RequestParser p;
+    string raw =
+        "GET / HTTP/1.1\r\n"
+        "Transfer-Encoding: chunked\r\n"
+        "Connection: keep-alive\r\n"
+        "\r\n"
+        "0\r\n"
+        "\r\n"
+        "2\r\n"
+        "12\r\n"
+        "2\r\n"
+        "34\r\n"
+        "2\r\n"
+        "56\r\n"
+        "0\r\n"
+        "\r\n"
+    ;
+    auto result = p.parse(raw);
+    auto req = result.request;
+    CHECK(result.state == State::done);
+    CHECK_FALSE(result.error);
+    CHECK(result.position == 75); //stoped at first final chunk
+    CHECK(req->body.to_string() == "");
+}

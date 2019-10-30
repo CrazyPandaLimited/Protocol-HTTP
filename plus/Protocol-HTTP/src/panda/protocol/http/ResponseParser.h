@@ -21,6 +21,8 @@ struct ResponseParser : MessageParser<Response> {
 
     virtual ~ResponseParser () {}
 
+    const RequestSP& request () const { return _request; }
+
     void set_request (const RequestSP& request) {
         if (_request) throw ParserError("can't set another request until response is done");
         _request = request;

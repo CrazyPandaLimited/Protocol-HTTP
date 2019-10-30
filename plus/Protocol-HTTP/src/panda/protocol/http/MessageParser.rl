@@ -40,11 +40,6 @@
 
     machine http_message_parser;
 
-    action return {
-        state = State::done;
-        fret;
-    }
-
     action mark {
         // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
@@ -84,7 +79,7 @@
         has_content_len = true;
     }
     
-    action hdr_clen_chunk {
+    action hdr_clen_digit {
         if (content_len > 1000000000000000000) {
             state = State::error;
             fbreak;
@@ -102,6 +97,7 @@
     }
 
     action chunk_size {
+        printf("chunk size\n");
         string len_str;
         if(marked_buffer.empty()) {
             len_str = string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc));
@@ -111,6 +107,7 @@
         }
         auto len = len_str.length();
         if (len > 16 || panda::from_chars(len_str.data(), len_str.data() + len, chunk_len, 16).ec) {
+            printf("wrong chunk size\n");
             state = State::error;
             fbreak;
         }
@@ -118,9 +115,16 @@
     }
 
     action chunk_data {
+        printf("chunk data\n");
         if(chunk_len > 0) {
             current_message->add_body_part( advance_buffer(buffer, fpc) );
         }
+    }
+    
+    action final_chunk {
+        printf("chunk finale\n");
+        state = State::done;
+        fbreak;
     }
 
     action body_data {
@@ -161,7 +165,7 @@
 
     fields = field_name ":" space* field_value :> crlf;
 
-    hdr_clen       = (/Content-Length/i ":" space * digit+ >hdr_clen_start $hdr_clen_chunk) crlf;
+    hdr_clen       = (/Content-Length/i ":" space * digit+ >hdr_clen_start $hdr_clen_digit) crlf;
     #hdr_conn_close = (/Connection/i ":" space* /close/i) crlf @hdr_conn_close;
     #hdr_conn_ka    = (/Connection/i ":" space* /keep-alive/i) crlf @hdr_conn_ka;
     hdr_te_chunked = (/Transfer-Encoding/i ":" space* /chunked/i) crlf @hdr_te_chunked;
@@ -171,15 +175,16 @@
     chunk_ext_val = token+;
     chunk_ext_name = token+;
     chunk_extension = (";" chunk_ext_name ("=" chunk_ext_val )? )*;
-    chunk_size = xdigit+ >mark %chunk_size %unmark;
+    chunk_size = ([1-9A-Fa-f] xdigit*) >mark %chunk_size %unmark;
+    #chunk_size = xdigit+ >mark %chunk_size %unmark;
     chunk_data = any* >mark %chunk_data %unmark when { chunk_so_far++ < chunk_len };
 
     trailing_header = fields* >write_trailing_header;
 
     # the <: operator shifts priority to chunk_data machine, so it ignores crlf in chunk data
     chunk = chunk_size chunk_extension crlf chunk_data <: trailing_header :> crlf;
-    final_chunk = "0" chunk_extension crlf trailing_header :> crlf;
+    final_chunk = "0" chunk_extension crlf trailing_header :> crlf @final_chunk;
 
     #separate chunked body parser
-    chunked_body := chunk* final_chunk %return;
+    chunked_body := chunk* final_chunk;
 }%%
