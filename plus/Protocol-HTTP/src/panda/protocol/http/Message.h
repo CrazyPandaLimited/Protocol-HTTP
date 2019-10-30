@@ -63,14 +63,15 @@ protected:
     inline std::vector<string> _to_vector (const T& f) {
         _compile_prepare();
         auto hdr = f();
+        if (!body.length()) return {hdr};
         auto sz = body.parts.size();
-        if (!sz) return {hdr};
 
         std::vector<string> result;
         if (chunked) {
             result.reserve(1 + sz * 3 + 1);
             result.emplace_back(hdr);
             for (auto& part : body.parts) {
+                if (!part) continue;
                 auto ss = make_chunk(part);
                 for (auto& s : ss) result.emplace_back(s);
             }
