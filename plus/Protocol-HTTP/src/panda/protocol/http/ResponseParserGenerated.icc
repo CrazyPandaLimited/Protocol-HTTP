@@ -1747,7 +1747,7 @@ case 101:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 178 "MessageParser.rl"
+#line 179 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr126;
@@ -1857,7 +1857,7 @@ case 108:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 178 "MessageParser.rl"
+#line 179 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr140;
@@ -2176,17 +2176,18 @@ f16:
         state = State::done;
         //instead of fret that does not work in the end of main we make its work manualy
         --top;
+        cs = stack[top];
         {p++; goto _out; }
     }
 	goto _again;
 f1:
-#line 132 "MessageParser.rl"
+#line 133 "MessageParser.rl"
 	{
         current_message->http_version = HttpVersion::v1_0;
     }
 	goto _again;
 f13:
-#line 136 "MessageParser.rl"
+#line 137 "MessageParser.rl"
 	{
         current_message->http_version = HttpVersion::v1_1;
     }

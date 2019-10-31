@@ -122,6 +122,7 @@
         state = State::done;
         //instead of fret that does not work in the end of main we make its work manualy
         --top;
+        cs = stack[top];
         fbreak;
     }
 
