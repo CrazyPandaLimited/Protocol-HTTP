@@ -85,7 +85,7 @@ TEST("response chunks #1") {
     CHECK(res->body.to_string() == "ans1");
     CHECK(v[2][0] == 'H');
 
-    //p.reset();
+    p.reset();
     p.set_request(req);
     result = p.parse_shift(v[2]);
     res = result.response;

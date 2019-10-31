@@ -16,7 +16,6 @@
         state = State::got_header;
         if (current_message->chunked) {
             fcall chunked_body;
-            state = State::done;
         }
         else if (content_len > 0) {
             // we are between headers and body and there are no body yet
