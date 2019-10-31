@@ -34,8 +34,8 @@ protected:
         content_len = 0;
         body_so_far = 0;
         chunk_len = 0;
-        has_content_len = false;
         chunk_so_far = 0;
+        has_content_len = false;
         trailing_header = false;
         marked = false;
         mark = 0;

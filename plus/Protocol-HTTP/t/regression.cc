@@ -70,8 +70,29 @@ TEST("response chunks #1") {
     };
 
     auto result = p.parse_shift(v[0]);
-    CHECK(result.state == State::got_header);
-    CHECK(!v[0]);
+    auto res = result.response;
+    CHECK(result.state != State::done);
+    CHECK(res->body.to_string() == "");
+    CHECK_FALSE(v[0]);
+
+    result = p.parse_shift(v[1]);
+    CHECK(result.state != State::done);
+    CHECK(res->body.to_string() == "ans1");
+    CHECK_FALSE(v[1]);
+
+    result = p.parse_shift(v[2]);
+    CHECK(result.state == State::done);
+    CHECK(res->body.to_string() == "ans1");
+    CHECK(v[2][0] == 'H');
+
+    //p.reset();
+    p.set_request(req);
+    result = p.parse_shift(v[2]);
+    res = result.response;
+    CHECK(result.state == State::done);
+    CHECK_FALSE(result.error);
+    CHECK(res->body.to_string() == "ans2");
+    CHECK_FALSE(v[2]);
 }
 
 TEST("google response 0") {

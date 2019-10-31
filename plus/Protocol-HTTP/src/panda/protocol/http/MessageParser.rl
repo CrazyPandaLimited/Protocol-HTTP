@@ -120,7 +120,8 @@
     
     action final_chunk {
         state = State::done;
-        fbreak;
+        //fbreak;
+        fret;
     }
 
     action body_data {
@@ -171,16 +172,18 @@
     chunk_ext_val = token+;
     chunk_ext_name = token+;
     chunk_extension = (";" chunk_ext_name ("=" chunk_ext_val )? )*;
-    chunk_size = ([1-9A-Fa-f] xdigit*) >mark %chunk_size %unmark;
-    #chunk_size = xdigit+ >mark %chunk_size %unmark;
+    #chunk_size = ([1-9A-Fa-f] xdigit*) >mark %chunk_size %unmark;
+    chunk_size = xdigit+ >mark %chunk_size %unmark;
     chunk_data = any* >mark %chunk_data %unmark when { chunk_so_far++ < chunk_len };
 
     trailing_header = fields* >write_trailing_header;
 
     # the <: operator shifts priority to chunk_data machine, so it ignores crlf in chunk data
     chunk = chunk_size chunk_extension crlf chunk_data <: trailing_header :> crlf;
-    final_chunk = "0" chunk_extension crlf trailing_header :> crlf @final_chunk;
+    #final_chunk = "0" chunk_extension crlf trailing_header :> crlf @final_chunk;
+    final_chunk = "0" chunk_extension crlf trailing_header :> crlf;
 
     #separate chunked body parser
-    chunked_body := chunk* final_chunk;
+    #chunked_body := chunk* final_chunk;
+    chunked_body := chunk* final_chunk %final_chunk;
 }%%

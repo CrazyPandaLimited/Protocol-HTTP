@@ -17,7 +17,7 @@ RequestParser::Result RequestParser::parse (const string& buffer) {
     const char* buffer_ptr = buffer.data(); // pointer to current buffer, used by LEN, PTR_TO defines above
     const char* p          = buffer_ptr; // start parsing from the beginning pointer
     const char* pe         = buffer_ptr + buffer.size(); // to the end pointer
-    //const char* eof        = pe;
+    const char* eof        = pe;
 
     if (state == State::in_body) {
         bool is_completed = process_body(buffer, p, pe);
@@ -36,15 +36,19 @@ RequestParser::Result RequestParser::parse (const string& buffer) {
 
     size_t position = p - buffer_ptr;
     if (state == State::error) {
+        //printf("1\n");
         return reset_and_build_result(position, state, errc::semantic_error);
     } else if (cs == http_request_parser_first_final) {
+        //printf("2\n");
         if(state == State::in_body) {
             return build_result(FinalFlag::CONTINUE, position);
         }
         return build_result(FinalFlag::RESET, position);
     } else if (cs == http_request_parser_error) {
+        //printf("3\n");
         return reset_and_build_result(position, state, errc::lexical_error);
     } else {
+        //printf("4\n");
         // append into current marked buffer everything which is unparsed yet
         if (marked) {
             marked_buffer.append(buffer.substr(mark));
