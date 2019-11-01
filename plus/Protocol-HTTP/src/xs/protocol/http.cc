@@ -37,7 +37,7 @@ ResponseSP make_response (const Hash& p, const ResponseSP& dest) {
 
 void set_headers (Message* p, const Hash& hv) {
     p->headers.clear();
-    for (const auto& row : hv) p->headers.add_field(string(row.key()), xs::in<string>(row.value()));
+    for (const auto& row : hv) p->headers.add(string(row.key()), xs::in<string>(row.value()));
 }
 
 void set_method (Request* req, const Sv& method) {

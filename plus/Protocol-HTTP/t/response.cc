@@ -19,7 +19,7 @@ TEST("trivial get response") {
     CHECK(res->http_version == HttpVersion::v1_0);
     CHECK(res->code == 200);
     CHECK(res->message == "OK");
-    CHECK(res->headers.get_field("Host") == "host1");
+    CHECK(res->headers.get("Host") == "host1");
 
     result = p.eof();
     CHECK(result.state == State::done);
@@ -43,7 +43,7 @@ TEST("trivial head response") {
     CHECK(res->http_version == HttpVersion::v1_0);
     CHECK(res->code == 200);
     CHECK(res->message == "OK");
-    CHECK(res->headers.get_field("Host") == "host1");
+    CHECK(res->headers.get("Host") == "host1");
     CHECK(raw.empty());
 }
 
@@ -68,8 +68,8 @@ TEST("redirect response") {
     REQUIRE(res->http_version == HttpVersion::v1_1);
     CHECK(res->code == 301);
     CHECK(res->message == "Moved Permanently");
-    CHECK(res->headers.get_field("Location") == "http://localhost:35615");
-    CHECK(res->headers.get_field("Date") == "Thu, 22 Mar 2018 16:25:43 GMT");
+    CHECK(res->headers.get("Location") == "http://localhost:35615");
+    CHECK(res->headers.get("Date") == "Thu, 22 Mar 2018 16:25:43 GMT");
 }
 
 TEST("trivial connection close") {
@@ -89,7 +89,7 @@ TEST("trivial connection close") {
 
     auto res = result.response;
     CHECK(res->http_version == HttpVersion::v1_1);
-    CHECK(res->headers.get_field("Host") == "host1");
+    CHECK(res->headers.get("Host") == "host1");
     CHECK(res->body.to_string() == "body");
 
     result = p.eof();
@@ -191,7 +191,7 @@ TEST("parsing response byte by byte") {
     REQUIRE(res->http_version == HttpVersion::v1_1);
     CHECK(res->code == 101);
     CHECK(res->full_message() == "101 Switching Protocols");
-    CHECK(res->headers.get_field("Upgrade") == "websocket");
-    CHECK(res->headers.get_field("Connection") == "Upgrade");
-    CHECK(res->headers.get_field("Sec-WebSocket-Extensions") == "permessage-deflate; client_max_window_bits=15");
+    CHECK(res->headers.get("Upgrade") == "websocket");
+    CHECK(res->headers.get("Connection") == "Upgrade");
+    CHECK(res->headers.get("Sec-WebSocket-Extensions") == "permessage-deflate; client_max_window_bits=15");
 }

@@ -70,7 +70,7 @@ TEST("fragmented method") {
     auto req = result.request;
     CHECK(req->method == Method::GET);
     CHECK(req->http_version == HttpVersion::v1_0);
-    CHECK(req->headers.get_field("Header1") == "header1");
+    CHECK(req->headers.get("Header1") == "header1");
 }
 
 TEST("parsing request byte by byte") {
@@ -93,8 +93,8 @@ TEST("parsing request byte by byte") {
     auto req = result.request;
     CHECK(req->method == Method::GET);
     CHECK(req->http_version == HttpVersion::v1_0);
-    CHECK(req->headers.get_field("Header1") == "header1");
-    CHECK(req->headers.get_field("Header2") == "header2");
+    CHECK(req->headers.get("Header1") == "header1");
+    CHECK(req->headers.get("Header2") == "header2");
 }
 
 TEST("double first line") {

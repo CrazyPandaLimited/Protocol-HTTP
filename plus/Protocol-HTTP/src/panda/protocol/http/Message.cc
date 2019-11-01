@@ -3,8 +3,8 @@
 
 namespace panda { namespace protocol { namespace http {
 
-void Message::add_header_field (const string& key, const string& value) {
-    headers.add_field(key, value);
+void Message::add_header (const string& key, const string& value) {
+    headers.add(key, value);
     _buf_size += key.size() + value.size();
 }
 

@@ -67,7 +67,7 @@
             // separate buffer, which is not cheap
             // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl
             rtrim(marked_buffer);
-            current_message->add_header_field(current_field_buffer, marked_buffer);
+            current_message->add_header(current_field_buffer, marked_buffer);
         }
     }
     

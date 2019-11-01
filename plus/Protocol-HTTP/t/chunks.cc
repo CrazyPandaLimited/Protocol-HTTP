@@ -25,7 +25,7 @@ TEST("trivial chunks") {
 
     auto req = result.request;
     REQUIRE(req->headers.fields.size() == 1);
-    REQUIRE(req->headers.get_field("Transfer-Encoding") == "chunked");
+    REQUIRE(req->headers.get("Transfer-Encoding") == "chunked");
     REQUIRE(req->body.parts.size() == 3);
     REQUIRE(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
     REQUIRE(req->chunked);
@@ -54,7 +54,7 @@ TEST("chunks with extension") {
 
     auto req = result.request;
     REQUIRE(req->headers.fields.size() == 1);
-    REQUIRE(req->headers.get_field("Transfer-Encoding") == "chunked");
+    REQUIRE(req->headers.get("Transfer-Encoding") == "chunked");
     REQUIRE(req->body.parts.size() == 3);
     REQUIRE(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
 }
@@ -84,7 +84,7 @@ TEST("chunks with trailer header") {
 
     auto req = result.request;
     REQUIRE(req->headers.fields.size() == 2);
-    REQUIRE(req->headers.get_field("Transfer-Encoding") == "chunked");
+    REQUIRE(req->headers.get("Transfer-Encoding") == "chunked");
     REQUIRE(req->body.parts.size() == 3);
     REQUIRE(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
 }
@@ -120,8 +120,8 @@ TEST("fragmented chunks") {
     auto req = result.request;
     CHECK(req->method == Method::POST);
     CHECK(req->http_version == HttpVersion::v1_1);
-    CHECK(req->headers.get_field("Transfer-Encoding") == "chunked");
-    CHECK(req->headers.get_field("Trailer") == "Expires");
+    CHECK(req->headers.get("Transfer-Encoding") == "chunked");
+    CHECK(req->headers.get("Trailer") == "Expires");
     CHECK(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
 }
 

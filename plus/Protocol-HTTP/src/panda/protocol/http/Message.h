@@ -40,8 +40,8 @@ protected:
 
     size_t _buf_size;
 
-    void add_header_field (const string& key, const string& value);
-    void add_body_part    (const string& body_part);
+    void add_header    (const string& key, const string& value);
+    void add_body_part (const string& body_part);
 
     size_t body_length () {
         auto l = body.length();
@@ -52,10 +52,10 @@ protected:
     inline void _compile_prepare () {
         if (chunked) {
             http_version = HttpVersion::v1_1;
-            headers.add_field("Transfer-Encoding", "chunked");
+            headers.add("Transfer-Encoding", "chunked");
         }
-        else if (!headers.has_field("Content-Length")) {
-            headers.add_field("Content-Length", panda::to_string(body.length()));
+        else if (!headers.has("Content-Length")) {
+            headers.add("Content-Length", panda::to_string(body.length()));
         }
     }
 
@@ -114,13 +114,13 @@ struct Message::Builder {
 
     T& body (Body&& val, const string& content_type = "") {
         _body = std::move(val);
-        if (content_type) _headers.add_field("Content-Type", content_type);
+        if (content_type) _headers.add("Content-Type", content_type);
         return self();
     }
 
     T& body (const string& body, const string& content_type = "") {
         _body = body;
-        if (content_type) _headers.add_field("Content-Type", content_type);
+        if (content_type) _headers.add("Content-Type", content_type);
         return self();
     }
 
@@ -131,7 +131,7 @@ struct Message::Builder {
 
     T& chunked (const string& content_type = "") {
         _chunked = true;
-        if (content_type) _headers.add_field("Content-Type", content_type);
+        if (content_type) _headers.add("Content-Type", content_type);
         return self();
     }
 

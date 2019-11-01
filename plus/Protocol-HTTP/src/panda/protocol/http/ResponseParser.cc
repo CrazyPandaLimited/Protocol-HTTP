@@ -40,7 +40,7 @@ ResponseParser::Result ResponseParser::parse (const string& buffer) {
     const char* buffer_ptr = buffer.data(); // pointer to current buffer, used by LEN, PTR_TO defines above
     const char* p          = buffer_ptr; // start parsing from the beginning pointer
     const char* pe         = buffer_ptr + buffer.size(); // to the end pointer
-    const char* eof        = pe;
+    //const char* eof        = pe;
 
     if (state == State::in_body) {
         bool is_completed = process_body(buffer, p, pe);

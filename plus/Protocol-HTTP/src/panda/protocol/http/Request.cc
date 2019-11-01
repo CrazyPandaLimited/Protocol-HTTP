@@ -22,7 +22,7 @@ string Request::_http_header (size_t reserve) {
     auto reluri  = uri->relative();
     if (http_version == HttpVersion::any) http_version = HttpVersion::v1_1;
 
-    if (http_version == HttpVersion::v1_1 && !headers.has_field("Host")) {
+    if (http_version == HttpVersion::v1_1 && !headers.has("Host")) {
         // Host field builder
         // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Host
         auto host = uri->host();
@@ -31,13 +31,8 @@ string Request::_http_header (size_t reserve) {
             host += ':';
             host += panda::to_string(uri->port());
         }
-        headers.add_field("Host", host);
+        headers.add("Host", host);
     }
-
-    if (!headers.has_field("User-Agent")) headers.add_field(
-        "User-Agent",
-        "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36 PandaHTTP/1.0.1"
-    );
 
     string s(meth.length() + 1 + reluri.length() + 6 + 5 + headers.length() + 2 + reserve);
 

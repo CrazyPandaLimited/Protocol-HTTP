@@ -71,7 +71,7 @@
                 state = State::done;
             }
         } else { // no TE or CLEN -> eat body till connection closes
-            current_message->headers.set_field("Connection", "close");
+            current_message->headers.set("Connection", "close");
             state = State::in_body;
             current_message->add_body_part(string(fpc+1, pe - fpc - 1));
             fpc = pe;

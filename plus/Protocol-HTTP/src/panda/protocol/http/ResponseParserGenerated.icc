@@ -2232,7 +2232,7 @@ f5:
                 state = State::done;
             }
         } else { // no TE or CLEN -> eat body till connection closes
-            current_message->headers.set_field("Connection", "close");
+            current_message->headers.set("Connection", "close");
             state = State::in_body;
             current_message->add_body_part(string(p+1, pe - p - 1));
             p = pe;
@@ -2264,7 +2264,7 @@ f8:
             // separate buffer, which is not cheap
             // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl
             rtrim(marked_buffer);
-            current_message->add_header_field(current_field_buffer, marked_buffer);
+            current_message->add_header(current_field_buffer, marked_buffer);
         }
     }
 #line 50 "MessageParser.rl"
@@ -2389,7 +2389,7 @@ f7:
             // separate buffer, which is not cheap
             // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl
             rtrim(marked_buffer);
-            current_message->add_header_field(current_field_buffer, marked_buffer);
+            current_message->add_header(current_field_buffer, marked_buffer);
         }
     }
 #line 50 "MessageParser.rl"

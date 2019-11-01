@@ -17,7 +17,7 @@ TEST("content as single buffer") {
     auto req = result.request;
     
     CHECK(req->headers.fields.size() == 1);
-    CHECK(req->headers.get_field("Content-Length") == "23");
+    CHECK(req->headers.get("Content-Length") == "23");
     CHECK(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
 }
 
@@ -44,7 +44,7 @@ TEST("content in parts") {
 
     auto req = result.request;
     CHECK(req->headers.fields.size() == 1);
-    CHECK(req->headers.get_field("Content-Length") == "23");
+    CHECK(req->headers.get("Content-Length") == "23");
     CHECK(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
 }
 
@@ -61,7 +61,7 @@ TEST("zero content-length") {
     
     auto req = result.request;
     CHECK(req->headers.fields.size() == 1);
-    CHECK(req->headers.get_field("Content-Length") == "0");
+    CHECK(req->headers.get("Content-Length") == "0");
     CHECK(req->body.to_string() == "");
 }
 
@@ -78,7 +78,7 @@ TEST("case insensitive") {
 
     auto req = result.request;
     CHECK(req->headers.fields.size() == 1);
-    CHECK(req->headers.get_field("Content-LENGTH") == "1");
+    CHECK(req->headers.get("Content-LENGTH") == "1");
     CHECK(req->body.to_string() == "1");
 }
 

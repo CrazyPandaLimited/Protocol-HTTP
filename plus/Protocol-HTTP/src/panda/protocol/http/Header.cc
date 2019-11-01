@@ -3,7 +3,7 @@
 
 namespace panda { namespace protocol { namespace http {
 
-bool Header::has_field (string_view key) const {
+bool Header::has (string_view key) const {
     for (const auto& f : fields) if (iequals(f.name, key)) return true;
     return false;
 }
@@ -24,12 +24,12 @@ Header::Container::iterator Header::find (string_view key) {
     return fields.end();
 }
 
-string Header::get_field (string_view key, const string& default_val) const {
+string Header::get (string_view key, const string& default_val) const {
     auto it = find(key);
     return it == fields.cend() ? default_val : it->value;
 }
 
-void Header::set_field (const string& key, const string& value) {
+void Header::set (const string& key, const string& value) {
     bool replaced = false;
     for (auto it = fields.begin(); it != fields.end();) {
         if (iequals(it->name, key)) {
@@ -44,11 +44,11 @@ void Header::set_field (const string& key, const string& value) {
         else ++it;
     }
     if (!replaced) {
-        add_field(key, value);
+        add(key, value);
     }
 }
 
-void Header::remove_field (string_view key) {
+void Header::remove (string_view key) {
     for (auto it = fields.cbegin(); it != fields.end();) {
         if (iequals(it->name, key)) it = fields.erase(it);
         else ++it;

@@ -30,12 +30,12 @@ struct Header {
     Header (const Container& fields) : fields(fields) {}
     Header (Container&& fields)      : fields(std::move(fields)) {}
 
-    bool     has_field    (string_view key) const;
-    string   get_field    (string_view key, const string& default_val = "") const;
-    Header&  add_field    (const string& key, const string& value) &  { fields.emplace_back(key, value); return *this; }
-    Header&& add_field    (const string& key, const string& value) && { add_field(key, value); return std::move(*this); }
-    void     set_field    (const string& key, const string& value);
-    void     remove_field (string_view key);
+    bool     has    (string_view key) const;
+    string   get    (string_view key, const string& default_val = "") const;
+    Header&  add    (const string& key, const string& value) &  { fields.emplace_back(key, value); return *this; }
+    Header&& add    (const string& key, const string& value) && { add(key, value); return std::move(*this); }
+    void     set    (const string& key, const string& value);
+    void     remove (string_view key);
 
     bool   empty () const { return fields.empty(); }
     size_t size  () const { return fields.size(); }
@@ -48,22 +48,22 @@ struct Header {
 
     void clear () { fields.clear(); }
 
-    string connection () const { return get_field("Connection", ""); }
-    string date       () const { return get_field("Date", ""); }
-    string host       () const { return get_field("Host", ""); }
-    string location   () const { return get_field("Location", ""); }
-    bool   is_chunked () const { return get_field("Transfer-Encoding", "") == "chunked"; }
+    string connection () const { return get("Connection", ""); }
+    string date       () const { return get("Date", ""); }
+    string host       () const { return get("Host", ""); }
+    string location   () const { return get("Location", ""); }
+    bool   is_chunked () const { return get("Transfer-Encoding", "") == "chunked"; }
 
-    Header&  connection (const string& ctype) &     { return add_field("Connection", ctype); }
-    Header&& connection (const string& ctype) &&    { return std::move(*this).add_field("Connection", ctype); }
-    Header&  date       (const string& date) &      { return add_field("Date", date); }
-    Header&& date       (const string& date) &&     { return std::move(*this).add_field("Date", date); }
-    Header&  host       (const string& host) &      { return add_field("Host", host); }
-    Header&& host       (const string& host) &&     { return std::move(*this).add_field("Host", host); }
-    Header&  location   (const string& location) &  { return add_field("Location", location); }
-    Header&& location   (const string& location) && { return std::move(*this).add_field("Location", location); }
-    Header&  chunked    () &                        { return add_field("Transfer-Encoding", "chunked"); }
-    Header&& chunked    () &&                       { return std::move(*this).add_field("Transfer-Encoding", "chunked"); }
+    Header&  connection (const string& ctype) &     { return add("Connection", ctype); }
+    Header&& connection (const string& ctype) &&    { return std::move(*this).add("Connection", ctype); }
+    Header&  date       (const string& date) &      { return add("Date", date); }
+    Header&& date       (const string& date) &&     { return std::move(*this).add("Date", date); }
+    Header&  host       (const string& host) &      { return add("Host", host); }
+    Header&& host       (const string& host) &&     { return std::move(*this).add("Host", host); }
+    Header&  location   (const string& location) &  { return add("Location", location); }
+    Header&& location   (const string& location) && { return std::move(*this).add("Location", location); }
+    Header&  chunked    () &                        { return add("Transfer-Encoding", "chunked"); }
+    Header&& chunked    () &&                       { return std::move(*this).add("Transfer-Encoding", "chunked"); }
 
     Container::iterator       find (string_view key);
     Container::const_iterator find (string_view key) const;
