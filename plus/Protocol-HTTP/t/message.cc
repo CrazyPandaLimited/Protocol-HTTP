@@ -213,51 +213,108 @@ TEST("message fragmented by lines") {
     REQUIRE(req->headers.get("Header3") == "header3");
 }
 
-TEST("max_{message,body}_size") {
+TEST("max_headers_size") {
     RequestParser p;
-    auto conf = GENERATE(&RequestParser::max_body_size, &RequestParser::max_message_size);
-    p.*conf = 2;
+    p.max_headers_size = 19;
     string raw =
-        "POST /upload HTTP/1.1\r\n"
-        "Content-Length: 10\r\n"
-        "\r\n"
-        "1234567890"
-        ;
-    CHECK(p.parse(raw).error);
+        "GET / HTTP/1.1\r\n"
+        "Content-Length: 0\r\n" // len = 19
+        "\r\n";
+    CHECK_FALSE(p.parse(raw).error);
+
+    p.max_headers_size = 18;
+    CHECK(p.parse(raw).error == errc::headers_too_large);
 }
 
-TEST("max_body_size prohibited") {
+TEST("max_body_size with content-length") {
     RequestParser p;
-    p.max_body_size = RequestParser::SIZE_PROHIBITED;
+    int sz;
+    SECTION("ok")         { sz = 10; }
+    SECTION("too large")  { sz = 9; }
+    SECTION("disallowed") { sz = 0; }
+    p.max_body_size = sz;
+
     string raw =
-        "POST /upload HTTP/1.1\r\n"
-        "Content-Length: 1\r\n"
-        "\r\n"
-        "1"
-        ;
-    CHECK(p.parse(raw).error);
+        "POST / HTTP/1.1\r\n"
+        "Content-Length: 10\r\n"
+        "\r\n";
+
+    auto result = p.parse(raw);
+    if (sz == 10) {
+        CHECK(result.state == State::in_body);
+        CHECK_FALSE(result.error);
+    } else if (sz) {
+        CHECK(result.error == errc::body_too_large);
+    } else {
+        CHECK(result.error == errc::unexpected_body);
+    }
+}
+
+TEST("max_body_size without content-length") {
+    ResponseParser p;
+    p.set_request(new Request(Method::GET, new URI()));
+
+    int sz;
+    SECTION("ok")         { sz = 10; }
+    SECTION("too large")  { sz = 9; }
+    SECTION("disallowed") { sz = 0; }
+    p.max_body_size = sz;
+
+    string raw =
+        "HTTP/1.0 200 OK\r\n"
+        "\r\n";
+
+    auto result = p.parse(raw);
+    CHECK(result.state == State::in_body);
+    CHECK_FALSE(result.error);
+
+    result = p.parse("1234567890");
+    if (sz == 10) {
+        CHECK(result.state == State::in_body);
+        CHECK_FALSE(result.error);
+        result = p.eof();
+        CHECK(result.state == State::done);
+        CHECK_FALSE(result.error);
+    } else if (sz) {
+        CHECK(result.error == errc::body_too_large);
+    } else {
+        CHECK(result.error == errc::unexpected_body);
+    }
 }
 
 TEST("max_body_size chunked") {
     RequestParser p;
-    p.max_body_size = 3;
-    string raw =
-        "POST /upload HTTP/1.1\r\n"
-        "Transfer-Encoding: chunked\r\n"
-        "\r\n"
-        "4\r\n"
-        "Wiki\r\n"
-        "5\r\n"
-        "pedia\r\n"
-        "E\r\n"
-        " in\r\n"
-        "\r\n"
-        "chunks.\r\n"
-        "0\r\n"
-        "\r\n"
-        ;
 
-    REQUIRE(p.parse(raw).error);
+    int sz;
+    SECTION("ok")         { sz = 10; }
+    SECTION("too large")  { sz = 9; }
+    SECTION("disallowed") { sz = 0; }
+    p.max_body_size = sz;
+
+    string raw =
+        "POST / HTTP/1.1\r\n"
+        "Transfer-Encoding: chunked\r\n"
+        "\r\n";
+
+    auto result = p.parse(raw);
+    CHECK(result.state == State::got_header);
+    CHECK_FALSE(result.error);
+
+    result = p.parse("a\r\n");
+    if (sz == 10) {
+        CHECK(result.state != State::done);
+        CHECK_FALSE(result.error);
+        result = p.parse("1234567890\r\n");
+        CHECK(result.state != State::done);
+        CHECK_FALSE(result.error);
+        result = p.parse("0\r\n\r\n");
+        CHECK(result.state == State::done);
+        CHECK_FALSE(result.error);
+    } else if (sz) {
+        CHECK(result.error == errc::body_too_large);
+    } else {
+        CHECK(result.error == errc::unexpected_body);
+    }
 }
 
 TEST("parsing pipelined messages") {

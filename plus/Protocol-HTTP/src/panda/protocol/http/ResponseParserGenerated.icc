@@ -1,7 +1,7 @@
 
 #line 1 "ResponseParser.rl"
 
-#line 88 "ResponseParser.rl"
+#line 90 "ResponseParser.rl"
 
 
 #if defined(MACHINE_DATA)
@@ -16,7 +16,7 @@ static const int http_response_parser_en_chunked_body = 85;
 static const int http_response_parser_en_main = 1;
 
 
-#line 94 "ResponseParser.rl"
+#line 96 "ResponseParser.rl"
 
 #endif
 
@@ -29,7 +29,7 @@ static const int http_response_parser_en_main = 1;
 	top = 0;
 	}
 
-#line 101 "ResponseParser.rl"
+#line 103 "ResponseParser.rl"
 
 #endif
 
@@ -1747,7 +1747,7 @@ case 101:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 179 "MessageParser.rl"
+#line 181 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr126;
@@ -1857,7 +1857,7 @@ case 108:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 179 "MessageParser.rl"
+#line 181 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
 		case 269: goto tr140;
@@ -2148,7 +2148,7 @@ f2:
     }
 	goto _again;
 f11:
-#line 82 "MessageParser.rl"
+#line 83 "MessageParser.rl"
 	{
         if (content_len > 1000000000000000000) {
             state = State::error;
@@ -2159,19 +2159,19 @@ f11:
     }
 	goto _again;
 f12:
-#line 91 "MessageParser.rl"
+#line 92 "MessageParser.rl"
 	{
         current_message->chunked = true;
     }
 	goto _again;
 f14:
-#line 95 "MessageParser.rl"
+#line 96 "MessageParser.rl"
 	{
         trailing_header = true;
     }
 	goto _again;
 f16:
-#line 121 "MessageParser.rl"
+#line 123 "MessageParser.rl"
 	{
         state = State::done;
         //instead of fret that does not work in the end of main we make its work manualy
@@ -2181,13 +2181,13 @@ f16:
     }
 	goto _again;
 f1:
-#line 133 "MessageParser.rl"
+#line 135 "MessageParser.rl"
 	{
         current_message->http_version = HttpVersion::v1_0;
     }
 	goto _again;
 f13:
-#line 137 "MessageParser.rl"
+#line 139 "MessageParser.rl"
 	{
         current_message->http_version = HttpVersion::v1_1;
     }
@@ -2234,7 +2234,9 @@ f5:
         } else { // no TE or CLEN -> eat body till connection closes
             current_message->headers.set("Connection", "close");
             state = State::in_body;
-            current_message->add_body_part(string(p+1, pe - p - 1));
+            auto s = string(p+1, pe - p - 1); //TODO: REMOVE COPYING
+            current_message->body.parts.push_back(s);
+            body_so_far += s.length();
             p = pe;
         }
         {p++; goto _out; }
@@ -2264,7 +2266,8 @@ f8:
             // separate buffer, which is not cheap
             // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl
             rtrim(marked_buffer);
-            current_message->add_header(current_field_buffer, marked_buffer);
+            current_message->headers.add(current_field_buffer, marked_buffer);
+            headers_so_far += current_field_buffer.length() + marked_buffer.length() + 4;
         }
     }
 #line 50 "MessageParser.rl"
@@ -2275,7 +2278,7 @@ f8:
     }
 	goto _again;
 f10:
-#line 74 "MessageParser.rl"
+#line 75 "MessageParser.rl"
 	{
         if (has_content_len) {
             state = State::error;
@@ -2283,7 +2286,7 @@ f10:
         }
         has_content_len = true;
     }
-#line 82 "MessageParser.rl"
+#line 83 "MessageParser.rl"
 	{
         if (content_len > 1000000000000000000) {
             state = State::error;
@@ -2294,7 +2297,7 @@ f10:
     }
 	goto _again;
 f15:
-#line 95 "MessageParser.rl"
+#line 96 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -2307,7 +2310,7 @@ f15:
     }
 	goto _again;
 f17:
-#line 99 "MessageParser.rl"
+#line 100 "MessageParser.rl"
 	{
         string len_str;
         if(marked_buffer.empty()) {
@@ -2322,6 +2325,7 @@ f17:
             {p++; goto _out; }
         }
         chunk_so_far = 0;
+        body_so_far += chunk_len;
     }
 #line 50 "MessageParser.rl"
 	{
@@ -2389,7 +2393,8 @@ f7:
             // separate buffer, which is not cheap
             // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl
             rtrim(marked_buffer);
-            current_message->add_header(current_field_buffer, marked_buffer);
+            current_message->headers.add(current_field_buffer, marked_buffer);
+            headers_so_far += current_field_buffer.length() + marked_buffer.length() + 4;
         }
     }
 #line 50 "MessageParser.rl"
@@ -2400,7 +2405,7 @@ f7:
     }
 	goto _again;
 f9:
-#line 74 "MessageParser.rl"
+#line 75 "MessageParser.rl"
 	{
         if (has_content_len) {
             state = State::error;
@@ -2408,7 +2413,7 @@ f9:
         }
         has_content_len = true;
     }
-#line 82 "MessageParser.rl"
+#line 83 "MessageParser.rl"
 	{
         if (content_len > 1000000000000000000) {
             state = State::error;
@@ -2426,10 +2431,10 @@ f9:
     }
 	goto _again;
 f19:
-#line 115 "MessageParser.rl"
+#line 117 "MessageParser.rl"
 	{
-        if(chunk_len > 0) {
-            current_message->add_body_part( advance_buffer(buffer, p) );
+        if (chunk_len > 0) {
+            current_message->body.parts.push_back(advance_buffer(buffer, p));
         }
     }
 #line 50 "MessageParser.rl"
@@ -2438,7 +2443,7 @@ f19:
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 95 "MessageParser.rl"
+#line 96 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -2451,10 +2456,10 @@ f18:
         mark = p - buffer_ptr;
         marked = true;
     }
-#line 115 "MessageParser.rl"
+#line 117 "MessageParser.rl"
 	{
-        if(chunk_len > 0) {
-            current_message->add_body_part( advance_buffer(buffer, p) );
+        if (chunk_len > 0) {
+            current_message->body.parts.push_back(advance_buffer(buffer, p));
         }
     }
 #line 50 "MessageParser.rl"
@@ -2463,16 +2468,16 @@ f18:
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 95 "MessageParser.rl"
+#line 96 "MessageParser.rl"
 	{
         trailing_header = true;
     }
 	goto _again;
 f20:
-#line 115 "MessageParser.rl"
+#line 117 "MessageParser.rl"
 	{
-        if(chunk_len > 0) {
-            current_message->add_body_part( advance_buffer(buffer, p) );
+        if (chunk_len > 0) {
+            current_message->body.parts.push_back(advance_buffer(buffer, p));
         }
     }
 #line 50 "MessageParser.rl"
@@ -2481,7 +2486,7 @@ f20:
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 95 "MessageParser.rl"
+#line 96 "MessageParser.rl"
 	{
         trailing_header = true;
     }
@@ -2503,6 +2508,6 @@ _again:
 	_out: {}
 	}
 
-#line 108 "ResponseParser.rl"
+#line 110 "ResponseParser.rl"
 
 #endif

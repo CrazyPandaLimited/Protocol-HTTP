@@ -8,17 +8,14 @@
 
 namespace panda { namespace protocol { namespace http {
 
+constexpr const size_t SIZE_UNLIMITED = size_t(-1);
+
 template <class T>
 struct MessageParser {
     using MessageSP = iptr<T>;
 
-    enum SizeLimit : size_t {
-        SIZE_UNLIMITED = 0,
-        SIZE_PROHIBITED = size_t(-1)
-    };
-
-    size_t max_body_size; // limits body
-    size_t max_message_size; // limits all message with start line, headers and body
+    size_t max_headers_size;
+    size_t max_body_size;
 
 protected:
     enum class FinalFlag { CONTINUE, RESET };
@@ -31,6 +28,7 @@ protected:
     inline void reset () {
         state = State::not_yet;
 
+        headers_so_far = 0;
         content_len = 0;
         body_so_far = 0;
         chunk_len = 0;
@@ -40,8 +38,8 @@ protected:
         marked = false;
         mark = 0;
 
+        max_headers_size = SIZE_UNLIMITED;
         max_body_size = SIZE_UNLIMITED;
-        max_message_size = SIZE_UNLIMITED;
 
         // we don't want extra virtual call, so set machine state by hand
         cs = cs_initial_state;
@@ -70,13 +68,13 @@ protected:
         mark = fpc - buffer.data();
         marked = true;
 
-        if (body_so_far + (pe - fpc) < content_len) {
+        if (!content_len || body_so_far + (pe - fpc) < content_len) {
             body_so_far += (pe - fpc);
             fpc = pe;
 
-            current_message->add_body_part( advance_buffer(buffer, fpc) );
+            current_message->body.parts.push_back(advance_buffer(buffer, fpc));
             // append into current marked buffer everything which is unparsed yet
-            if(marked) {
+            if (marked) {
                 marked_buffer.append(buffer.substr(mark));
                 unmark();
             }
@@ -88,7 +86,7 @@ protected:
             fpc += (content_len - body_so_far);
             body_so_far = content_len;
 
-            current_message->add_body_part( advance_buffer(buffer, fpc) );
+            current_message->body.parts.push_back(advance_buffer(buffer, fpc));
             unmark();
 
             // there was the last body part
@@ -105,6 +103,7 @@ protected:
     string    current_field_buffer;
     MessageSP current_message;
     State     state; // more general parser state, not used by Ragel
+    size_t    headers_so_far;
     uint64_t  content_len;
     size_t    body_so_far;
     size_t    chunk_len;

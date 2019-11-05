@@ -99,18 +99,24 @@ ResponseParser::Result ResponseParser::reset_and_build_result (size_t position, 
 }
 
 ResponseParser::Result ResponseParser::build_result (FinalFlag flag, size_t position) {
-    //printf("ResponseParser::build_result\n");
-    if (max_message_size != SIZE_UNLIMITED && current_message->buf_size() > max_message_size) {
-        return reset_and_build_result(position, errc::message_too_large);
+    if (headers_so_far > max_headers_size) {
+        return reset_and_build_result(position, errc::headers_too_large);
     }
 
-    // TODO: body->length() is linear, we need cache
-    auto length = current_message->body.length();
-    if (max_body_size == SIZE_PROHIBITED && length > 0) {
-        return reset_and_build_result(position, errc::unexpected_body);
-    } else  if (max_body_size != SIZE_UNLIMITED && length > max_body_size) {
-        return reset_and_build_result(position, errc::body_too_large);
-    } else if (flag == FinalFlag::RESET) {
+    if (state >= State::got_header) {
+        if (has_content_len) {
+            if (content_len > max_body_size) {
+                auto err = max_body_size ? errc::body_too_large : errc::unexpected_body;
+                return reset_and_build_result(position, err);
+            }
+        }
+        else if (body_so_far > max_body_size) {
+            auto err = max_body_size ? errc::body_too_large : errc::unexpected_body;
+            return reset_and_build_result(position, err);
+        }
+    }
+
+    if (flag == FinalFlag::RESET) {
         return reset_and_build_result(position);
     } else {
         return {_request, current_message, position, state, {}};

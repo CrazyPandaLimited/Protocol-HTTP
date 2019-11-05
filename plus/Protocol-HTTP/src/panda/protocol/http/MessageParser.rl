@@ -67,7 +67,8 @@
             // separate buffer, which is not cheap
             // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl
             rtrim(marked_buffer);
-            current_message->add_header(current_field_buffer, marked_buffer);
+            current_message->headers.add(current_field_buffer, marked_buffer);
+            headers_so_far += current_field_buffer.length() + marked_buffer.length() + 4;
         }
     }
     
@@ -110,11 +111,12 @@
             fbreak;
         }
         chunk_so_far = 0;
+        body_so_far += chunk_len;
     }
 
     action chunk_data {
-        if(chunk_len > 0) {
-            current_message->add_body_part( advance_buffer(buffer, fpc) );
+        if (chunk_len > 0) {
+            current_message->body.parts.push_back(advance_buffer(buffer, fpc));
         }
     }
     

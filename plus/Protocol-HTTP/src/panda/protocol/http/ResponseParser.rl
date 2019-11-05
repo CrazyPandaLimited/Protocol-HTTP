@@ -73,7 +73,9 @@
         } else { // no TE or CLEN -> eat body till connection closes
             current_message->headers.set("Connection", "close");
             state = State::in_body;
-            current_message->add_body_part(string(fpc+1, pe - fpc - 1));
+            auto s = string(fpc+1, pe - fpc - 1); //TODO: REMOVE COPYING
+            current_message->body.parts.push_back(s);
+            body_so_far += s.length();
             fpc = pe;
         }
         fbreak;

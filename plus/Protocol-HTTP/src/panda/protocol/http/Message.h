@@ -17,10 +17,10 @@ struct Message : virtual Refcnt {
     bool        chunked;
     HttpVersion http_version;
 
-    Message () : chunked(), http_version(HttpVersion::any), _buf_size() {}
+    Message () : chunked(), http_version(HttpVersion::any) {}
 
     Message (Header&& headers, Body&& body, bool chunked = false, HttpVersion http_version = HttpVersion::any) :
-        headers(std::move(headers)), body(std::move(body)), chunked(chunked), http_version(http_version), _buf_size()
+        headers(std::move(headers)), body(std::move(body)), chunked(chunked), http_version(http_version)
     {}
 
     bool keep_alive () const;
@@ -33,15 +33,8 @@ struct Message : virtual Refcnt {
 
     string final_chunk () { return "0\r\n\r\n"; }
 
-    size_t buf_size () const {return _buf_size;}
-
 protected:
     template <class T> friend struct MessageParser;
-
-    size_t _buf_size;
-
-    void add_header    (const string& key, const string& value);
-    void add_body_part (const string& body_part);
 
     size_t body_length () {
         auto l = body.length();
