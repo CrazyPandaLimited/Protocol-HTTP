@@ -23,6 +23,8 @@ protected:
     MessageParser (const MessageSP& message, int cs_initial_state) : cs_initial_state(cs_initial_state) {
         reset();
         current_message = message;
+        max_headers_size = SIZE_UNLIMITED;
+        max_body_size = SIZE_UNLIMITED;
     }
 
     inline void reset () {
@@ -37,9 +39,6 @@ protected:
         trailing_header = false;
         marked = false;
         mark = 0;
-
-        max_headers_size = SIZE_UNLIMITED;
-        max_body_size = SIZE_UNLIMITED;
 
         // we don't want extra virtual call, so set machine state by hand
         cs = cs_initial_state;
