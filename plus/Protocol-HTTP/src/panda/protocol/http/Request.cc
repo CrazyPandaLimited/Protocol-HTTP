@@ -20,9 +20,9 @@ static inline string _method_str (Request::Method rm) {
 string Request::_http_header (size_t reserve) {
     auto meth = _method_str(method);
     auto reluri  = uri->relative();
-    if (http_version == HttpVersion::any) http_version = HttpVersion::v1_1;
+    if (!http_version) http_version = 11;
 
-    if (http_version == HttpVersion::v1_1 && !headers.has("Host")) {
+    if (http_version == 11 && !headers.has("Host")) {
         // Host field builder
         // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Host
         auto host = uri->host();
@@ -40,8 +40,8 @@ string Request::_http_header (size_t reserve) {
     s += ' ';
     s += reluri;
     s += " HTTP/";
-    if (http_version == HttpVersion::v1_1) s += "1.1\r\n";
-    else                                   s += "1.0\r\n";
+    if (http_version == 11) s += "1.1\r\n";
+    else                    s += "1.0\r\n";
     headers.write(s);
     s += "\r\n";
 

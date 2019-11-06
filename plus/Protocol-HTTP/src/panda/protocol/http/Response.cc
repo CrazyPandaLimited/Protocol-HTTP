@@ -5,7 +5,7 @@ namespace panda { namespace protocol { namespace http {
 
 string Response::_http_header (const Request* req, size_t reserve) {
     if (req) {
-        if (http_version == HttpVersion::any) http_version = req->http_version;
+        if (!http_version) http_version = req->http_version;
         if (!req->keep_alive()) headers.set("Connection", "close");
         else if (!headers.has("Connection")) headers.add("Connection", "keep-alive");
     }
@@ -15,10 +15,10 @@ string Response::_http_header (const Request* req, size_t reserve) {
 
     s += "HTTP/";
     switch (http_version) {
-        case HttpVersion::any:
-        case HttpVersion::v1_1: s += "1.1 "; break;
-        case HttpVersion::v1_0: s += "1.0 "; break;
-        default: assert(false && "invalid int in http version");
+        case 0:
+        case 11: s += "1.1 "; break;
+        case 10: s += "1.0 "; break;
+        default: assert(false && "invalid http version");
     }
     s += panda::to_string(code);
     s += ' ';

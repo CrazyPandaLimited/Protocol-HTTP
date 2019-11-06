@@ -19,7 +19,7 @@ struct Request : Message, AllocatedObject<Request> {
 
     Request () : method(Method::GET) {}
 
-    Request (Method method, const URISP& uri, Header&& header = Header(), Body&& body = Body(), bool chunked = false, HttpVersion http_version = HttpVersion::any) :
+    Request (Method method, const URISP& uri, Header&& header = Header(), Body&& body = Body(), bool chunked = false, int http_version = 0) :
         Message(std::move(header), std::move(body), chunked, http_version), method(method), uri(uri)
     {}
 

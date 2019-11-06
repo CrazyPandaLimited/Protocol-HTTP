@@ -118,7 +118,7 @@ TEST("google response 0") {
 
     auto result = p.parse(raw);
     CHECK(result.state == State::done);
-    REQUIRE(result.response->http_version == HttpVersion::v1_1);
+    REQUIRE(result.response->http_version == 11);
 }
 
 TEST("google response 1") {
@@ -137,5 +137,5 @@ TEST("google response 1") {
     }
     CHECK(result.state == State::done);
 
-    REQUIRE(result.response->http_version == HttpVersion::v1_1);
+    REQUIRE(result.response->http_version == 11);
 }

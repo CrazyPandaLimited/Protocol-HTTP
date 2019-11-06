@@ -28,14 +28,6 @@ namespace xs { namespace protocol { namespace http {
         ret.length(len);
         return ret;
     }
-
-    inline HttpVersion sv_to_http_version (const Simple& sv) {
-        if (!sv.defined()) return HttpVersion::any;
-        double v = sv;
-        if      (v == 1.1) return HttpVersion::v1_1;
-        else if (v == 1)   return HttpVersion::v1_0;
-        else               return HttpVersion::any;
-    }
 }}}
 
 namespace xs {

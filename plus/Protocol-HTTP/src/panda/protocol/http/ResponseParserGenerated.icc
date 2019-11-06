@@ -2183,13 +2183,13 @@ f16:
 f1:
 #line 135 "MessageParser.rl"
 	{
-        current_message->http_version = HttpVersion::v1_0;
+        current_message->http_version = 10;
     }
 	goto _again;
 f13:
 #line 139 "MessageParser.rl"
 	{
-        current_message->http_version = HttpVersion::v1_1;
+        current_message->http_version = 11;
     }
 	goto _again;
 f0:

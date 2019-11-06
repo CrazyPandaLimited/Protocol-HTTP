@@ -9,7 +9,7 @@ static inline void make_message (const Hash& p, Message* m) {
     Sv sv;
     if ((sv = p.fetch("headers")))      set_headers(m, sv);
     if ((sv = p.fetch("body")))         m->body         = xs::in<string>(sv);
-    if ((sv = p.fetch("http_version"))) m->http_version = sv_to_http_version(sv);
+    if ((sv = p.fetch("http_version"))) m->http_version = Simple(sv);
     if ((sv = p.fetch("chunked")))      m->chunked      = sv.is_true();
 }
 

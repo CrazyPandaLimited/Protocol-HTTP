@@ -14,7 +14,7 @@ TEST("get") {
 
     auto req = result.request;
     CHECK(req->method == Method::GET);
-    CHECK(req->http_version == HttpVersion::v1_0);
+    CHECK(req->http_version == 10);
     CHECK(req->uri->to_string() == "/");
 }
 
@@ -32,7 +32,7 @@ TEST("post") {
 
     auto req = result.request;
     CHECK(req->method == Method::POST);
-    CHECK(req->http_version == HttpVersion::v1_1);
+    CHECK(req->http_version == 11);
     CHECK(req->uri->to_string() == "/upload");
 }
 
@@ -47,7 +47,7 @@ TEST("request without length") {
     auto fres = p.parse(raw);
     CHECK(fres.state == State::done);
     auto req = fres.request;
-    CHECK(req->http_version == HttpVersion::v1_1);
+    CHECK(req->http_version == 11);
     CHECK_FALSE(req->body.length());
 }
 
@@ -69,7 +69,7 @@ TEST("fragmented method") {
 
     auto req = result.request;
     CHECK(req->method == Method::GET);
-    CHECK(req->http_version == HttpVersion::v1_0);
+    CHECK(req->http_version == 10);
     CHECK(req->headers.get("Header1") == "header1");
 }
 
@@ -92,7 +92,7 @@ TEST("parsing request byte by byte") {
 
     auto req = result.request;
     CHECK(req->method == Method::GET);
-    CHECK(req->http_version == HttpVersion::v1_0);
+    CHECK(req->http_version == 10);
     CHECK(req->headers.get("Header1") == "header1");
     CHECK(req->headers.get("Header2") == "header2");
 }
@@ -110,7 +110,7 @@ TEST("double first line") {
 
     auto req = result.request;
     REQUIRE(req->method == Method::GET);
-    REQUIRE(req->http_version == HttpVersion::v1_0);
+    REQUIRE(req->http_version == 10);
 }
 
 TEST("bad first line") {

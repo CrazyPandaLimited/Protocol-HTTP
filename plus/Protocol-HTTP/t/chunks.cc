@@ -119,7 +119,7 @@ TEST("fragmented chunks") {
 
     auto req = result.request;
     CHECK(req->method == Method::POST);
-    CHECK(req->http_version == HttpVersion::v1_1);
+    CHECK(req->http_version == 11);
     CHECK(req->headers.get("Transfer-Encoding") == "chunked");
     CHECK(req->headers.get("Trailer") == "Expires");
     CHECK(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");

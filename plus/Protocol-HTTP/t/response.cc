@@ -16,7 +16,7 @@ TEST("trivial get response") {
     CHECK(result.state != State::done);
 
     auto res = result.response;
-    CHECK(res->http_version == HttpVersion::v1_0);
+    CHECK(res->http_version == 10);
     CHECK(res->code == 200);
     CHECK(res->message == "OK");
     CHECK(res->headers.get("Host") == "host1");
@@ -40,7 +40,7 @@ TEST("trivial head response") {
     CHECK(result.state == State::done);
 
     auto res = result.response;
-    CHECK(res->http_version == HttpVersion::v1_0);
+    CHECK(res->http_version == 10);
     CHECK(res->code == 200);
     CHECK(res->message == "OK");
     CHECK(res->headers.get("Host") == "host1");
@@ -65,7 +65,7 @@ TEST("redirect response") {
     CHECK(result.state == State::done);
 
     auto res = result.response;
-    REQUIRE(res->http_version == HttpVersion::v1_1);
+    REQUIRE(res->http_version == 11);
     CHECK(res->code == 301);
     CHECK(res->message == "Moved Permanently");
     CHECK(res->headers.get("Location") == "http://localhost:35615");
@@ -88,7 +88,7 @@ TEST("trivial connection close") {
     CHECK(result.state != State::done);
 
     auto res = result.response;
-    CHECK(res->http_version == HttpVersion::v1_1);
+    CHECK(res->http_version == 11);
     CHECK(res->headers.get("Host") == "host1");
     CHECK(res->body.to_string() == "body");
 
@@ -188,7 +188,7 @@ TEST("parsing response byte by byte") {
 
     auto res = result.response;
     REQUIRE(res);
-    REQUIRE(res->http_version == HttpVersion::v1_1);
+    REQUIRE(res->http_version == 11);
     CHECK(res->code == 101);
     CHECK(res->full_message() == "101 Switching Protocols");
     CHECK(res->headers.get("Upgrade") == "websocket");

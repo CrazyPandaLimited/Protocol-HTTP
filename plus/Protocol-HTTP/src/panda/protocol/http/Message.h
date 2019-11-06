@@ -6,20 +6,19 @@
 
 namespace panda { namespace protocol { namespace http {
 
-enum class State       {not_yet, got_header, in_body, done, error};
-enum class HttpVersion {any, v1_0, v1_1};
+enum class State {not_yet, got_header, in_body, done, error};
 
 struct Message : virtual Refcnt {
     template <class T> struct Builder;
 
-    Header      headers;
-    Body        body;
-    bool        chunked;
-    HttpVersion http_version;
+    Header headers;
+    Body   body;
+    bool   chunked;
+    int    http_version;
 
-    Message () : chunked(), http_version(HttpVersion::any) {}
+    Message () : chunked(), http_version() {}
 
-    Message (Header&& headers, Body&& body, bool chunked = false, HttpVersion http_version = HttpVersion::any) :
+    Message (Header&& headers, Body&& body, bool chunked = false, int http_version = 0) :
         headers(std::move(headers)), body(std::move(body)), chunked(chunked), http_version(http_version)
     {}
 
@@ -44,7 +43,7 @@ protected:
 
     inline void _compile_prepare () {
         if (chunked) {
-            http_version = HttpVersion::v1_1;
+            http_version = 11;
             headers.add("Transfer-Encoding", "chunked");
         }
         else if (!headers.has("Content-Length")) {
@@ -117,7 +116,7 @@ struct Message::Builder {
         return self();
     }
 
-    T& version (HttpVersion http_version) {
+    T& version (int http_version) {
         _http_version = http_version;
         return self();
     }
@@ -129,11 +128,11 @@ struct Message::Builder {
     }
 
 protected:
-    Header      _headers;
-    Body        _body;
-    HttpVersion _http_version;
-    string      _content_type;
-    bool        _chunked;
+    Header _headers;
+    Body   _body;
+    int    _http_version;
+    string _content_type;
+    bool   _chunked;
 
     Builder () : _chunked() {}
 

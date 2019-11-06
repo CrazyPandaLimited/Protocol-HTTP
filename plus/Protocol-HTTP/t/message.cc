@@ -13,7 +13,7 @@ TEST("trivial") {
     CHECK(result.state == State::done);
 
     auto req = result.request;
-    REQUIRE(req->http_version == HttpVersion::v1_0);
+    REQUIRE(req->http_version == 10);
     REQUIRE(req->headers.get("Host") == "host1");
 }
 
@@ -28,7 +28,7 @@ TEST("trimming spaces from header value") {
     CHECK(result.state == State::done);
 
     auto req = result.request;
-    REQUIRE(req->http_version == HttpVersion::v1_0);
+    REQUIRE(req->http_version == 10);
     REQUIRE(req->headers.fields.size() == 1);
     REQUIRE(req->headers.get("Host") == "host");
 }
@@ -44,7 +44,7 @@ TEST("no space after header field") {
     CHECK(result.state == State::done);
 
     auto req = result.request;
-    REQUIRE(req->http_version == HttpVersion::v1_0);
+    REQUIRE(req->http_version == 10);
     REQUIRE(req->headers.get("Host") == "host");
     REQUIRE(req->headers.fields.size() == 1);
 }
@@ -59,7 +59,7 @@ TEST("no header at all") {
     CHECK(result.state == State::done);
 
     auto req = result.request;
-    REQUIRE(req->http_version == HttpVersion::v1_0);
+    REQUIRE(req->http_version == 10);
     REQUIRE(req->headers.fields.size() == 0);
 }
 
@@ -74,7 +74,7 @@ TEST("space in header value") {
     CHECK(result.state == State::done);
 
     auto req = result.request;
-    REQUIRE(req->http_version == HttpVersion::v1_0);
+    REQUIRE(req->http_version == 10);
     REQUIRE(req->headers.get("Host") == "ho  st");
     REQUIRE(req->headers.fields.size() == 1);
 }
@@ -90,7 +90,7 @@ TEST("colon in header 1") {
     CHECK(result.state == State::done);
 
     auto req = result.request;
-    REQUIRE(req->http_version == HttpVersion::v1_0);
+    REQUIRE(req->http_version == 10);
     REQUIRE(req->headers.get("Host") == ": host");
     REQUIRE(req->headers.fields.size() == 1);
 }
@@ -106,7 +106,7 @@ TEST("colon in header 2") {
     CHECK(result.state == State::done);
 
     auto req = result.request;
-    REQUIRE(req->http_version == HttpVersion::v1_0);
+    REQUIRE(req->http_version == 10);
     REQUIRE(req->headers.get("Host") == "h:ost");
     REQUIRE(req->headers.fields.size() == 1);
 }
@@ -141,7 +141,7 @@ TEST("multiple spaces in header") {
     CHECK(result.state == State::done);
 
     auto req = result.request;
-    REQUIRE(req->http_version == HttpVersion::v1_0);
+    REQUIRE(req->http_version == 10);
     REQUIRE(req->headers.get("Host") == "hh oo ss tt");
     REQUIRE(req->headers.fields.size() == 1);
 }
@@ -158,7 +158,7 @@ TEST("duplicated header field") {
     CHECK(result.state == State::done);
 
     auto req = result.request;
-    REQUIRE(req->http_version == HttpVersion::v1_0);
+    REQUIRE(req->http_version == 10);
     REQUIRE(req->headers.get("Host") == "host2");
     REQUIRE(req->headers.fields.size() == 2);
 }
@@ -182,7 +182,7 @@ TEST("fragmented header") {
     CHECK(result.state == State::done);
 
     auto req = result.request;
-    REQUIRE(req->http_version == HttpVersion::v1_0);
+    REQUIRE(req->http_version == 10);
     REQUIRE(req->headers.get("Header1") == "header1");
     REQUIRE(req->headers.get("Header2") == "header2");
     REQUIRE(req->headers.get("Header3") == "header3");
@@ -207,7 +207,7 @@ TEST("message fragmented by lines") {
     CHECK(result.state == State::done);
 
     auto req = result.request;
-    REQUIRE(req->http_version == HttpVersion::v1_0);
+    REQUIRE(req->http_version == 10);
     REQUIRE(req->headers.get("Header1") == "header1");
     REQUIRE(req->headers.get("Header2") == "header2");
     REQUIRE(req->headers.get("Header3") == "header3");
@@ -341,7 +341,7 @@ TEST("parsing pipelined messages") {
     CHECK(result.state == State::done);
     s.offset(result.position);
     auto req = result.request;
-    REQUIRE(req->http_version == HttpVersion::v1_0);
+    REQUIRE(req->http_version == 10);
     REQUIRE(req->uri->to_string() == "/r1");
     REQUIRE(req->headers.get("Header1") == "header1");
     REQUIRE(req->headers.get("Header2") == "header2");
@@ -352,7 +352,7 @@ TEST("parsing pipelined messages") {
     s.offset(result.position);
     req = result.request;
     REQUIRE(req->uri->to_string() == "/r2");
-    REQUIRE(req->http_version == HttpVersion::v1_0);
+    REQUIRE(req->http_version == 10);
     REQUIRE(req->headers.get("Header4") == "header4");
     REQUIRE(req->headers.get("Header5") == "header5");
     REQUIRE(req->headers.get("Header6") == "header6");
@@ -360,7 +360,7 @@ TEST("parsing pipelined messages") {
     result = p.parse_shift(s);
     CHECK(result.state == State::done);
     req = result.request;
-    REQUIRE(req->http_version == HttpVersion::v1_0);
+    REQUIRE(req->http_version == 10);
     REQUIRE(req->uri->to_string() == "/r3");
     REQUIRE(req->headers.get("Header7") == "header7");
     REQUIRE(req->headers.get("Header8") == "header8");
@@ -388,7 +388,7 @@ TEST("keep_alive()") {
     RequestSP req = new Request();
 
     SECTION("1.0") {
-        req->http_version = HttpVersion::v1_0;
+        req->http_version = 10;
         SECTION("yes1") {
             req->headers.connection("Keep-Alive");
             CHECK(req->keep_alive());
@@ -415,7 +415,7 @@ TEST("keep_alive()") {
     }
 
     SECTION("1.1") {
-        req->http_version = HttpVersion::v1_1;
+        req->http_version = 11;
         SECTION("yes 1") {
             CHECK(req->keep_alive());
         }

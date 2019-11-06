@@ -133,11 +133,11 @@
     }
 
     action http_version10 {
-        current_message->http_version = HttpVersion::v1_0;
+        current_message->http_version = 10;
     }
 
     action http_version11 {
-        current_message->http_version = HttpVersion::v1_1;
+        current_message->http_version = 11;
     }
     
 #### HTTP PROTOCOL GRAMMAR
