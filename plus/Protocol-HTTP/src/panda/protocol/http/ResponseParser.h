@@ -18,6 +18,7 @@ struct ResponseParser : MessageParser<Response> {
     using ResultSP = iptr<Result>;
 
     ResponseParser ();
+    ResponseParser (ResponseParser&&) = default;
 
     virtual ~ResponseParser () {}
 

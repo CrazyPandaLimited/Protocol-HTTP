@@ -19,6 +19,7 @@ struct RequestParser : MessageParser<Request> {
     };
 
     RequestParser (IRequestFactory* = nullptr);
+    RequestParser (RequestParser&&) = default;
 
     virtual ~RequestParser () {}
 

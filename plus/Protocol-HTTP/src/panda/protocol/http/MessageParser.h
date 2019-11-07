@@ -27,6 +27,9 @@ protected:
         max_body_size = SIZE_UNLIMITED;
     }
 
+    MessageParser (const MessageParser&) = delete;
+    MessageParser (MessageParser&&)      = default;
+
     inline void reset () {
         state = State::not_yet;
 
