@@ -42,12 +42,12 @@ struct ResponseParser : MessageParser<Response> {
     void reset ();
 
 private:
+    RequestSP _request;
+
     ResponseSP create_message ();
 
     Result build_result           (FinalFlag reset, size_t position);
     Result reset_and_build_result (size_t position, const std::error_code& error = {});
-
-    RequestSP _request;
 };
 
 }}}

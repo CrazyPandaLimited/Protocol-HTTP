@@ -36,9 +36,9 @@ struct RequestParser : MessageParser<Request> {
 private:
     using MessageParser::FinalFlag;
 
-    IRequestFactory* request_factory;
+    IRequestFactory* factory;
 
-    RequestSP new_request () const { return request_factory ? request_factory->create_request() : make_iptr<Request>(); }
+    RequestSP new_request () const { return factory ? factory->create_request() : make_iptr<Request>(); }
 
     Result build_result           (FinalFlag reset, size_t position);
     Result reset_and_build_result (size_t position, State state, std::error_code error = {});

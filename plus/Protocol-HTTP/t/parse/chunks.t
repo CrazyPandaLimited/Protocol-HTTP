@@ -1,4 +1,4 @@
 use 5.012;
 use lib 't/lib';
 use MyTest;
-use Test::Catch '[request]';
+use Test::Catch '[parse-chunks]';

@@ -1,6 +1,6 @@
-#include "lib/test.h"
+#include "../lib/test.h"
 
-#define TEST(name) TEST_CASE("message: " name, "[message]")
+#define TEST(name) TEST_CASE("parse-message: " name, "[parse-message]")
 
 TEST("trivial") {
     RequestParser p;

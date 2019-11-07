@@ -76,7 +76,7 @@
             auto s = string(fpc+1, pe - fpc - 1); //TODO: REMOVE COPYING
             current_message->body.parts.push_back(s);
             body_so_far += s.length();
-            fpc = pe;
+            fpc = pe - 1;
         }
         fbreak;
     }

@@ -1,0 +1,26 @@
+use 5.012;
+use lib 't/lib';
+use MyTest;
+use Test::More;
+use Test::Catch;
+
+subtest 'basic' => sub {
+    my $res = Protocol::HTTP::Response->new({
+        code    => 500,
+        message => "epta",
+        headers => {a => 1},
+        body    => "hello",
+    });
+    $res->header('b', 2);
+    
+    is $res->to_string,
+        "HTTP/1.1 500 epta\r\n".
+        "a: 1\r\n".
+        "b: 2\r\n".
+        "Content-Length: 5\r\n".
+        "\r\n".
+        "hello"
+        ;
+};
+
+done_testing();

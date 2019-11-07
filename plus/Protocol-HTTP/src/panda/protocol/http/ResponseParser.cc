@@ -17,7 +17,7 @@ ResponseSP ResponseParser::create_message () {
     // so something is terribly wrong if we have no corresponding request
     assert(!current_message);
     if (!_request) throw_no_request();
-    current_message = _request->response();
+    current_message = _request->create_response();
     return current_message;
 }
 
@@ -60,19 +60,16 @@ ResponseParser::Result ResponseParser::parse (const string& buffer) {
     size_t position = p - buffer_ptr;
 
     if (state == State::error) {
-        //printf("1\n");
         return reset_and_build_result(position, errc::semantic_error);
     } else if (cs == http_response_parser_first_final) {
-        //printf("2\n");
         if (state == State::in_body) {
             return build_result(FinalFlag::CONTINUE, position);
         }
         return build_result(FinalFlag::RESET, position);
     } else if (cs == http_response_parser_error) {
-        //printf("3\n");
+        state = State::error;
         return reset_and_build_result(position, errc::lexical_error);
     } else {
-        //printf("4\n");
         // append into current marked buffer everything which is unparsed yet
         if (marked) {
             marked_buffer.append(buffer.substr(mark));

@@ -9,7 +9,7 @@
 
 #line 11 "ResponseParserGenerated.icc"
 static const int http_response_parser_start = 1;
-static const int http_response_parser_first_final = 113;
+static const int http_response_parser_first_final = 125;
 static const int http_response_parser_error = 0;
 
 static const int http_response_parser_en_chunked_body = 85;
@@ -138,7 +138,7 @@ case 16:
 	if ( (*p) == 10 )
 		goto tr22;
 	goto tr1;
-case 113:
+case 125:
 	goto tr1;
 case 17:
 	switch( (*p) ) {
@@ -1513,479 +1513,1009 @@ case 85:
 case 86:
 	switch( (*p) ) {
 		case 13: goto tr103;
-		case 59: goto tr104;
+		case 59: goto tr105;
 	}
+	if ( (*p) < 65 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto tr104;
+	} else if ( (*p) > 70 ) {
+		if ( 97 <= (*p) && (*p) <= 102 )
+			goto tr104;
+	} else
+		goto tr104;
 	goto tr1;
 case 87:
 	if ( (*p) == 10 )
-		goto tr105;
+		goto tr106;
 	goto tr1;
 case 88:
-	switch( (*p) ) {
-		case 13: goto tr106;
-		case 33: goto tr107;
-		case 124: goto tr107;
-		case 126: goto tr107;
+	_widec = (*p);
+	_widec = (short)(128 + ((*p) - -128));
+	if ( 
+#line 142 "MessageParser.rl"
+ chunk_so_far++ < chunk_len  ) _widec += 256;
+	switch( _widec ) {
+		case 269: goto tr107;
+		case 289: goto tr108;
+		case 380: goto tr108;
+		case 382: goto tr108;
+		case 525: goto tr110;
+		case 545: goto tr111;
+		case 556: goto tr109;
+		case 559: goto tr109;
+		case 635: goto tr109;
+		case 637: goto tr109;
+		case 639: goto tr109;
 	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto tr107;
-		} else if ( (*p) >= 35 )
-			goto tr107;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto tr107;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto tr107;
+	if ( _widec < 384 ) {
+		if ( _widec < 301 ) {
+			if ( _widec > 295 ) {
+				if ( 298 <= _widec && _widec <= 299 )
+					goto tr108;
+			} else if ( _widec >= 291 )
+				goto tr108;
+		} else if ( _widec > 302 ) {
+			if ( _widec < 321 ) {
+				if ( 304 <= _widec && _widec <= 313 )
+					goto tr108;
+			} else if ( _widec > 346 ) {
+				if ( 350 <= _widec && _widec <= 378 )
+					goto tr108;
+			} else
+				goto tr108;
 		} else
-			goto tr107;
-	} else
-		goto tr107;
-	goto tr1;
-case 89:
-	if ( (*p) == 10 )
-		goto tr108;
-	goto tr1;
-case 114:
-	goto tr1;
-case 90:
-	switch( (*p) ) {
-		case 33: goto tr109;
-		case 58: goto tr110;
-		case 124: goto tr109;
-		case 126: goto tr109;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
+			goto tr108;
+	} else if ( _widec > 546 ) {
+		if ( _widec < 570 ) {
+			if ( _widec < 552 ) {
+				if ( 547 <= _widec && _widec <= 551 )
+					goto tr111;
+			} else if ( _widec > 553 ) {
+				if ( 554 <= _widec && _widec <= 569 )
+					goto tr111;
+			} else
 				goto tr109;
-		} else if ( (*p) >= 35 )
-			goto tr109;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto tr109;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
+		} else if ( _widec > 576 ) {
+			if ( _widec < 603 ) {
+				if ( 577 <= _widec && _widec <= 602 )
+					goto tr111;
+			} else if ( _widec > 605 ) {
+				if ( 606 <= _widec && _widec <= 638 )
+					goto tr111;
+			} else
 				goto tr109;
 		} else
 			goto tr109;
 	} else
 		goto tr109;
 	goto tr1;
+case 89:
+	if ( (*p) == 10 )
+		goto tr112;
+	goto tr1;
+case 126:
+	goto tr1;
+case 90:
+	switch( (*p) ) {
+		case 33: goto tr113;
+		case 58: goto tr114;
+		case 124: goto tr113;
+		case 126: goto tr113;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto tr113;
+		} else if ( (*p) >= 35 )
+			goto tr113;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto tr113;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto tr113;
+		} else
+			goto tr113;
+	} else
+		goto tr113;
+	goto tr1;
 case 91:
 	switch( (*p) ) {
-		case 13: goto tr112;
-		case 32: goto tr111;
+		case 13: goto tr116;
+		case 32: goto tr115;
 	}
 	if ( (*p) > 12 ) {
 		if ( 33 <= (*p) && (*p) <= 126 )
-			goto tr113;
+			goto tr117;
 	} else if ( (*p) >= 9 )
-		goto tr111;
+		goto tr115;
 	goto tr1;
 case 92:
 	if ( (*p) == 10 )
-		goto tr114;
+		goto tr118;
 	goto tr1;
 case 93:
 	switch( (*p) ) {
-		case 13: goto tr115;
-		case 33: goto tr116;
-		case 124: goto tr116;
-		case 126: goto tr116;
+		case 13: goto tr119;
+		case 33: goto tr120;
+		case 124: goto tr120;
+		case 126: goto tr120;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto tr116;
+				goto tr120;
 		} else if ( (*p) >= 35 )
-			goto tr116;
+			goto tr120;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto tr116;
+				goto tr120;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto tr116;
+				goto tr120;
 		} else
-			goto tr116;
+			goto tr120;
 	} else
-		goto tr116;
+		goto tr120;
 	goto tr1;
 case 94:
 	switch( (*p) ) {
-		case 9: goto tr117;
-		case 13: goto tr118;
+		case 9: goto tr121;
+		case 13: goto tr122;
 	}
 	if ( 32 <= (*p) && (*p) <= 126 )
-		goto tr117;
+		goto tr121;
 	goto tr1;
 case 95:
-	switch( (*p) ) {
-		case 33: goto tr119;
-		case 124: goto tr119;
-		case 126: goto tr119;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto tr119;
-		} else if ( (*p) >= 35 )
-			goto tr119;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto tr119;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto tr119;
-		} else
-			goto tr119;
-	} else
-		goto tr119;
-	goto tr1;
-case 96:
-	switch( (*p) ) {
-		case 13: goto tr103;
-		case 33: goto tr119;
-		case 59: goto tr104;
-		case 61: goto tr120;
-		case 124: goto tr119;
-		case 126: goto tr119;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto tr119;
-		} else if ( (*p) >= 35 )
-			goto tr119;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto tr119;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto tr119;
-		} else
-			goto tr119;
-	} else
-		goto tr119;
-	goto tr1;
-case 97:
-	switch( (*p) ) {
-		case 33: goto tr121;
-		case 124: goto tr121;
-		case 126: goto tr121;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto tr121;
-		} else if ( (*p) >= 35 )
-			goto tr121;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto tr121;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto tr121;
-		} else
-			goto tr121;
-	} else
-		goto tr121;
-	goto tr1;
-case 98:
-	switch( (*p) ) {
-		case 13: goto tr103;
-		case 33: goto tr121;
-		case 59: goto tr104;
-		case 124: goto tr121;
-		case 126: goto tr121;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto tr121;
-		} else if ( (*p) >= 35 )
-			goto tr121;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto tr121;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto tr121;
-		} else
-			goto tr121;
-	} else
-		goto tr121;
-	goto tr1;
-case 99:
-	switch( (*p) ) {
-		case 13: goto tr122;
-		case 59: goto tr124;
-	}
-	if ( (*p) < 65 ) {
-		if ( 48 <= (*p) && (*p) <= 57 )
-			goto tr123;
-	} else if ( (*p) > 70 ) {
-		if ( 97 <= (*p) && (*p) <= 102 )
-			goto tr123;
-	} else
-		goto tr123;
-	goto tr1;
-case 100:
-	if ( (*p) == 10 )
-		goto tr125;
-	goto tr1;
-case 101:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 181 "MessageParser.rl"
+#line 142 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
-		case 269: goto tr126;
-		case 289: goto tr127;
-		case 380: goto tr127;
-		case 382: goto tr127;
+		case 269: goto tr123;
+		case 289: goto tr124;
+		case 380: goto tr124;
+		case 382: goto tr124;
 	}
 	if ( _widec < 304 ) {
 		if ( _widec < 298 ) {
 			if ( 291 <= _widec && _widec <= 295 )
-				goto tr127;
+				goto tr124;
 		} else if ( _widec > 299 ) {
 			if ( 301 <= _widec && _widec <= 302 )
-				goto tr127;
+				goto tr124;
 		} else
-			goto tr127;
+			goto tr124;
 	} else if ( _widec > 313 ) {
 		if ( _widec < 350 ) {
 			if ( 321 <= _widec && _widec <= 346 )
-				goto tr127;
+				goto tr124;
 		} else if ( _widec > 378 ) {
 			if ( 384 <= _widec && _widec <= 639 )
-				goto tr128;
+				goto tr125;
+		} else
+			goto tr124;
+	} else
+		goto tr124;
+	goto tr1;
+case 96:
+	if ( (*p) == 10 )
+		goto tr126;
+	goto tr1;
+case 97:
+	switch( (*p) ) {
+		case 33: goto tr127;
+		case 58: goto tr128;
+		case 124: goto tr127;
+		case 126: goto tr127;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto tr127;
+		} else if ( (*p) >= 35 )
+			goto tr127;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto tr127;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto tr127;
 		} else
 			goto tr127;
 	} else
 		goto tr127;
 	goto tr1;
-case 102:
-	if ( (*p) == 10 )
-		goto tr129;
-	goto tr1;
-case 103:
+case 98:
 	switch( (*p) ) {
-		case 33: goto tr130;
-		case 58: goto tr131;
-		case 124: goto tr130;
-		case 126: goto tr130;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto tr130;
-		} else if ( (*p) >= 35 )
-			goto tr130;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto tr130;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto tr130;
-		} else
-			goto tr130;
-	} else
-		goto tr130;
-	goto tr1;
-case 104:
-	switch( (*p) ) {
-		case 13: goto tr133;
-		case 32: goto tr132;
+		case 13: goto tr130;
+		case 32: goto tr129;
 	}
 	if ( (*p) > 12 ) {
 		if ( 33 <= (*p) && (*p) <= 126 )
-			goto tr134;
+			goto tr131;
 	} else if ( (*p) >= 9 )
+		goto tr129;
+	goto tr1;
+case 99:
+	if ( (*p) == 10 )
 		goto tr132;
 	goto tr1;
-case 105:
-	if ( (*p) == 10 )
-		goto tr135;
-	goto tr1;
-case 106:
+case 100:
 	switch( (*p) ) {
-		case 13: goto tr136;
-		case 33: goto tr137;
-		case 124: goto tr137;
-		case 126: goto tr137;
+		case 13: goto tr133;
+		case 33: goto tr134;
+		case 124: goto tr134;
+		case 126: goto tr134;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto tr137;
+				goto tr134;
 		} else if ( (*p) >= 35 )
-			goto tr137;
+			goto tr134;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto tr137;
+				goto tr134;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto tr137;
+				goto tr134;
 		} else
-			goto tr137;
+			goto tr134;
 	} else
-		goto tr137;
+		goto tr134;
 	goto tr1;
-case 107:
+case 101:
 	switch( (*p) ) {
-		case 9: goto tr138;
-		case 13: goto tr139;
+		case 9: goto tr135;
+		case 13: goto tr136;
 	}
 	if ( 32 <= (*p) && (*p) <= 126 )
-		goto tr138;
+		goto tr135;
 	goto tr1;
-case 108:
+case 102:
 	_widec = (*p);
 	_widec = (short)(128 + ((*p) - -128));
 	if ( 
-#line 181 "MessageParser.rl"
+#line 142 "MessageParser.rl"
  chunk_so_far++ < chunk_len  ) _widec += 256;
 	switch( _widec ) {
-		case 269: goto tr140;
-		case 289: goto tr141;
-		case 380: goto tr141;
-		case 382: goto tr141;
+		case 266: goto tr112;
+		case 269: goto tr123;
+		case 289: goto tr124;
+		case 380: goto tr124;
+		case 382: goto tr124;
+		case 522: goto tr137;
 	}
 	if ( _widec < 304 ) {
 		if ( _widec < 298 ) {
 			if ( 291 <= _widec && _widec <= 295 )
-				goto tr141;
+				goto tr124;
 		} else if ( _widec > 299 ) {
 			if ( 301 <= _widec && _widec <= 302 )
-				goto tr141;
+				goto tr124;
 		} else
-			goto tr141;
+			goto tr124;
 	} else if ( _widec > 313 ) {
 		if ( _widec < 350 ) {
 			if ( 321 <= _widec && _widec <= 346 )
-				goto tr141;
+				goto tr124;
 		} else if ( _widec > 378 ) {
 			if ( 384 <= _widec && _widec <= 639 )
-				goto tr142;
+				goto tr125;
 		} else
-			goto tr141;
+			goto tr124;
+	} else
+		goto tr124;
+	goto tr1;
+case 127:
+	_widec = (*p);
+	_widec = (short)(128 + ((*p) - -128));
+	if ( 
+#line 142 "MessageParser.rl"
+ chunk_so_far++ < chunk_len  ) _widec += 256;
+	switch( _widec ) {
+		case 269: goto tr123;
+		case 289: goto tr124;
+		case 380: goto tr124;
+		case 382: goto tr124;
+	}
+	if ( _widec < 304 ) {
+		if ( _widec < 298 ) {
+			if ( 291 <= _widec && _widec <= 295 )
+				goto tr124;
+		} else if ( _widec > 299 ) {
+			if ( 301 <= _widec && _widec <= 302 )
+				goto tr124;
+		} else
+			goto tr124;
+	} else if ( _widec > 313 ) {
+		if ( _widec < 350 ) {
+			if ( 321 <= _widec && _widec <= 346 )
+				goto tr124;
+		} else if ( _widec > 378 ) {
+			if ( 384 <= _widec && _widec <= 639 )
+				goto tr125;
+		} else
+			goto tr124;
+	} else
+		goto tr124;
+	goto tr1;
+case 103:
+	_widec = (*p);
+	_widec = (short)(128 + ((*p) - -128));
+	if ( 
+#line 142 "MessageParser.rl"
+ chunk_so_far++ < chunk_len  ) _widec += 256;
+	switch( _widec ) {
+		case 269: goto tr123;
+		case 289: goto tr113;
+		case 314: goto tr114;
+		case 380: goto tr113;
+		case 382: goto tr113;
+		case 545: goto tr138;
+		case 556: goto tr125;
+		case 559: goto tr125;
+		case 570: goto tr139;
+		case 635: goto tr125;
+		case 637: goto tr125;
+		case 639: goto tr125;
+	}
+	if ( _widec < 384 ) {
+		if ( _widec < 301 ) {
+			if ( _widec > 295 ) {
+				if ( 298 <= _widec && _widec <= 299 )
+					goto tr113;
+			} else if ( _widec >= 291 )
+				goto tr113;
+		} else if ( _widec > 302 ) {
+			if ( _widec < 321 ) {
+				if ( 304 <= _widec && _widec <= 313 )
+					goto tr113;
+			} else if ( _widec > 346 ) {
+				if ( 350 <= _widec && _widec <= 378 )
+					goto tr113;
+			} else
+				goto tr113;
+		} else
+			goto tr113;
+	} else if ( _widec > 546 ) {
+		if ( _widec < 571 ) {
+			if ( _widec < 552 ) {
+				if ( 547 <= _widec && _widec <= 551 )
+					goto tr138;
+			} else if ( _widec > 553 ) {
+				if ( 554 <= _widec && _widec <= 569 )
+					goto tr138;
+			} else
+				goto tr125;
+		} else if ( _widec > 576 ) {
+			if ( _widec < 603 ) {
+				if ( 577 <= _widec && _widec <= 602 )
+					goto tr138;
+			} else if ( _widec > 605 ) {
+				if ( 606 <= _widec && _widec <= 638 )
+					goto tr138;
+			} else
+				goto tr125;
+		} else
+			goto tr125;
+	} else
+		goto tr125;
+	goto tr1;
+case 104:
+	_widec = (*p);
+	_widec = (short)(128 + ((*p) - -128));
+	if ( 
+#line 142 "MessageParser.rl"
+ chunk_so_far++ < chunk_len  ) _widec += 256;
+	switch( _widec ) {
+		case 269: goto tr140;
+		case 288: goto tr115;
+		case 290: goto tr117;
+		case 300: goto tr117;
+		case 303: goto tr117;
+		case 379: goto tr117;
+		case 381: goto tr117;
+		case 525: goto tr143;
+		case 544: goto tr142;
+		case 639: goto tr125;
+	}
+	if ( _widec < 321 ) {
+		if ( _widec < 296 ) {
+			if ( _widec > 268 ) {
+				if ( 289 <= _widec && _widec <= 295 )
+					goto tr141;
+			} else if ( _widec >= 265 )
+				goto tr115;
+		} else if ( _widec > 297 ) {
+			if ( _widec > 313 ) {
+				if ( 314 <= _widec && _widec <= 320 )
+					goto tr117;
+			} else if ( _widec >= 298 )
+				goto tr141;
+		} else
+			goto tr117;
+	} else if ( _widec > 346 ) {
+		if ( _widec < 384 ) {
+			if ( _widec > 349 ) {
+				if ( 350 <= _widec && _widec <= 382 )
+					goto tr141;
+			} else if ( _widec >= 347 )
+				goto tr117;
+		} else if ( _widec > 520 ) {
+			if ( _widec < 526 ) {
+				if ( 521 <= _widec && _widec <= 524 )
+					goto tr142;
+			} else if ( _widec > 543 ) {
+				if ( 545 <= _widec && _widec <= 638 )
+					goto tr144;
+			} else
+				goto tr125;
+		} else
+			goto tr125;
 	} else
 		goto tr141;
 	goto tr1;
-case 109:
+case 105:
+	if ( (*p) == 10 )
+		goto tr145;
+	goto tr1;
+case 106:
 	switch( (*p) ) {
-		case 33: goto tr143;
-		case 124: goto tr143;
-		case 126: goto tr143;
+		case 13: goto tr119;
+		case 33: goto tr120;
+		case 48: goto tr146;
+		case 124: goto tr120;
+		case 126: goto tr120;
 	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto tr143;
-		} else if ( (*p) >= 35 )
-			goto tr143;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto tr143;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto tr143;
+	if ( (*p) < 65 ) {
+		if ( (*p) < 42 ) {
+			if ( 35 <= (*p) && (*p) <= 39 )
+				goto tr120;
+		} else if ( (*p) > 43 ) {
+			if ( (*p) > 46 ) {
+				if ( 49 <= (*p) && (*p) <= 57 )
+					goto tr147;
+			} else if ( (*p) >= 45 )
+				goto tr120;
 		} else
-			goto tr143;
+			goto tr120;
+	} else if ( (*p) > 70 ) {
+		if ( (*p) < 94 ) {
+			if ( 71 <= (*p) && (*p) <= 90 )
+				goto tr120;
+		} else if ( (*p) > 96 ) {
+			if ( (*p) > 102 ) {
+				if ( 103 <= (*p) && (*p) <= 122 )
+					goto tr120;
+			} else if ( (*p) >= 97 )
+				goto tr147;
+		} else
+			goto tr120;
 	} else
-		goto tr143;
+		goto tr147;
+	goto tr1;
+case 107:
+	switch( (*p) ) {
+		case 13: goto tr103;
+		case 33: goto tr113;
+		case 58: goto tr114;
+		case 59: goto tr105;
+		case 124: goto tr113;
+		case 126: goto tr113;
+	}
+	if ( (*p) < 65 ) {
+		if ( (*p) < 42 ) {
+			if ( 35 <= (*p) && (*p) <= 39 )
+				goto tr113;
+		} else if ( (*p) > 43 ) {
+			if ( (*p) > 46 ) {
+				if ( 48 <= (*p) && (*p) <= 57 )
+					goto tr148;
+			} else if ( (*p) >= 45 )
+				goto tr113;
+		} else
+			goto tr113;
+	} else if ( (*p) > 70 ) {
+		if ( (*p) < 94 ) {
+			if ( 71 <= (*p) && (*p) <= 90 )
+				goto tr113;
+		} else if ( (*p) > 96 ) {
+			if ( (*p) > 102 ) {
+				if ( 103 <= (*p) && (*p) <= 122 )
+					goto tr113;
+			} else if ( (*p) >= 97 )
+				goto tr148;
+		} else
+			goto tr113;
+	} else
+		goto tr148;
+	goto tr1;
+case 108:
+	switch( (*p) ) {
+		case 13: goto tr149;
+		case 33: goto tr113;
+		case 58: goto tr114;
+		case 59: goto tr150;
+		case 124: goto tr113;
+		case 126: goto tr113;
+	}
+	if ( (*p) < 65 ) {
+		if ( (*p) < 42 ) {
+			if ( 35 <= (*p) && (*p) <= 39 )
+				goto tr113;
+		} else if ( (*p) > 43 ) {
+			if ( (*p) > 46 ) {
+				if ( 48 <= (*p) && (*p) <= 57 )
+					goto tr148;
+			} else if ( (*p) >= 45 )
+				goto tr113;
+		} else
+			goto tr113;
+	} else if ( (*p) > 70 ) {
+		if ( (*p) < 94 ) {
+			if ( 71 <= (*p) && (*p) <= 90 )
+				goto tr113;
+		} else if ( (*p) > 96 ) {
+			if ( (*p) > 102 ) {
+				if ( 103 <= (*p) && (*p) <= 122 )
+					goto tr113;
+			} else if ( (*p) >= 97 )
+				goto tr148;
+		} else
+			goto tr113;
+	} else
+		goto tr148;
+	goto tr1;
+case 109:
+	if ( (*p) == 10 )
+		goto tr151;
 	goto tr1;
 case 110:
-	switch( (*p) ) {
-		case 13: goto tr144;
-		case 33: goto tr143;
-		case 59: goto tr145;
-		case 61: goto tr146;
-		case 124: goto tr143;
-		case 126: goto tr143;
+	_widec = (*p);
+	_widec = (short)(128 + ((*p) - -128));
+	if ( 
+#line 142 "MessageParser.rl"
+ chunk_so_far++ < chunk_len  ) _widec += 256;
+	switch( _widec ) {
+		case 269: goto tr152;
+		case 289: goto tr153;
+		case 380: goto tr153;
+		case 382: goto tr153;
 	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto tr143;
-		} else if ( (*p) >= 35 )
-			goto tr143;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto tr143;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto tr143;
+	if ( _widec < 304 ) {
+		if ( _widec < 298 ) {
+			if ( 291 <= _widec && _widec <= 295 )
+				goto tr153;
+		} else if ( _widec > 299 ) {
+			if ( 301 <= _widec && _widec <= 302 )
+				goto tr153;
 		} else
-			goto tr143;
+			goto tr153;
+	} else if ( _widec > 313 ) {
+		if ( _widec < 350 ) {
+			if ( 321 <= _widec && _widec <= 346 )
+				goto tr153;
+		} else if ( _widec > 378 ) {
+			if ( 384 <= _widec && _widec <= 639 )
+				goto tr109;
+		} else
+			goto tr153;
 	} else
-		goto tr143;
+		goto tr153;
 	goto tr1;
 case 111:
 	switch( (*p) ) {
-		case 33: goto tr147;
-		case 124: goto tr147;
-		case 126: goto tr147;
+		case 33: goto tr154;
+		case 124: goto tr154;
+		case 126: goto tr154;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto tr147;
+				goto tr154;
 		} else if ( (*p) >= 35 )
-			goto tr147;
+			goto tr154;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto tr147;
+				goto tr154;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto tr147;
+				goto tr154;
 		} else
-			goto tr147;
+			goto tr154;
 	} else
-		goto tr147;
+		goto tr154;
 	goto tr1;
 case 112:
 	switch( (*p) ) {
-		case 13: goto tr144;
-		case 33: goto tr147;
-		case 59: goto tr145;
-		case 124: goto tr147;
-		case 126: goto tr147;
+		case 13: goto tr155;
+		case 33: goto tr154;
+		case 59: goto tr156;
+		case 61: goto tr157;
+		case 124: goto tr154;
+		case 126: goto tr154;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto tr147;
+				goto tr154;
 		} else if ( (*p) >= 35 )
-			goto tr147;
+			goto tr154;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto tr147;
+				goto tr154;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto tr147;
+				goto tr154;
 		} else
-			goto tr147;
+			goto tr154;
 	} else
-		goto tr147;
+		goto tr154;
+	goto tr1;
+case 113:
+	switch( (*p) ) {
+		case 33: goto tr158;
+		case 124: goto tr158;
+		case 126: goto tr158;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto tr158;
+		} else if ( (*p) >= 35 )
+			goto tr158;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto tr158;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto tr158;
+		} else
+			goto tr158;
+	} else
+		goto tr158;
+	goto tr1;
+case 114:
+	switch( (*p) ) {
+		case 13: goto tr155;
+		case 33: goto tr158;
+		case 59: goto tr156;
+		case 124: goto tr158;
+		case 126: goto tr158;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto tr158;
+		} else if ( (*p) >= 35 )
+			goto tr158;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto tr158;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto tr158;
+		} else
+			goto tr158;
+	} else
+		goto tr158;
+	goto tr1;
+case 115:
+	switch( (*p) ) {
+		case 33: goto tr159;
+		case 124: goto tr159;
+		case 126: goto tr159;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto tr159;
+		} else if ( (*p) >= 35 )
+			goto tr159;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto tr159;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto tr159;
+		} else
+			goto tr159;
+	} else
+		goto tr159;
+	goto tr1;
+case 116:
+	switch( (*p) ) {
+		case 13: goto tr160;
+		case 33: goto tr159;
+		case 59: goto tr161;
+		case 61: goto tr162;
+		case 124: goto tr159;
+		case 126: goto tr159;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto tr159;
+		} else if ( (*p) >= 35 )
+			goto tr159;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto tr159;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto tr159;
+		} else
+			goto tr159;
+	} else
+		goto tr159;
+	goto tr1;
+case 117:
+	switch( (*p) ) {
+		case 33: goto tr163;
+		case 124: goto tr163;
+		case 126: goto tr163;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto tr163;
+		} else if ( (*p) >= 35 )
+			goto tr163;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto tr163;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto tr163;
+		} else
+			goto tr163;
+	} else
+		goto tr163;
+	goto tr1;
+case 118:
+	switch( (*p) ) {
+		case 13: goto tr160;
+		case 33: goto tr163;
+		case 59: goto tr161;
+		case 124: goto tr163;
+		case 126: goto tr163;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto tr163;
+		} else if ( (*p) >= 35 )
+			goto tr163;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto tr163;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto tr163;
+		} else
+			goto tr163;
+	} else
+		goto tr163;
+	goto tr1;
+case 119:
+	switch( (*p) ) {
+		case 9: goto tr121;
+		case 13: goto tr122;
+		case 33: goto tr164;
+		case 44: goto tr121;
+		case 47: goto tr121;
+		case 58: goto tr165;
+		case 123: goto tr121;
+		case 125: goto tr121;
+	}
+	if ( (*p) < 42 ) {
+		if ( (*p) < 35 ) {
+			if ( 32 <= (*p) && (*p) <= 34 )
+				goto tr121;
+		} else if ( (*p) > 39 ) {
+			if ( 40 <= (*p) && (*p) <= 41 )
+				goto tr121;
+		} else
+			goto tr164;
+	} else if ( (*p) > 57 ) {
+		if ( (*p) < 65 ) {
+			if ( 59 <= (*p) && (*p) <= 64 )
+				goto tr121;
+		} else if ( (*p) > 90 ) {
+			if ( (*p) > 93 ) {
+				if ( 94 <= (*p) && (*p) <= 126 )
+					goto tr164;
+			} else if ( (*p) >= 91 )
+				goto tr121;
+		} else
+			goto tr164;
+	} else
+		goto tr164;
+	goto tr1;
+case 120:
+	switch( (*p) ) {
+		case 9: goto tr166;
+		case 13: goto tr122;
+		case 32: goto tr166;
+	}
+	if ( (*p) > 12 ) {
+		if ( 33 <= (*p) && (*p) <= 126 )
+			goto tr121;
+	} else if ( (*p) >= 10 )
+		goto tr129;
+	goto tr1;
+case 121:
+	_widec = (*p);
+	_widec = (short)(128 + ((*p) - -128));
+	if ( 
+#line 142 "MessageParser.rl"
+ chunk_so_far++ < chunk_len  ) _widec += 256;
+	switch( _widec ) {
+		case 266: goto tr118;
+		case 269: goto tr123;
+		case 289: goto tr124;
+		case 380: goto tr124;
+		case 382: goto tr124;
+		case 522: goto tr167;
+	}
+	if ( _widec < 304 ) {
+		if ( _widec < 298 ) {
+			if ( 291 <= _widec && _widec <= 295 )
+				goto tr124;
+		} else if ( _widec > 299 ) {
+			if ( 301 <= _widec && _widec <= 302 )
+				goto tr124;
+		} else
+			goto tr124;
+	} else if ( _widec > 313 ) {
+		if ( _widec < 350 ) {
+			if ( 321 <= _widec && _widec <= 346 )
+				goto tr124;
+		} else if ( _widec > 378 ) {
+			if ( 384 <= _widec && _widec <= 639 )
+				goto tr125;
+		} else
+			goto tr124;
+	} else
+		goto tr124;
+	goto tr1;
+case 122:
+	_widec = (*p);
+	_widec = (short)(128 + ((*p) - -128));
+	if ( 
+#line 142 "MessageParser.rl"
+ chunk_so_far++ < chunk_len  ) _widec += 256;
+	switch( _widec ) {
+		case 269: goto tr119;
+		case 289: goto tr120;
+		case 380: goto tr120;
+		case 382: goto tr120;
+		case 525: goto tr168;
+		case 545: goto tr169;
+		case 556: goto tr125;
+		case 559: goto tr125;
+		case 635: goto tr125;
+		case 637: goto tr125;
+		case 639: goto tr125;
+	}
+	if ( _widec < 384 ) {
+		if ( _widec < 301 ) {
+			if ( _widec > 295 ) {
+				if ( 298 <= _widec && _widec <= 299 )
+					goto tr120;
+			} else if ( _widec >= 291 )
+				goto tr120;
+		} else if ( _widec > 302 ) {
+			if ( _widec < 321 ) {
+				if ( 304 <= _widec && _widec <= 313 )
+					goto tr120;
+			} else if ( _widec > 346 ) {
+				if ( 350 <= _widec && _widec <= 378 )
+					goto tr120;
+			} else
+				goto tr120;
+		} else
+			goto tr120;
+	} else if ( _widec > 546 ) {
+		if ( _widec < 570 ) {
+			if ( _widec < 552 ) {
+				if ( 547 <= _widec && _widec <= 551 )
+					goto tr169;
+			} else if ( _widec > 553 ) {
+				if ( 554 <= _widec && _widec <= 569 )
+					goto tr169;
+			} else
+				goto tr125;
+		} else if ( _widec > 576 ) {
+			if ( _widec < 603 ) {
+				if ( 577 <= _widec && _widec <= 602 )
+					goto tr169;
+			} else if ( _widec > 605 ) {
+				if ( 606 <= _widec && _widec <= 638 )
+					goto tr169;
+			} else
+				goto tr125;
+		} else
+			goto tr125;
+	} else
+		goto tr125;
+	goto tr1;
+case 123:
+	_widec = (*p);
+	_widec = (short)(128 + ((*p) - -128));
+	if ( 
+#line 142 "MessageParser.rl"
+ chunk_so_far++ < chunk_len  ) _widec += 256;
+	switch( _widec ) {
+		case 265: goto tr121;
+		case 269: goto tr170;
+		case 289: goto tr141;
+		case 300: goto tr121;
+		case 303: goto tr121;
+		case 379: goto tr121;
+		case 381: goto tr121;
+		case 521: goto tr171;
+		case 525: goto tr172;
+		case 639: goto tr125;
+	}
+	if ( _widec < 314 ) {
+		if ( _widec < 291 ) {
+			if ( 288 <= _widec && _widec <= 290 )
+				goto tr121;
+		} else if ( _widec > 295 ) {
+			if ( _widec > 297 ) {
+				if ( 298 <= _widec && _widec <= 313 )
+					goto tr141;
+			} else if ( _widec >= 296 )
+				goto tr121;
+		} else
+			goto tr141;
+	} else if ( _widec > 320 ) {
+		if ( _widec < 350 ) {
+			if ( _widec > 346 ) {
+				if ( 347 <= _widec && _widec <= 349 )
+					goto tr121;
+			} else if ( _widec >= 321 )
+				goto tr141;
+		} else if ( _widec > 382 ) {
+			if ( _widec > 543 ) {
+				if ( 544 <= _widec && _widec <= 638 )
+					goto tr171;
+			} else if ( _widec >= 384 )
+				goto tr125;
+		} else
+			goto tr141;
+	} else
+		goto tr121;
+	goto tr1;
+case 124:
+	switch( (*p) ) {
+		case 13: goto tr149;
+		case 59: goto tr150;
+	}
+	if ( (*p) < 65 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto tr104;
+	} else if ( (*p) > 70 ) {
+		if ( 97 <= (*p) && (*p) <= 102 )
+			goto tr104;
+	} else
+		goto tr104;
 	goto tr1;
 	}
 
@@ -2089,57 +2619,82 @@ case 112:
 	tr46: cs = 83; goto f9;
 	tr99: cs = 83; goto f11;
 	tr9: cs = 84; goto _again;
-	tr129: cs = 85; goto _again;
-	tr101: cs = 86; goto _again;
-	tr103: cs = 87; goto _again;
-	tr105: cs = 88; goto _again;
-	tr115: cs = 89; goto _again;
-	tr106: cs = 89; goto f14;
-	tr109: cs = 90; goto _again;
-	tr116: cs = 90; goto f2;
-	tr107: cs = 90; goto f15;
-	tr111: cs = 91; goto _again;
-	tr110: cs = 91; goto f6;
-	tr112: cs = 92; goto f7;
-	tr118: cs = 92; goto f8;
-	tr114: cs = 93; goto _again;
-	tr117: cs = 94; goto _again;
-	tr113: cs = 94; goto f2;
-	tr104: cs = 95; goto _again;
-	tr119: cs = 96; goto _again;
-	tr120: cs = 97; goto _again;
-	tr121: cs = 98; goto _again;
-	tr123: cs = 99; goto _again;
-	tr102: cs = 99; goto f2;
-	tr144: cs = 100; goto _again;
-	tr122: cs = 100; goto f17;
-	tr125: cs = 101; goto _again;
-	tr136: cs = 102; goto _again;
-	tr126: cs = 102; goto f18;
-	tr140: cs = 102; goto f19;
-	tr130: cs = 103; goto _again;
-	tr137: cs = 103; goto f2;
-	tr127: cs = 103; goto f18;
-	tr141: cs = 103; goto f20;
-	tr132: cs = 104; goto _again;
-	tr131: cs = 104; goto f6;
-	tr133: cs = 105; goto f7;
-	tr139: cs = 105; goto f8;
-	tr135: cs = 106; goto _again;
-	tr138: cs = 107; goto _again;
-	tr134: cs = 107; goto f2;
-	tr142: cs = 108; goto _again;
-	tr128: cs = 108; goto f2;
-	tr145: cs = 109; goto _again;
-	tr124: cs = 109; goto f17;
-	tr143: cs = 110; goto _again;
-	tr146: cs = 111; goto _again;
-	tr147: cs = 112; goto _again;
-	tr22: cs = 113; goto f5;
-	tr108: cs = 114; goto f16;
+	tr126: cs = 85; goto _again;
+	tr101: cs = 86; goto f2;
+	tr160: cs = 87; goto _again;
+	tr103: cs = 87; goto f14;
+	tr106: cs = 88; goto _again;
+	tr119: cs = 89; goto _again;
+	tr107: cs = 89; goto f15;
+	tr113: cs = 90; goto _again;
+	tr120: cs = 90; goto f2;
+	tr108: cs = 90; goto f16;
+	tr115: cs = 91; goto _again;
+	tr114: cs = 91; goto f6;
+	tr116: cs = 92; goto f7;
+	tr122: cs = 92; goto f8;
+	tr118: cs = 93; goto _again;
+	tr121: cs = 94; goto _again;
+	tr117: cs = 94; goto f2;
+	tr125: cs = 95; goto _again;
+	tr109: cs = 95; goto f2;
+	tr133: cs = 96; goto _again;
+	tr123: cs = 96; goto f19;
+	tr152: cs = 96; goto f22;
+	tr127: cs = 97; goto _again;
+	tr134: cs = 97; goto f2;
+	tr124: cs = 97; goto f20;
+	tr153: cs = 97; goto f22;
+	tr129: cs = 98; goto _again;
+	tr128: cs = 98; goto f6;
+	tr130: cs = 99; goto f7;
+	tr136: cs = 99; goto f8;
+	tr132: cs = 100; goto _again;
+	tr135: cs = 101; goto _again;
+	tr131: cs = 101; goto f2;
+	tr168: cs = 102; goto _again;
+	tr110: cs = 102; goto f17;
+	tr138: cs = 103; goto _again;
+	tr169: cs = 103; goto f2;
+	tr111: cs = 103; goto f17;
+	tr142: cs = 104; goto _again;
+	tr139: cs = 104; goto f6;
+	tr140: cs = 105; goto f21;
+	tr170: cs = 105; goto f23;
+	tr145: cs = 106; goto _again;
+	tr146: cs = 107; goto f2;
+	tr148: cs = 108; goto _again;
+	tr147: cs = 108; goto f2;
+	tr155: cs = 109; goto _again;
+	tr149: cs = 109; goto f14;
+	tr151: cs = 110; goto _again;
+	tr156: cs = 111; goto _again;
+	tr150: cs = 111; goto f14;
+	tr154: cs = 112; goto _again;
+	tr157: cs = 113; goto _again;
+	tr158: cs = 114; goto _again;
+	tr161: cs = 115; goto _again;
+	tr105: cs = 115; goto f14;
+	tr159: cs = 116; goto _again;
+	tr162: cs = 117; goto _again;
+	tr163: cs = 118; goto _again;
+	tr164: cs = 119; goto _again;
+	tr141: cs = 119; goto f20;
+	tr166: cs = 120; goto _again;
+	tr165: cs = 120; goto f6;
+	tr143: cs = 121; goto f7;
+	tr172: cs = 121; goto f8;
+	tr167: cs = 122; goto _again;
+	tr171: cs = 123; goto _again;
+	tr144: cs = 123; goto f2;
+	tr104: cs = 124; goto _again;
+	tr102: cs = 124; goto f2;
+	tr22: cs = 125; goto f5;
+	tr112: cs = 126; goto f18;
+	tr137: cs = 127; goto f18;
 
 f2:
-#line 43 "MessageParser.rl"
+#line 5 "MessageParser.rl"
 	{
         // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
@@ -2148,7 +2703,7 @@ f2:
     }
 	goto _again;
 f11:
-#line 83 "MessageParser.rl"
+#line 45 "MessageParser.rl"
 	{
         if (content_len > 1000000000000000000) {
             state = State::error;
@@ -2159,19 +2714,19 @@ f11:
     }
 	goto _again;
 f12:
-#line 92 "MessageParser.rl"
+#line 54 "MessageParser.rl"
 	{
         current_message->chunked = true;
     }
 	goto _again;
-f14:
-#line 96 "MessageParser.rl"
+f15:
+#line 58 "MessageParser.rl"
 	{
         trailing_header = true;
     }
 	goto _again;
-f16:
-#line 123 "MessageParser.rl"
+f18:
+#line 85 "MessageParser.rl"
 	{
         state = State::done;
         //instead of fret that does not work in the end of main we make its work manualy
@@ -2181,13 +2736,13 @@ f16:
     }
 	goto _again;
 f1:
-#line 135 "MessageParser.rl"
+#line 97 "MessageParser.rl"
 	{
         current_message->http_version = 10;
     }
 	goto _again;
 f13:
-#line 139 "MessageParser.rl"
+#line 101 "MessageParser.rl"
 	{
         current_message->http_version = 11;
     }
@@ -2237,17 +2792,30 @@ f5:
             auto s = string(p+1, pe - p - 1); //TODO: REMOVE COPYING
             current_message->body.parts.push_back(s);
             body_so_far += s.length();
-            p = pe;
+            p = pe - 1;
         }
         {p++; goto _out; }
     }
 	goto _again;
+f17:
+#line 5 "MessageParser.rl"
+	{
+        // mark the beginning of the buffer to copy it later
+        // there is only one mark at a time, no inner buffers are possible
+        mark = p - buffer_ptr;
+        marked = true;
+    }
+#line 58 "MessageParser.rl"
+	{
+        trailing_header = true;
+    }
+	goto _again;
 f6:
-#line 56 "MessageParser.rl"
+#line 18 "MessageParser.rl"
 	{
         current_field_buffer = advance_buffer(buffer, p);
     }
-#line 50 "MessageParser.rl"
+#line 12 "MessageParser.rl"
 	{
         marked = false;
         mark = 0;
@@ -2255,7 +2823,7 @@ f6:
     }
 	goto _again;
 f8:
-#line 60 "MessageParser.rl"
+#line 22 "MessageParser.rl"
 	{
         // ignore trailing header
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
@@ -2270,7 +2838,7 @@ f8:
             headers_so_far += current_field_buffer.length() + marked_buffer.length() + 4;
         }
     }
-#line 50 "MessageParser.rl"
+#line 12 "MessageParser.rl"
 	{
         marked = false;
         mark = 0;
@@ -2278,7 +2846,7 @@ f8:
     }
 	goto _again;
 f10:
-#line 75 "MessageParser.rl"
+#line 37 "MessageParser.rl"
 	{
         if (has_content_len) {
             state = State::error;
@@ -2286,7 +2854,7 @@ f10:
         }
         has_content_len = true;
     }
-#line 83 "MessageParser.rl"
+#line 45 "MessageParser.rl"
 	{
         if (content_len > 1000000000000000000) {
             state = State::error;
@@ -2296,12 +2864,12 @@ f10:
         content_len += (*p) - '0';
     }
 	goto _again;
-f15:
-#line 96 "MessageParser.rl"
+f16:
+#line 58 "MessageParser.rl"
 	{
         trailing_header = true;
     }
-#line 43 "MessageParser.rl"
+#line 5 "MessageParser.rl"
 	{
         // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
@@ -2309,8 +2877,8 @@ f15:
         marked = true;
     }
 	goto _again;
-f17:
-#line 100 "MessageParser.rl"
+f14:
+#line 62 "MessageParser.rl"
 	{
         string len_str;
         if(marked_buffer.empty()) {
@@ -2327,7 +2895,7 @@ f17:
         chunk_so_far = 0;
         body_so_far += chunk_len;
     }
-#line 50 "MessageParser.rl"
+#line 12 "MessageParser.rl"
 	{
         marked = false;
         mark = 0;
@@ -2344,7 +2912,7 @@ f4:
             current_message->message = marked_buffer;
         }
     }
-#line 50 "MessageParser.rl"
+#line 12 "MessageParser.rl"
 	{
         marked = false;
         mark = 0;
@@ -2367,7 +2935,7 @@ f3:
             {p++; goto _out; }
         }
     }
-#line 50 "MessageParser.rl"
+#line 12 "MessageParser.rl"
 	{
         marked = false;
         mark = 0;
@@ -2375,14 +2943,14 @@ f3:
     }
 	goto _again;
 f7:
-#line 43 "MessageParser.rl"
+#line 5 "MessageParser.rl"
 	{
         // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
         mark = p - buffer_ptr;
         marked = true;
     }
-#line 60 "MessageParser.rl"
+#line 22 "MessageParser.rl"
 	{
         // ignore trailing header
         // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
@@ -2397,7 +2965,7 @@ f7:
             headers_so_far += current_field_buffer.length() + marked_buffer.length() + 4;
         }
     }
-#line 50 "MessageParser.rl"
+#line 12 "MessageParser.rl"
 	{
         marked = false;
         mark = 0;
@@ -2405,7 +2973,7 @@ f7:
     }
 	goto _again;
 f9:
-#line 75 "MessageParser.rl"
+#line 37 "MessageParser.rl"
 	{
         if (has_content_len) {
             state = State::error;
@@ -2413,7 +2981,7 @@ f9:
         }
         has_content_len = true;
     }
-#line 83 "MessageParser.rl"
+#line 45 "MessageParser.rl"
 	{
         if (content_len > 1000000000000000000) {
             state = State::error;
@@ -2422,7 +2990,7 @@ f9:
         content_len *= 10;
         content_len += (*p) - '0';
     }
-#line 43 "MessageParser.rl"
+#line 5 "MessageParser.rl"
 	{
         // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
@@ -2431,71 +2999,144 @@ f9:
     }
 	goto _again;
 f19:
-#line 117 "MessageParser.rl"
+#line 79 "MessageParser.rl"
 	{
         if (chunk_len > 0) {
             current_message->body.parts.push_back(advance_buffer(buffer, p));
         }
     }
-#line 50 "MessageParser.rl"
+#line 12 "MessageParser.rl"
 	{
         marked = false;
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 96 "MessageParser.rl"
+#line 58 "MessageParser.rl"
 	{
         trailing_header = true;
     }
 	goto _again;
-f18:
-#line 43 "MessageParser.rl"
+f22:
+#line 5 "MessageParser.rl"
 	{
         // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
         mark = p - buffer_ptr;
         marked = true;
     }
-#line 117 "MessageParser.rl"
+#line 79 "MessageParser.rl"
 	{
         if (chunk_len > 0) {
             current_message->body.parts.push_back(advance_buffer(buffer, p));
         }
     }
-#line 50 "MessageParser.rl"
+#line 12 "MessageParser.rl"
 	{
         marked = false;
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 96 "MessageParser.rl"
+#line 58 "MessageParser.rl"
 	{
         trailing_header = true;
     }
 	goto _again;
 f20:
-#line 117 "MessageParser.rl"
+#line 79 "MessageParser.rl"
 	{
         if (chunk_len > 0) {
             current_message->body.parts.push_back(advance_buffer(buffer, p));
         }
     }
-#line 50 "MessageParser.rl"
+#line 12 "MessageParser.rl"
 	{
         marked = false;
         mark = 0;
         if (!marked_buffer.empty()) marked_buffer.clear();
     }
-#line 96 "MessageParser.rl"
+#line 58 "MessageParser.rl"
 	{
         trailing_header = true;
     }
-#line 43 "MessageParser.rl"
+#line 5 "MessageParser.rl"
 	{
         // mark the beginning of the buffer to copy it later
         // there is only one mark at a time, no inner buffers are possible
         mark = p - buffer_ptr;
         marked = true;
+    }
+	goto _again;
+f23:
+#line 79 "MessageParser.rl"
+	{
+        if (chunk_len > 0) {
+            current_message->body.parts.push_back(advance_buffer(buffer, p));
+        }
+    }
+#line 12 "MessageParser.rl"
+	{
+        marked = false;
+        mark = 0;
+        if (!marked_buffer.empty()) marked_buffer.clear();
+    }
+#line 58 "MessageParser.rl"
+	{
+        trailing_header = true;
+    }
+#line 22 "MessageParser.rl"
+	{
+        // ignore trailing header
+        // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
+        if(!trailing_header) {
+            marked_buffer = advance_buffer(buffer, p);
+
+            // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
+            // separate buffer, which is not cheap
+            // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl
+            rtrim(marked_buffer);
+            current_message->headers.add(current_field_buffer, marked_buffer);
+            headers_so_far += current_field_buffer.length() + marked_buffer.length() + 4;
+        }
+    }
+	goto _again;
+f21:
+#line 79 "MessageParser.rl"
+	{
+        if (chunk_len > 0) {
+            current_message->body.parts.push_back(advance_buffer(buffer, p));
+        }
+    }
+#line 12 "MessageParser.rl"
+	{
+        marked = false;
+        mark = 0;
+        if (!marked_buffer.empty()) marked_buffer.clear();
+    }
+#line 58 "MessageParser.rl"
+	{
+        trailing_header = true;
+    }
+#line 5 "MessageParser.rl"
+	{
+        // mark the beginning of the buffer to copy it later
+        // there is only one mark at a time, no inner buffers are possible
+        mark = p - buffer_ptr;
+        marked = true;
+    }
+#line 22 "MessageParser.rl"
+	{
+        // ignore trailing header
+        // for details on trailing headers see https://developer.mozilla.org/ru/docs/Web/HTTP/Headers/Trailer
+        if(!trailing_header) {
+            marked_buffer = advance_buffer(buffer, p);
+
+            // rtrim here is good enough for most cases, because proper grammar demands copying each symbol into
+            // separate buffer, which is not cheap
+            // full grammar could be found here: https://github.com/ki11roy/http_header_field_parser/blob/master/parse_header_field.rl
+            rtrim(marked_buffer);
+            current_message->headers.add(current_field_buffer, marked_buffer);
+            headers_so_far += current_field_buffer.length() + marked_buffer.length() + 4;
+        }
     }
 	goto _again;
 

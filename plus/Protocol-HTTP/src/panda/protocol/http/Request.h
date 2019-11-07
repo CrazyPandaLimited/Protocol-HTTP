@@ -1,5 +1,4 @@
 #pragma once
-#include "Message.h"
 #include "Response.h"
 #include <panda/uri/URI.h>
 #include <panda/memory.h>
@@ -23,15 +22,13 @@ struct Request : Message, AllocatedObject<Request> {
         Message(std::move(header), std::move(body), chunked, http_version), method(method), uri(uri)
     {}
 
-    ResponseSP response () const { return create_response(); }
-
     std::vector<string> to_vector ();
     string              to_string ();
 
+    virtual ResponseSP create_response () const { return make_iptr<Response>(); }
+
 protected:
     ~Request () {} // restrict stack allocation
-
-    virtual ResponseSP create_response () const { return make_iptr<Response>(); }
 
 private:
     friend struct RequestParser;

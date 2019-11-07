@@ -6,8 +6,8 @@
 namespace xs { namespace protocol { namespace http {
     using namespace panda::protocol::http;
 
-    RequestSP  make_request  (const Hash&, const RequestSP& = {});
-    ResponseSP make_response (const Hash&, const ResponseSP& = {});
+    void fill_request  (const Hash&, Request*);
+    void fill_response (const Hash&, Response*);
 
     void set_headers (Message* p, const Hash& headers);
     void set_method  (Request* req, const Sv& method);
@@ -33,7 +33,7 @@ namespace xs { namespace protocol { namespace http {
 namespace xs {
 
 template <class TYPE>
-struct Typemap<panda::protocol::http::Message*, TYPE> : TypemapObject<panda::protocol::http::Message*, TYPE, ObjectTypeRefcntPtr, ObjectStorageMG> {};
+struct Typemap<panda::protocol::http::Message*, TYPE> : TypemapObject<panda::protocol::http::Message*, TYPE, ObjectTypeRefcntPtr, ObjectStorageMGBackref> {};
 
 template <class TYPE>
 struct Typemap<panda::protocol::http::Request*, TYPE> : Typemap<panda::protocol::http::Message*, TYPE> {
@@ -44,8 +44,10 @@ template <class TYPE>
 struct Typemap<panda::protocol::http::RequestSP, panda::iptr<TYPE>> : Typemap<TYPE*> {
     using Super = Typemap<TYPE*>;
     static panda::iptr<TYPE> in (Sv arg) {
-        if (arg.is_hash_ref()) return xs::protocol::http::make_request(arg, new TYPE());
-        return Super::in(arg);
+        if (!arg.is_hash_ref()) return Super::in(arg);
+        panda::iptr<TYPE> ret = make_backref<TYPE>();
+        xs::protocol::http::fill_request(arg, ret);
+        return ret;
     }
 };
 
@@ -58,8 +60,10 @@ template <class TYPE>
 struct Typemap<panda::protocol::http::ResponseSP, panda::iptr<TYPE>> : Typemap<TYPE*> {
     using Super = Typemap<TYPE*>;
     static panda::iptr<TYPE> in (Sv arg) {
-        if (arg.is_hash_ref()) return xs::protocol::http::make_response(arg, new TYPE());
-        return Super::in(arg);
+        if (!arg.is_hash_ref()) return Super::in(arg);
+        panda::iptr<TYPE> ret = make_backref<TYPE>();
+        xs::protocol::http::fill_response(arg, ret);
+        return ret;
     }
 };
 

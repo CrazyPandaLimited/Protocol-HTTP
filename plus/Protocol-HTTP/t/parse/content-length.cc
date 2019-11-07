@@ -1,6 +1,6 @@
-#include "lib/test.h"
+#include "../lib/test.h"
 
-#define TEST(name) TEST_CASE("content-length: " name, "[content-length]")
+#define TEST(name) TEST_CASE("parse-content-length: " name, "[parse-content-length]")
 
 TEST("content as single buffer") {
     RequestParser p;

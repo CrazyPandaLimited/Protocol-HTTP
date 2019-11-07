@@ -1,6 +1,6 @@
-#include "lib/test.h"
+#include "../lib/test.h"
 
-#define TEST(name) TEST_CASE("response: " name, "[response]")
+#define TEST(name) TEST_CASE("parse-response: " name, "[parse-response]")
 
 TEST("trivial get response") {
     ResponseParser p;
@@ -14,6 +14,7 @@ TEST("trivial get response") {
 
     auto result = p.parse(raw);
     CHECK(result.state != State::done);
+    CHECK(result.position == raw.length());
 
     auto res = result.response;
     CHECK(res->http_version == 10);

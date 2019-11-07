@@ -1,6 +1,6 @@
-#include "lib/test.h"
+#include "../lib/test.h"
 
-#define TEST(name) TEST_CASE("chunks: " name, "[chunks]")
+#define TEST(name) TEST_CASE("parse-chunks: " name, "[parse-chunks]")
 
 TEST("trivial chunks") {
     RequestParser p;
