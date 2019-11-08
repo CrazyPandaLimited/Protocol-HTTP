@@ -26,7 +26,7 @@ string Request::_http_header (size_t reserve) {
         // Host field builder
         // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Host
         auto host = uri->host();
-        if ((uri->scheme() == "http" && uri->port() != 80) || (uri->scheme() == "https" && uri->port() != 443)) {
+        if (!uri->scheme() || (uri->scheme() == "http" && uri->port() != 80) || (uri->scheme() == "https" && uri->port() != 443)) {
             host.reserve(host.length()+6);
             host += ':';
             host += panda::to_string(uri->port());

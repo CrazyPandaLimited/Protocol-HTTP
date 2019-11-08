@@ -104,6 +104,11 @@ struct Message::Builder {
         return self();
     }
 
+    T& header (const string& k, const string& v) {
+        _headers.add(k, v);
+        return self();
+    }
+
     T& body (Body&& val, const string& content_type = "") {
         _body = std::move(val);
         if (content_type) _headers.add("Content-Type", content_type);
