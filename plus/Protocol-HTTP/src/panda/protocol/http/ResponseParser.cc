@@ -90,7 +90,22 @@ ResponseParser::Result ResponseParser::reset_and_build_result (size_t position, 
     State real_state = state; // state will be reset in MessageParser::reset;
     auto res = current_message;
     auto req = _request;
-    _request.reset();
+
+    if (!error && res->code == 100) {
+        bool found = false;
+        for (auto& r : req->headers.equal_range("Expect")) {
+            if (r.value != "100-continue") continue;
+            found = true;
+            break;
+        }
+        if (!found) {
+            _request.reset();
+            MessageParser::reset();
+            return {req, res, position, State::error, errc::unexpected_continue};
+        }
+    }
+    else _request.reset();
+
     MessageParser::reset();
     return {req, res, position, real_state, error};
 }

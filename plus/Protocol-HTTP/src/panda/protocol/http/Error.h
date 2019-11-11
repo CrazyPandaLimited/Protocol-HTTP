@@ -11,6 +11,7 @@ enum class errc {
     body_too_large,
     unexpected_body,
     unexpected_eof,
+    unexpected_continue,
 };
 
 struct ErrorCategory : std::error_category {
