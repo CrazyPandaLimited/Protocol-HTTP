@@ -54,16 +54,18 @@ struct Header {
     string location   () const { return get("Location", ""); }
     bool   is_chunked () const { return get("Transfer-Encoding", "") == "chunked"; }
 
-    Header&  connection (const string& ctype) &     { return add("Connection", ctype); }
-    Header&& connection (const string& ctype) &&    { return std::move(*this).add("Connection", ctype); }
-    Header&  date       (const string& date) &      { return add("Date", date); }
-    Header&& date       (const string& date) &&     { return std::move(*this).add("Date", date); }
-    Header&  host       (const string& host) &      { return add("Host", host); }
-    Header&& host       (const string& host) &&     { return std::move(*this).add("Host", host); }
-    Header&  location   (const string& location) &  { return add("Location", location); }
-    Header&& location   (const string& location) && { return std::move(*this).add("Location", location); }
-    Header&  chunked    () &                        { return add("Transfer-Encoding", "chunked"); }
-    Header&& chunked    () &&                       { return std::move(*this).add("Transfer-Encoding", "chunked"); }
+    Header&  connection      (const string& ctype) &     { return add("Connection", ctype); }
+    Header&& connection      (const string& ctype) &&    { return std::move(*this).add("Connection", ctype); }
+    Header&  date            (const string& date) &      { return add("Date", date); }
+    Header&& date            (const string& date) &&     { return std::move(*this).add("Date", date); }
+    Header&  host            (const string& host) &      { return add("Host", host); }
+    Header&& host            (const string& host) &&     { return std::move(*this).add("Host", host); }
+    Header&  location        (const string& location) &  { return add("Location", location); }
+    Header&& location        (const string& location) && { return std::move(*this).add("Location", location); }
+    Header&  chunked         () &                        { return add("Transfer-Encoding", "chunked"); }
+    Header&& chunked         () &&                       { return std::move(*this).add("Transfer-Encoding", "chunked"); }
+    Header&  expect_continue () &                        { return add("Expect", "100-continue"); }
+    Header&& expect_continue () &&                       { return std::move(*this).add("Expect", "100-continue"); }
 
     Container::iterator       find (string_view key);
     Container::const_iterator find (string_view key) const;

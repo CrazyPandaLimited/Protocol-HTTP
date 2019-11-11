@@ -22,6 +22,8 @@ struct Request : Message, AllocatedObject<Request> {
         Message(std::move(header), std::move(body), chunked, http_version), method(method), uri(uri)
     {}
 
+    bool expects_continue () const;
+
     std::vector<string> to_vector ();
     string              to_string ();
 

@@ -51,4 +51,9 @@ string Request::_http_header (size_t reserve) {
 std::vector<string> Request::to_vector () { return _to_vector([this]{ return _http_header(0); }); }
 string              Request::to_string () { return _to_string([this](size_t r){ return _http_header(r); }); }
 
+bool Request::expects_continue () const {
+    for (auto& r : headers.equal_range("Expect")) if (r.value == "100-continue") return true;
+    return false;
+}
+
 }}}
