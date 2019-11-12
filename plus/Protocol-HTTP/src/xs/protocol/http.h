@@ -6,8 +6,8 @@
 namespace xs { namespace protocol { namespace http {
     using namespace panda::protocol::http;
 
-    void fill_request  (const Hash&, Request*);
-    void fill_response (const Hash&, Response*);
+    void fill (Request*,  const Hash&);
+    void fill (Response*, const Hash&);
 
     void set_headers (Message* p, const Hash& headers);
     void set_method  (Request* req, const Sv& method);
@@ -46,7 +46,7 @@ struct Typemap<panda::protocol::http::RequestSP, panda::iptr<TYPE>> : Typemap<TY
     static panda::iptr<TYPE> in (Sv arg) {
         if (!arg.is_hash_ref()) return Super::in(arg);
         panda::iptr<TYPE> ret = make_backref<TYPE>();
-        xs::protocol::http::fill_request(arg, ret);
+        xs::protocol::http::fill(ret.get(), arg);
         return ret;
     }
 };
@@ -62,7 +62,7 @@ struct Typemap<panda::protocol::http::ResponseSP, panda::iptr<TYPE>> : Typemap<T
     static panda::iptr<TYPE> in (Sv arg) {
         if (!arg.is_hash_ref()) return Super::in(arg);
         panda::iptr<TYPE> ret = make_backref<TYPE>();
-        xs::protocol::http::fill_response(arg, ret);
+        xs::protocol::http::fill(ret.get(), arg);
         return ret;
     }
 };
