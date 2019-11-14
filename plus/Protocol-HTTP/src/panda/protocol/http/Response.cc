@@ -4,6 +4,7 @@
 namespace panda { namespace protocol { namespace http {
 
 string Response::_http_header (const Request* req, size_t reserve) {
+    if (!code) code = 200;
     if (req) {
         if (!http_version) http_version = req->http_version;
         if (!req->keep_alive()) headers.set("Connection", "close");

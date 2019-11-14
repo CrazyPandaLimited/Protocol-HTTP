@@ -20,7 +20,17 @@ subtest 'basic' => sub {
         "Content-Length: 5\r\n".
         "\r\n".
         "hello"
-        ;
+    ;
+};
+
+subtest 'code is not given' => sub {
+    my $res = Protocol::HTTP::Response->new();
+    
+    is $res->to_string,
+        "HTTP/1.1 200 OK\r\n".
+        "Content-Length: 0\r\n".
+        "\r\n"
+    ;
 };
 
 done_testing();

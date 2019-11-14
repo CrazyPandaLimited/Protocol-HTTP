@@ -19,10 +19,10 @@ static inline string _method_str (Request::Method rm) {
 
 string Request::_http_header (size_t reserve) {
     auto meth = _method_str(method);
-    auto reluri  = uri->relative();
+    auto reluri  = uri ? uri->relative() : string("/");
     if (!http_version) http_version = 11;
 
-    if (http_version == 11 && !headers.has("Host")) {
+    if (!headers.has("Host") && uri && uri->host()) {
         // Host field builder
         // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Host
         auto host = uri->host();
