@@ -7,7 +7,7 @@
 namespace panda { namespace protocol { namespace http {
 
 struct IRequestFactory {
-    virtual RequestSP create_request () = 0;
+    virtual RequestSP new_request () = 0;
 };
 
 struct RequestParser : MessageParser<Request> {
@@ -18,7 +18,11 @@ struct RequestParser : MessageParser<Request> {
         std::error_code error;
     };
 
-    RequestParser (IRequestFactory* = nullptr);
+    struct IFactory {
+        virtual RequestSP new_request () = 0;
+    };
+
+    RequestParser (IFactory* = nullptr);
     RequestParser (RequestParser&&) = default;
 
     virtual ~RequestParser () {}
@@ -37,9 +41,9 @@ struct RequestParser : MessageParser<Request> {
 private:
     using MessageParser::FinalFlag;
 
-    IRequestFactory* factory;
+    IFactory* factory;
 
-    RequestSP new_request () const { return factory ? factory->create_request() : make_iptr<Request>(); }
+    RequestSP new_request () const { return factory ? factory->new_request() : make_iptr<Request>(); }
 
     Result build_result           (FinalFlag reset, size_t position);
     Result reset_and_build_result (size_t position, State state, std::error_code error = {});

@@ -27,7 +27,7 @@ struct Request : Message, AllocatedObject<Request> {
     std::vector<string> to_vector ();
     string              to_string ();
 
-    virtual ResponseSP create_response () const { return make_iptr<Response>(); }
+    virtual ResponseSP new_response () const { return make_iptr<Response>(); }
 
 protected:
     ~Request () {} // restrict stack allocation

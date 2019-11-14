@@ -17,7 +17,7 @@ ResponseSP ResponseParser::create_message () {
     // so something is terribly wrong if we have no corresponding request
     assert(!current_message);
     if (!_request) throw_no_request();
-    current_message = _request->create_response();
+    current_message = _request->new_response();
     return current_message;
 }
 

@@ -8,8 +8,8 @@ namespace {
     #include "RequestParserGenerated.icc"
 }
 
-RequestParser::RequestParser (IRequestFactory* fac) :
-    MessageParser<Request>(fac ? fac->create_request() : make_iptr<Request>(), http_request_parser_start), factory(fac)
+RequestParser::RequestParser (IFactory* fac) :
+    MessageParser<Request>(fac ? fac->new_request() : make_iptr<Request>(), http_request_parser_start), factory(fac)
 {}
 
 RequestParser::Result RequestParser::parse (const string& buffer) {
