@@ -8,7 +8,6 @@ string Response::_http_header (const Request* req, size_t reserve) {
     if (req) {
         if (!http_version) http_version = req->http_version;
         if (!req->keep_alive()) headers.set("Connection", "close");
-        else if (!headers.has("Connection")) headers.add("Connection", "keep-alive");
     }
     if (!message) message = message_for_code(code);
 
