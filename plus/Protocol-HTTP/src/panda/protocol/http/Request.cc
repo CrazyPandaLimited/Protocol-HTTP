@@ -52,7 +52,7 @@ std::vector<string> Request::to_vector () { return _to_vector([this]{ return _ht
 string              Request::to_string () { return _to_string([this](size_t r){ return _http_header(r); }); }
 
 bool Request::expects_continue () const {
-    for (auto& r : headers.equal_range("Expect")) if (r.value == "100-continue") return true;
+    for (auto& val : headers.get_multi("Expect")) if (val == "100-continue") return true;
     return false;
 }
 

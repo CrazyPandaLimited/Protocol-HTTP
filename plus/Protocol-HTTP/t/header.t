@@ -1,4 +1,42 @@
 use 5.012;
 use lib 't/lib';
 use MyTest;
-use Test::Catch '[header]';
+use Test::More;
+use Test::Catch;
+
+catch_run('[header]');
+
+subtest 'single header' => sub {
+    my $msg = new Protocol::HTTP::Request();
+    
+    is $msg->headers_size, 0;
+    is $msg->header("a"), undef;
+
+    $msg->header("a", "1");
+    is $msg->header("a"), 1;
+    is $msg->headers_size, 1;
+
+    $msg->header("b", "2");
+    is $msg->header("b"), 2;
+    is $msg->headers_size, 2;
+};
+
+subtest 'multi header' => sub {
+    my $msg = new Protocol::HTTP::Request();
+    
+    is_deeply [$msg->multiheader("a")], [];
+    
+    $msg->multiheader("a", 1);
+    is $msg->headers_size, 1;
+    is_deeply [$msg->multiheader("a")], [1];
+
+    $msg->multiheader("a", 2);
+    is $msg->headers_size, 2;
+    is_deeply [$msg->multiheader("a")], [1,2];
+    
+    $msg->multiheader("a", 3, 4);
+    is $msg->headers_size, 4;
+    is_deeply [$msg->multiheader("a")], [1,2,3,4];
+};
+
+done_testing();

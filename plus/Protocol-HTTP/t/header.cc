@@ -24,3 +24,18 @@ TEST("basic") {
     h.set("field2", "value2");
     CHECK(h.get("field2", "default") == "value2");
 }
+
+TEST("multi") {
+    Header h;
+
+    h.add("key", "hello");
+    h.add("Key", "world");
+
+    CHECK(h.get("key") == "world");
+
+    auto r = h.get_multi("key");
+    auto it = r.begin();
+    CHECK(*it++ == "hello");
+    CHECK(*it++ == "world");
+    CHECK(it == r.end());
+}

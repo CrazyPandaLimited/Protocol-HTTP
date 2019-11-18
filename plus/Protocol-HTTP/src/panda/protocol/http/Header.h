@@ -5,6 +5,7 @@
 
 #include <boost/container/small_vector.hpp>
 #include <range/v3/view/filter.hpp>
+#include <range/v3/view/transform.hpp>
 
 namespace panda { namespace protocol { namespace http {
 
@@ -83,10 +84,10 @@ struct Header {
         }
     }
 
-    auto equal_range (const string& key) const {
-        return fields | ::ranges::view::filter([key](const Field& f){return iequals(f.name, key);});
+    auto get_multi (const string_view& key) const {
+        return fields | ::ranges::view::filter([key](const Field& f) {return iequals(f.name, key);})
+                      | ::ranges::view::transform([](const Field& f) -> const string& {return f.value; });
     }
-
 };
 
 std::ostream& operator<< (std::ostream&, const Header::Field&);
