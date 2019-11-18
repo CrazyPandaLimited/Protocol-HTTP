@@ -19,6 +19,10 @@ subtest 'single header' => sub {
     $msg->header("b", "2");
     is $msg->header("b"), 2;
     is $msg->headers_size, 2;
+    
+    $msg->header("b", undef);
+    is $msg->headers_size, 1;
+    is $msg->header("b"), undef;
 };
 
 subtest 'multi header' => sub {
@@ -37,6 +41,15 @@ subtest 'multi header' => sub {
     $msg->multiheader("a", 3, 4);
     is $msg->headers_size, 4;
     is_deeply [$msg->multiheader("a")], [1,2,3,4];
+    
+    $msg->header("a", undef);
+    is $msg->headers_size, 0;
+    is_deeply [$msg->multiheader("a")], [];
+    
+    $msg->multiheader("a", 3, 4);
+    $msg->multiheader("a", undef);
+    is $msg->headers_size, 2;
+    is_deeply [$msg->multiheader("a")], [3,4];    
 };
 
 done_testing();
