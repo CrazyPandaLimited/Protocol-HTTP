@@ -2761,7 +2761,7 @@ f5:
         // Response to HEAD is the same as response to GET, but without body
         if (!_request) throw_no_request();
 
-        if (_request->method == Request::Method::HEAD || current_message->code  < 200 || current_message->code == 203 || current_message->code == 304) {
+        if (_request->method == Request::Method::HEAD || current_message->code  < 200 || current_message->code == 204 || current_message->code == 304) {
             state = State::done;
             {p++; goto _out; }
         }

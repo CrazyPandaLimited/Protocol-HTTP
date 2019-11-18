@@ -196,27 +196,3 @@ TEST("parsing response byte by byte") {
     CHECK(res->headers.get("Connection") == "Upgrade");
     CHECK(res->headers.get("Sec-WebSocket-Extensions") == "permessage-deflate; client_max_window_bits=15");
 }
-
-TEST("100 continue") {
-    ResponseParser p;
-    p.set_request(new Request(Method::GET, new URI("/"), Header().add("Expect", "100-continue")));
-
-    auto result = p.parse("HTTP/1.1 100 Continue\r\n\r\n");
-    CHECK(result.state == State::done);
-    CHECK(result.response->code == 100);
-    CHECK(p.request());
-
-    result = p.parse("HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n");
-    CHECK(result.state == State::done);
-    CHECK(result.response->code == 200);
-    CHECK_FALSE(p.request());
-}
-
-TEST("unexpected 100 continue") {
-    ResponseParser p;
-    p.set_request(new Request());
-
-    auto result = p.parse("HTTP/1.1 100 Continue\r\n\r\n");
-    CHECK(result.state == State::error);
-    CHECK(result.error == errc::unexpected_continue);
-}
