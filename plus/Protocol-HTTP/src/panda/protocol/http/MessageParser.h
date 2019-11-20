@@ -20,33 +20,27 @@ struct MessageParser {
 protected:
     enum class FinalFlag { CONTINUE, RESET };
 
-    MessageParser (const MessageSP& message, int cs_initial_state) : cs_initial_state(cs_initial_state) {
-        reset();
-        current_message = message;
+    MessageParser () {
         max_headers_size = SIZE_UNLIMITED;
-        max_body_size = SIZE_UNLIMITED;
+        max_body_size    = SIZE_UNLIMITED;
     }
 
     MessageParser (const MessageParser&) = delete;
     MessageParser (MessageParser&&)      = default;
 
     inline void reset () {
-        state = State::not_yet;
-
+        message.reset();
+        state = State::headers;
+        mark = nullptr;
         headers_so_far = 0;
-        content_len = 0;
-        body_so_far = 0;
-        chunk_len = 0;
-        chunk_so_far = 0;
-        has_content_len = false;
-        trailing_header = false;
-        marked = false;
-        mark = 0;
-
-        // we don't want extra virtual call, so set machine state by hand
-        cs = cs_initial_state;
-        top = 0;
-        current_message.reset();
+        headers_finished = false;
+        has_content_length = false;
+//        body_so_far = 0;
+//        chunk_len = 0;
+//        chunk_so_far = 0;
+//
+//        // we don't want extra virtual call, so set machine state by hand
+//        cs = cs_initial_state;
     }
 
     inline void unmark () {
@@ -98,26 +92,20 @@ protected:
     }
 
 protected:
-    // marked buffer contains unfinished field and used to parse messages that come in fragments
-    // set only if parser stopped while processing buffer
-    // for more details see Ragel guide 5.9 "Maintaining Pointers to Input Data"
-    string    marked_buffer;
-    string    current_field_buffer;
-    MessageSP current_message;
-    State     state; // more general parser state, not used by Ragel
+    MessageSP message;
+    State     state; // high-level state
+    int       cs; // ragel state
+    ssize_t   mark;
+    string    acc; // contains unfinished field and used to parse messages that come in fragments
+    string    field_name;
     size_t    headers_so_far;
-    uint64_t  content_len;
-    size_t    body_so_far;
-    size_t    chunk_len;
-    size_t    chunk_so_far;
-    bool      has_content_len;
-    bool      trailing_header;
-    bool      marked;
-    size_t    mark;
-    const int cs_initial_state; // initial state, set by specific parser implementation
-    // internal variables used by Ragel, see guide 5.1 "Variables Used by Ragel"
-    int cs;            // current state
-    int top, stack[1]; // to call subparsers with fcall/fret
+    bool      headers_finished;
+    bool      has_content_length;
+    uint64_t  content_length;
+    size_t    chunk_length;
+    //size_t    body_so_far;
+    //size_t    chunk_so_far;
+    //const int cs_initial_state; // initial state, set by specific parser implementation
 };
 
 }}}

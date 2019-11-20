@@ -45,8 +45,10 @@ private:
 
     RequestSP new_request () const { return factory ? factory->new_request() : make_iptr<Request>(); }
 
-    Result build_result           (FinalFlag reset, size_t position);
-    Result reset_and_build_result (size_t position, State state, std::error_code error = {});
+    size_t machine_exec (const string& buf, size_t off);
+
+    Result build_result (FinalFlag reset, size_t position);
+    Result finish       (size_t position, State state, std::error_code error = {});
 };
 
 }}}

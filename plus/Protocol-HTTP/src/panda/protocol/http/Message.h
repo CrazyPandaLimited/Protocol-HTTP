@@ -6,7 +6,7 @@
 
 namespace panda { namespace protocol { namespace http {
 
-enum class State {not_yet, got_header, in_body, done, error};
+enum class State {headers, body, chunk_start, chunk_body, chunk_end, chunk_trailer, done, error};
 
 struct Message : virtual Refcnt {
     template <class T> struct Builder;
