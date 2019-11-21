@@ -6,7 +6,7 @@
 
 namespace panda { namespace protocol { namespace http {
 
-enum class State {headers, body, chunk_start, chunk_body, chunk_end, chunk_trailer, done, error};
+enum class State {headers, body, chunk, chunk_body, chunk_trailer, done, error};
 
 struct Message : virtual Refcnt {
     template <class T> struct Builder;
@@ -22,6 +22,9 @@ struct Message : virtual Refcnt {
         headers(std::move(headers)), body(std::move(body)), chunked(chunked), http_version(http_version)
     {}
 
+    State                  state () const { return _state; }
+    const std::error_code& error () const { return _error; }
+
     bool keep_alive () const;
     void keep_alive (bool val) { val ? headers.connection("keep-alive") : headers.connection("close"); }
 
@@ -33,14 +36,6 @@ struct Message : virtual Refcnt {
     string final_chunk () { return "0\r\n\r\n"; }
 
 protected:
-    template <class T> friend struct MessageParser;
-
-    size_t body_length () {
-        auto l = body.length();
-        if (!chunked || !l) return l;
-        return l + body.parts.size() * 8 + 5;
-    }
-
     inline void _compile_prepare () {
         if (chunked) {
             http_version = 11;
@@ -80,7 +75,8 @@ protected:
     template <class T>
     inline string _to_string (const T& f) {
         _compile_prepare();
-        auto blen = body_length();
+        auto blen = body.length();
+        if (chunked && blen) blen += body.parts.size() * 8 + 5;
         auto ret = f(blen);
         if (!blen) return ret;
 
@@ -94,6 +90,19 @@ protected:
         else for (auto& part : body.parts) ret += part;
 
         return ret;
+    }
+
+private:
+    friend struct Parser;
+
+    State           _state = State::headers;
+    std::error_code _error;
+
+    void state (State s) { _state = s; }
+
+    void error (const std::error_code& e) {
+        _error = e;
+        _state = State::error;
     }
 };
 

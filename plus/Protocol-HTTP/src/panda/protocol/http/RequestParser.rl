@@ -1,75 +1,142 @@
-%%{
-    machine http_request_parser;
+#include "RequestParser.h"
 
-    include http_message_parser "MessageParser.rl";
+namespace panda { namespace protocol { namespace http {
 
-    action request_uri {
-        if (marked_buffer.empty()) {
-            current_message->uri = make_iptr<uri::URI>(string(_HTTP_PARSER_PTR_TO(mark), _HTTP_PARSER_LEN(mark, fpc)));
-        } else {
-            marked_buffer.append(string(_HTTP_PARSER_PTR_TO(0), _HTTP_PARSER_LEN(0, fpc)));
-            current_message->uri = make_iptr<uri::URI>(marked_buffer);
-        }
-    }
+namespace {
+    #define MACHINE_DATA
+    #include "parser.icc"
+}
 
-    action done {
-        state = State::got_header;
-        if (current_message->chunked) {
-            fcall chunked_body;
-        }
-        else if (content_len > 0) {
-            // we are between headers and body and there are no body yet
-            // current position is on LF
-            if (pe - fpc == 1) {
-                // set state and wait for the body in next calls
-                state = State::in_body;
-            } else {
-                // we have more buffer to process,
-                // set position on the next character and proceed
-                process_body(buffer, ++fpc, pe);
-                --fpc;
+RequestParser::RequestParser (IFactory* fac) : MessageParser<Request>(), factory(fac) {
+    reset();
+}
+
+void RequestParser::reset () {
+    MessageParser::reset();
+    cs      = http_parser_en_request;
+    message = new_request();
+}
+
+size_t RequestParser::machine_exec (const string& buffer, size_t off) {
+    const char* ps = buffer.data();
+    const char* p  = ps + off;
+    const char* pe = ps + buffer.size();
+
+    #define MACHINE_EXEC
+    #include "parser.icc"
+
+    return p - ps;
+}
+
+RequestParser::Result RequestParser::parse (const string& buffer) {
+    auto   len = buffer.length();
+    size_t pos = 0;
+
+    while (pos != len) switch (state) {
+        case State::headers:
+            pos = machine_exec(buffer, pos);
+            if (cs == http_parser_error) return finish(pos, State::error, errc::lexical_error);
+
+            headers_so_far += pos;
+            if (headers_so_far > max_headers_size) return finish(pos, State::error, errc::headers_too_large);
+
+            if (cs < http_parser_first_final) {
+                if (mark) {
+                    acc = buffer.substr(mark - ps, p - mark);
+                    mark = nullptr;
+                }
+                return {message, pos, state, {}};
             }
-        }
-        else {
-            state = State::done;
-        }
-        fbreak;
+
+            if (message->chunked) {
+                state = State::chunk;
+                cs    = http_parser_en_first_chunk;
+            }
+            else if (has_content_length && content_length > 0) {
+                if (content_length > max_body_size) {
+                    return finish(position, State::error, max_body_size ? errc::body_too_large : errc::unexpected_body);
+                }
+                state = State::body;
+            }
+            else {
+                return finish(pos, State::done);
+            }
+            continue;
+
+        case State::body:
+            auto left = content_length - body_so_far;
+            if (pe - p >= left) {
+                message->body.parts.push_back(buffer.substr(pos, left));
+                return finish(off + left, State::done);
+            }
+            else {
+                message->body.parts.push_back(buffer.substr(pos));
+                return {message, len, state, {}};
+            }
+
+        case State::chunk:
+            pos = machine_exec(buffer, pos);
+            if (cs == http_parser_error) return finish(pos, State::error, errc::lexical_error);
+
+            if (cs < http_parser_first_final) {
+                if (mark) {
+                    acc = buffer.substr(mark - ps, p - mark);
+                    mark = nullptr;
+                }
+                return {message, pos, state, {}};
+            }
+
+            if (!chunk_length) { // final chunk
+                state = State::chunk_trailer;
+                cs    = http_parser_en_chunk_trailer;
+                continue;
+            }
+
+            body_so_far += chunk_length;
+            if (body_so_far > max_body_size) {
+                return finish(position, State::error, max_body_size ? errc::body_too_large : errc::unexpected_body);
+            }
+
+            chunk_so_far = 0;
+            state = State::chunk_body;
+            cs    = http_parser_en_chunk_body;
+
+        case State::chunk_body:
+            auto left = chunk_length - chunk_so_far;
+            auto have = len - off;
+
+            if (have >= left) {
+                message->body.parts.push_back(buffer.substr(off, left));
+                off += left;
+                state = State::chunk;
+                cs    = http_parser_en_chunk;
+                continue;
+            } else {
+                message->body.parts.push_back(buffer.substr(off));
+                chunk_so_far += have;
+                return {message, len, state, {}};
+            }
+
+        case State::chunk_trailer:
+            pos = machine_exec(buffer, pos);
+            if (cs == http_parser_error) return finish(pos, State::error, errc::lexical_error);
+
+            if (cs < http_parser_first_final) {
+                if (mark) {
+                    acc = buffer.substr(mark - ps, p - mark);
+                    mark = nullptr;
+                }
+                return {message, pos, state, {}};
+            }
+
+            return finish(pos, State::done);
     }
+}
 
-    method = ( "OPTIONS" @{current_message->method = Request::Method::OPTIONS; }
-             | "GET" @{current_message->method = Request::Method::GET; }
-             | "HEAD" @{current_message->method = Request::Method::HEAD; }
-             | "POST" @{current_message->method = Request::Method::POST; }
-             | "PUT" @{current_message->method = Request::Method::PUT; }
-             | "DELETE" @{current_message->method = Request::Method::DELETE; }
-             | "TRACE" @{current_message->method = Request::Method::TRACE; }
-             | "CONNECT" @{current_message->method = Request::Method::CONNECT; }
-             ) ;
+RequestParser::Result RequestParser::finish (size_t position, State state, std::error_code error) {
+    MessageSP msg = message;
+    reset();
+    return {msg, position, state, this->error ? this->error : error};
+}
 
-    uri_reference = vchar+ >mark %request_uri %unmark;
-
-    request_line = method " " uri_reference " " http_version crlf;
-
-    main := request_line message_header* :> crlf @done;
-}%%
-
-#if defined(MACHINE_DATA)
-#undef MACHINE_DATA
-%%{
-    write data;
-}%%
-#endif
-
-#if defined(MACHINE_INIT)
-#undef MACHINE_INIT
-%%{
-    write init;
-}%%
-#endif
-
-#if defined(MACHINE_EXEC)
-#undef MACHINE_EXEC
-%%{
-    write exec;
-}%%
-#endif
+}}}

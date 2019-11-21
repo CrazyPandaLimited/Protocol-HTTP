@@ -1,54 +1,41 @@
 #pragma once
 #include "Error.h"
-#include "Request.h"
-#include "Response.h"
-#include "MessageParser.h"
-#include <panda/excepted.h>
+#include "Parser.h"
 
 namespace panda { namespace protocol { namespace http {
 
-struct ResponseParser : MessageParser<Response> {
+struct ResponseParser : Parser {
     struct Result {
-        RequestSP       request;
-        ResponseSP      response;
-        size_t          position = 0;
-        State           state    = State::not_yet;
-        std::error_code error;
+        ResponseSP response;
+        size_t     position;
     };
-    using ResultSP = iptr<Result>;
 
     ResponseParser ();
     ResponseParser (ResponseParser&&) = default;
 
-    virtual ~ResponseParser () {}
+    const RequestSP& context_request () const { return _context_request; }
 
-    const RequestSP& request () const { return _request; }
-
-    void set_request (const RequestSP& request) {
-        if (_request) throw ParserError("can't set another request until response is done");
-        _request = request;
+    void set_context_request (const RequestSP& request) {
+        if (_context_request) throw ParserError("can't set another context request until response is done");
+        _context_request = request;
     }
 
     Result parse (const string& buffer);
 
-    Result parse_shift (string& s) {
+    ResponseSP parse_shift (string& s) {
         auto result = parse(s);
         s.offset(result.position);
-        result.position = 0;
-        return result;
+        return result.response;
     }
 
-    Result eof ();
+    ResponseSP eof ();
 
     void reset ();
 
 private:
-    RequestSP _request;
+    RequestSP _context_request;
 
     ResponseSP create_message ();
-
-    Result build_result           (FinalFlag reset, size_t position);
-    Result reset_and_build_result (size_t position, const std::error_code& error = {});
 };
 
 }}}

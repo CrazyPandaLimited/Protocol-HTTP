@@ -1,24 +1,44 @@
 #include "ResponseParser.h"
-#include "parser.icc"
 
 namespace panda { namespace protocol { namespace http {
 
-namespace {
-    #define MACHINE_DATA
-    #include "ResponseParserGenerated.icc"
+static void throw_no_request () {  }
+
+ResponseParser::ResponseParser () {}
+
+void ResponseParser::reset () {
+    Parser::reset();
+    _context_request.reset();
+    cs = http_parser_en_response;
 }
 
-static void throw_no_request () { throw ParserError("Cannot create response as there are no corresponding request"); }
+ResponseParser::Result ResponseParser::parse (const string& buffer) {
+    if (!message) {
+        if (!_context_request) throw ParserError("Cannot create response as there are no corresponding request");
+        auto res = _context_request->new_response();
+        response = res;
+        message  = std::move(res);
+    }
 
-ResponseParser::ResponseParser () : MessageParser<Response>(nullptr, http_response_parser_start) {}
+    auto pos = Parser::parse(buffer,
+        [this] {
+            if (_context_request->method == Request::Method::HEAD || response->code  < 200 || response->code == 204 || response->code == 304) {
+                if (response->chunked || content_length > 0) response->error(errc::unexpected_body);
+                else                                         response->state(State::done);
+                return false;
+            }
+            return true;
+        },
+        [this] {
+            response->headers.set("Connection", "close");
+            response->state(State::body);
+            return true;
+        }
+    );
 
-ResponseSP ResponseParser::create_message () {
-    // we need requests to parse some responses correctly (for example HEAD response)
-    // so something is terribly wrong if we have no corresponding request
-    assert(!current_message);
-    if (!_request) throw_no_request();
-    current_message = _request->new_response();
-    return current_message;
+    Result ret = {response, pos};
+    if (response->state() == State::done || response->error()) reset();
+    return ret;
 }
 
 ResponseParser::Result ResponseParser::eof () {
@@ -32,16 +52,6 @@ ResponseParser::Result ResponseParser::eof () {
 }
 
 ResponseParser::Result ResponseParser::parse (const string& buffer) {
-    if (!_request) {
-        if (buffer.empty()) return { nullptr, nullptr, 0, State::not_yet, {} }; // stop iteration
-        throw_no_request();
-    }
-
-    const char* buffer_ptr = buffer.data(); // pointer to current buffer, used by LEN, PTR_TO defines above
-    const char* p          = buffer_ptr; // start parsing from the beginning pointer
-    const char* pe         = buffer_ptr + buffer.size(); // to the end pointer
-    //const char* eof        = pe;
-
     if (state == State::in_body) {
         bool is_completed = process_body(buffer, p, pe);
         if (is_completed) {
