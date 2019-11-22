@@ -11,11 +11,8 @@ TEST("content as single buffer") {
         "Wikipedia in\r\n\r\nchunks."
         ;
 
-    auto result = p.parse(raw);
-    CHECK(result.state == State::done);
-    
-    auto req = result.request;
-    
+    auto req = p.parse(raw).request;
+    CHECK(req->state() == State::done);
     CHECK(req->headers.fields.size() == 1);
     CHECK(req->headers.get("Content-Length") == "23");
     CHECK(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
@@ -24,25 +21,23 @@ TEST("content as single buffer") {
 TEST("content in parts") {
     RequestParser p;
 
-    auto result = p.parse("POST /upload HTTP/1.1\r\nContent-Length: 23\r\n\r");
-    CHECK(result.state == State::not_yet);
+    auto req = p.parse("POST /upload HTTP/1.1\r\nContent-Length: 23\r\n\r").request;
+    CHECK(req->state() == State::headers);
 
-    result = p.parse("\n");
-    CHECK(result.state == State::in_body);
+    p.parse("\n");
+    CHECK(req->state() == State::body);
 
-    result = p.parse("W");
-    CHECK(result.state == State::in_body);
+    p.parse("W");
+    CHECK(req->state() == State::body);
     
-    result = p.parse("i");
-    CHECK(result.state == State::in_body);
+    p.parse("i");
+    CHECK(req->state() == State::body);
     
-    result = p.parse("kipedia in\r\n");
-    CHECK(result.state == State::in_body);
+    p.parse("kipedia in\r\n");
+    CHECK(req->state() == State::body);
     
-    result = p.parse("\r\nchunks.");
-    CHECK(result.state == State::done);
-
-    auto req = result.request;
+    p.parse("\r\nchunks.");
+    CHECK(req->state() == State::done);
     CHECK(req->headers.fields.size() == 1);
     CHECK(req->headers.get("Content-Length") == "23");
     CHECK(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
@@ -56,10 +51,8 @@ TEST("zero content-length") {
         "\r\n"
         ;
 
-    auto result = p.parse(raw);
-    CHECK(result.state == State::done);
-    
-    auto req = result.request;
+    auto req = p.parse(raw).request;
+    CHECK(req->state() == State::done);
     CHECK(req->headers.fields.size() == 1);
     CHECK(req->headers.get("Content-Length") == "0");
     CHECK(req->body.to_string() == "");
@@ -73,10 +66,8 @@ TEST("case insensitive") {
         "\r\n"
         "1";
 
-    auto result = p.parse(raw);
-    CHECK(result.state == State::done);
-
-    auto req = result.request;
+    auto req = p.parse(raw).request;
+    CHECK(req->state() == State::done);
     CHECK(req->headers.fields.size() == 1);
     CHECK(req->headers.get("Content-LENGTH") == "1");
     CHECK(req->body.to_string() == "1");
@@ -91,10 +82,10 @@ TEST("unreal content length request") {
     );
 
     RequestParser p;
-    CHECK(p.parse(raw).error);
+    CHECK(p.parse(raw).request->error());
 }
 
-TEST("unreal content lentgh response") {
+TEST("unreal content length response") {
     string raw = GENERATE(
         string("HTTP/1.1 200 OK\r\n"
         "Content-Length: 100500999999999999099999999\r\n"
@@ -108,6 +99,6 @@ TEST("unreal content lentgh response") {
     );
 
     ResponseParser p;
-    p.set_request(new Request(Method::GET, new URI("http://dev/"), Header(), Body()));
-    CHECK(p.parse(raw).error);
+    p.set_context_request(new Request(Method::GET, new URI("http://dev/"), Header(), Body()));
+    CHECK(p.parse(raw).response->error());
 }

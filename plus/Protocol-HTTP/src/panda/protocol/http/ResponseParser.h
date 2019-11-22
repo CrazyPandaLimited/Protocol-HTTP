@@ -30,12 +30,13 @@ struct ResponseParser : Parser {
 
     ResponseSP eof ();
 
-    void reset ();
+    void reset () { _reset(false); }
 
 private:
     RequestSP _context_request;
 
-    ResponseSP create_message ();
+    void _reset (bool keep_context);
+
 };
 
 }}}

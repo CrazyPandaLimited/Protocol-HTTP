@@ -1,31 +1,15 @@
 
 #line 1 "Parser.rl"
+#include "Parser.h"
 
-#line 92 "Parser.rl"
+
+#line 93 "Parser.rl"
 
 
-#ifdef MACHINE_DATA
-    #undef MACHINE_DATA
+namespace panda { namespace protocol { namespace http {
 
-    #define ADD_DIGIT(dest) \
-        dest *= 10;         \
-        dest += fc - '0';
-        
-    #define ADD_XDIGIT(dest) \
-        dest *= 16;          \
-        dest += (fc | 0x20) >= 'a' ? (fc - 'a' + 10) : (fc - '0');
-    
-    #define SAVE(dest)                                              \
-        if (mark != -1) dest = buffer.substr(mark, fpc - ps - mark);\
-        else {                                                      \
-            dest = std::move(acc);                                  \
-            dest.append(ps, fpc - ps);                              \
-        }
-        
-        
 
-    
-#line 29 "Parser.icc"
+#line 13 "Parser.cc"
 static const int http_parser_start = 1;
 static const int http_parser_first_final = 193;
 static const int http_parser_error = 0;
@@ -37,13 +21,31 @@ static const int http_parser_en_request = 94;
 static const int http_parser_en_response = 1;
 
 
-#line 115 "Parser.rl"
-#endif
+#line 98 "Parser.rl"
 
-#ifdef MACHINE_EXEC
-    #undef MACHINE_EXEC
+#ifndef PARSER_CONSTANTS
+
+#define ADD_DIGIT(dest) \
+    dest *= 10;         \
+    dest += *p - '0';
     
-#line 47 "Parser.icc"
+#define ADD_XDIGIT(dest) \
+    dest *= 16;          \
+    dest += (*p | 0x20) >= 'a' ? (*p - 'a' + 10) : (*p - '0');
+
+#define SAVE(dest)                                              \
+    if (mark != -1) dest = buffer.substr(mark, p - ps - mark);  \
+    else {                                                      \
+        dest = std::move(acc);                                  \
+        dest.append(ps, p - ps);                                \
+    }
+
+size_t Parser::machine_exec (const string& buffer, size_t off) {
+    const char* ps = buffer.data();
+    const char* p  = ps + off;
+    const char* pe = ps + buffer.size();
+    
+#line 49 "Parser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -3077,167 +3079,166 @@ case 192:
 	tr149: cs = 197; goto _again;
 
 f2:
-#line 4 "Parser.rl"
+#line 6 "Parser.rl"
 	{
         mark = p - ps;
     }
 	goto _again;
 f0:
-#line 50 "Parser.rl"
+#line 51 "Parser.rl"
 	{message->http_version = 10;}
 	goto _again;
 f11:
-#line 50 "Parser.rl"
+#line 51 "Parser.rl"
 	{message->http_version = 11;}
 	goto _again;
 f9:
-#line 58 "Parser.rl"
+#line 59 "Parser.rl"
 	{ADD_DIGIT(content_length)}
 	goto _again;
 f13:
-#line 64 "Parser.rl"
-	{ADD_XDIGIT(chunk_len)}
+#line 65 "Parser.rl"
+	{ADD_XDIGIT(chunk_length)}
 	goto _again;
 f19:
-#line 74 "Parser.rl"
+#line 75 "Parser.rl"
 	{request->method = Request::Method::OPTIONS; }
 	goto _again;
 f17:
-#line 75 "Parser.rl"
+#line 76 "Parser.rl"
 	{request->method = Request::Method::GET; }
 	goto _again;
 f18:
-#line 76 "Parser.rl"
+#line 77 "Parser.rl"
 	{request->method = Request::Method::HEAD; }
 	goto _again;
 f20:
-#line 77 "Parser.rl"
+#line 78 "Parser.rl"
 	{request->method = Request::Method::POST; }
 	goto _again;
 f21:
-#line 78 "Parser.rl"
+#line 79 "Parser.rl"
 	{request->method = Request::Method::PUT; }
 	goto _again;
 f16:
-#line 79 "Parser.rl"
+#line 80 "Parser.rl"
 	{request->method = Request::Method::DELETE; }
 	goto _again;
 f22:
-#line 80 "Parser.rl"
+#line 81 "Parser.rl"
 	{request->method = Request::Method::TRACE; }
 	goto _again;
 f14:
-#line 81 "Parser.rl"
+#line 82 "Parser.rl"
 	{request->method = Request::Method::CONNECT; }
 	goto _again;
 f1:
-#line 88 "Parser.rl"
+#line 89 "Parser.rl"
 	{ADD_DIGIT(response->code)}
 	goto _again;
 f7:
-#line 12 "Parser.rl"
+#line 14 "Parser.rl"
 	{
         string value;
         SAVE(value);
         if (!headers_finished) message->headers.add(field_name, value);
-        else; // trailing header after chunks, currently we just ignore them
+        else {} // trailing header after chunks, currently we just ignore them
     }
-#line 8 "Parser.rl"
+#line 10 "Parser.rl"
 	{
         mark = -1;
     }
 	goto _again;
 f15:
-#line 28 "Parser.rl"
+#line 29 "Parser.rl"
 	{
         string target;
         SAVE(target);
         request->uri = new URI(target);
     }
-#line 8 "Parser.rl"
+#line 10 "Parser.rl"
 	{
         mark = -1;
     }
 	goto _again;
 f5:
-#line 53 "Parser.rl"
+#line 54 "Parser.rl"
 	{SAVE(field_name)}
-#line 8 "Parser.rl"
+#line 10 "Parser.rl"
 	{
         mark = -1;
     }
 	goto _again;
 f12:
-#line 64 "Parser.rl"
+#line 65 "Parser.rl"
 	{chunk_length = 0;}
-#line 64 "Parser.rl"
-	{ADD_XDIGIT(chunk_len)}
+#line 65 "Parser.rl"
+	{ADD_XDIGIT(chunk_length)}
 	goto _again;
 f4:
-#line 89 "Parser.rl"
+#line 90 "Parser.rl"
 	{SAVE(response->message)}
-#line 8 "Parser.rl"
+#line 10 "Parser.rl"
 	{
         mark = -1;
     }
 	goto _again;
 f6:
-#line 4 "Parser.rl"
+#line 6 "Parser.rl"
 	{
         mark = p - ps;
     }
-#line 12 "Parser.rl"
+#line 14 "Parser.rl"
 	{
         string value;
         SAVE(value);
         if (!headers_finished) message->headers.add(field_name, value);
-        else; // trailing header after chunks, currently we just ignore them
+        else {} // trailing header after chunks, currently we just ignore them
     }
-#line 8 "Parser.rl"
+#line 10 "Parser.rl"
 	{
         mark = -1;
     }
 	goto _again;
 f3:
-#line 4 "Parser.rl"
+#line 6 "Parser.rl"
 	{
         mark = p - ps;
     }
-#line 89 "Parser.rl"
+#line 90 "Parser.rl"
 	{SAVE(response->message)}
-#line 8 "Parser.rl"
+#line 10 "Parser.rl"
 	{
         mark = -1;
     }
 	goto _again;
 f8:
-#line 19 "Parser.rl"
+#line 21 "Parser.rl"
 	{
         if (has_content_length) {
             cs = http_parser_error;
             {p++; goto _out; }
         }
         has_content_length = true;
-        content_length = 0;
     }
-#line 58 "Parser.rl"
+#line 59 "Parser.rl"
 	{ADD_DIGIT(content_length)}
-#line 4 "Parser.rl"
+#line 6 "Parser.rl"
 	{
         mark = p - ps;
     }
 	goto _again;
 f10:
-#line 59 "Parser.rl"
+#line 60 "Parser.rl"
 	{message->chunked = true;}
-#line 12 "Parser.rl"
+#line 14 "Parser.rl"
 	{
         string value;
         SAVE(value);
         if (!headers_finished) message->headers.add(field_name, value);
-        else; // trailing header after chunks, currently we just ignore them
+        else {} // trailing header after chunks, currently we just ignore them
     }
-#line 8 "Parser.rl"
+#line 10 "Parser.rl"
 	{
         mark = -1;
     }
@@ -3252,8 +3253,10 @@ _again:
 	_out: {}
 	}
 
-#line 120 "Parser.rl"
+#line 121 "Parser.rl"
+    return p - ps;
+}
+
 #endif
 
-    
-    
+}}}

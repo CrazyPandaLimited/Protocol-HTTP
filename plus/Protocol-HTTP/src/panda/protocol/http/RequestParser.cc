@@ -1,4 +1,5 @@
 #include "RequestParser.h"
+#include "Parser.tcc"
 
 namespace panda { namespace protocol { namespace http {
 
@@ -9,12 +10,14 @@ RequestParser::RequestParser (IFactory* fac) : factory(fac) {
 void RequestParser::reset () {
     Parser::reset();
     cs = http_parser_en_request;
-    auto req = new_request();
-    request = req;
-    message = std::move(req);
 }
 
 RequestParser::Result RequestParser::parse (const string& buffer) {
+    if (!request) {
+        request = new_request();
+        message = request;
+    }
+
     auto pos = Parser::parse(buffer,
         []{ return true; },
         [this] {
@@ -23,7 +26,7 @@ RequestParser::Result RequestParser::parse (const string& buffer) {
         }
     );
     Result ret = {request, pos};
-    if (request->state() == State::done || request->error()) reset();
+    if (request->state() >= State::done) reset();
     return ret;
 }
 

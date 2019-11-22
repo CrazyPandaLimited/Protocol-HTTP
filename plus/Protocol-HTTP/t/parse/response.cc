@@ -6,7 +6,7 @@ TEST("trivial get response") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
-    p.set_request(req);
+    p.set_context_request(req);
     string raw =
         "HTTP/1.0 200 OK\r\n"
         "Host: host1\r\n"
@@ -30,7 +30,7 @@ TEST("trivial head response") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::HEAD;
-    p.set_request(req);
+    p.set_context_request(req);
     string raw =
         "HTTP/1.0 200 OK\r\n"
         "Host: host1\r\n"
@@ -52,7 +52,7 @@ TEST("redirect response") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::HEAD;
-    p.set_request(req);
+    p.set_context_request(req);
     string raw =
         "HTTP/1.1 301 Moved Permanently\r\n"
         "Date: Thu, 22 Mar 2018 16:25:43 GMT\r\n"
@@ -77,7 +77,7 @@ TEST("trivial connection close") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
-    p.set_request(req);
+    p.set_context_request(req);
     string raw =
         "HTTP/1.1 200 OK\r\n"
         "Host: host1\r\n"
@@ -102,7 +102,7 @@ TEST("connection close priority") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
-    p.set_request(req);
+    p.set_context_request(req);
     string additional = GENERATE(string("Content-Length: 4\r\n"), string("Transfer-Encoding: chunked\r\n"));
     string raw =
         "HTTP/1.1 200 OK\r\n"
@@ -122,7 +122,7 @@ TEST("eof after full message") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
-    p.set_request(req);
+    p.set_context_request(req);
     string body = GENERATE(string(""), string("1"));
     string raw =
         "HTTP/1.1 200 OK\r\n"
@@ -145,7 +145,7 @@ TEST("response with chunks") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
-    p.set_request(req);
+    p.set_context_request(req);
     string s =
         "HTTP/1.1 200 OK\r\n"
         "Transfer-Encoding: chunked\r\n"

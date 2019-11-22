@@ -20,15 +20,13 @@ TEST("trivial chunks") {
         "\r\n"
         ;
 
-    auto result = p.parse(raw);
-    CHECK(result.state == State::done);
-
-    auto req = result.request;
-    REQUIRE(req->headers.fields.size() == 1);
-    REQUIRE(req->headers.get("Transfer-Encoding") == "chunked");
-    REQUIRE(req->body.parts.size() == 3);
-    REQUIRE(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
-    REQUIRE(req->chunked);
+    auto req = p.parse(raw).request;
+    CHECK(req->state() == State::done);
+    CHECK(req->headers.fields.size() == 1);
+    CHECK(req->headers.get("Transfer-Encoding") == "chunked");
+    CHECK(req->body.parts.size() == 3);
+    CHECK(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
+    CHECK(req->chunked);
 }
 
 TEST("chunks with extension") {
@@ -49,14 +47,12 @@ TEST("chunks with extension") {
         "\r\n"
         ;
 
-    auto result = p.parse(raw);
-    CHECK(result.state == State::done);
-
-    auto req = result.request;
-    REQUIRE(req->headers.fields.size() == 1);
-    REQUIRE(req->headers.get("Transfer-Encoding") == "chunked");
-    REQUIRE(req->body.parts.size() == 3);
-    REQUIRE(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
+    auto req = p.parse(raw).request;
+    CHECK(req->state() == State::done);
+    CHECK(req->headers.fields.size() == 1);
+    CHECK(req->headers.get("Transfer-Encoding") == "chunked");
+    CHECK(req->body.parts.size() == 3);
+    CHECK(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
 }
 
 TEST("chunks with trailer header") {
@@ -79,14 +75,12 @@ TEST("chunks with trailer header") {
         "\r\n"
         ;
 
-    auto result = p.parse(raw);
-    CHECK(result.state == State::done);
-
-    auto req = result.request;
-    REQUIRE(req->headers.fields.size() == 2);
-    REQUIRE(req->headers.get("Transfer-Encoding") == "chunked");
-    REQUIRE(req->body.parts.size() == 3);
-    REQUIRE(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
+    auto req = p.parse(raw).request;
+    CHECK(req->state() == State::done);
+    CHECK(req->headers.fields.size() == 2);
+    CHECK(req->headers.get("Transfer-Encoding") == "chunked");
+    CHECK(req->body.parts.size() == 3);
+    CHECK(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
 }
 
 TEST("fragmented chunks") {
@@ -110,14 +104,12 @@ TEST("fragmented chunks") {
         "\r\n"
     };
 
-    RequestParser::Result result;
+    RequestSP req;
     for (auto s : v) {
-        CHECK(result.state != State::done);
-        result =  p.parse(s);
+        if (req) CHECK(req->state() != State::done);
+        req = p.parse(s).request;
     }
-    CHECK(result.state == State::done);
-
-    auto req = result.request;
+    CHECK(req->state() == State::done);
     CHECK(req->method == Method::POST);
     CHECK(req->http_version == 11);
     CHECK(req->headers.get("Transfer-Encoding") == "chunked");
@@ -148,9 +140,7 @@ TEST("bad chunk size") {
             "\r\n"
         )
     );
-    auto result = p.parse(raw);
-    REQUIRE(result.error);
-
-    auto req = result.request;
+    auto req = p.parse(raw).request;
+    CHECK(req->error());
     CHECK(req->method == Method::POST);
 }

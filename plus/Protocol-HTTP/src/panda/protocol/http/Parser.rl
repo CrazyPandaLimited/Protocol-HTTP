@@ -1,3 +1,5 @@
+#include "Parser.h"
+
 %%{
     machine http_parser;
     
@@ -13,7 +15,7 @@
         string value;
         SAVE(value);
         if (!headers_finished) message->headers.add(field_name, value);
-        else; // trailing header after chunks, currently we just ignore them
+        else {} // trailing header after chunks, currently we just ignore them
     }
     
     action content_length_start {
@@ -60,7 +62,7 @@
     headers        = (header CRLF)* CRLF;
     
     ################################## CHUNKS ########################################
-    chunk_size      = xdigit+ >{chunk_length = 0;} ${ADD_XDIGIT(chunk_len)};
+    chunk_size      = xdigit+ >{chunk_length = 0;} ${ADD_XDIGIT(chunk_length)};
     chunk_ext_name  = token;
     chunk_ext_val   = token | quoted_string;
     chunk_extension = ( ";" chunk_ext_name ("=" chunk_ext_val)? )+;
@@ -90,25 +92,25 @@
     response := status_line headers;
 }%%
 
-#include "Parser.h"
-
 namespace panda { namespace protocol { namespace http {
 
 %% write data;
 
+#ifndef PARSER_CONSTANTS
+
 #define ADD_DIGIT(dest) \
     dest *= 10;         \
-    dest += fc - '0';
+    dest += *p - '0';
     
 #define ADD_XDIGIT(dest) \
     dest *= 16;          \
-    dest += (fc | 0x20) >= 'a' ? (fc - 'a' + 10) : (fc - '0');
+    dest += (*p | 0x20) >= 'a' ? (*p - 'a' + 10) : (*p - '0');
 
 #define SAVE(dest)                                              \
-    if (mark != -1) dest = buffer.substr(mark, fpc - ps - mark);\
+    if (mark != -1) dest = buffer.substr(mark, p - ps - mark);  \
     else {                                                      \
         dest = std::move(acc);                                  \
-        dest.append(ps, fpc - ps);                              \
+        dest.append(ps, p - ps);                                \
     }
 
 size_t Parser::machine_exec (const string& buffer, size_t off) {
@@ -119,119 +121,6 @@ size_t Parser::machine_exec (const string& buffer, size_t off) {
     return p - ps;
 }
 
-#define RETURN_IF_PARSE_ERROR do if (cs == http_parser_error) { \
-    if (!message->error()) message->error(errc::lexical_error); \
-    return pos;                                                 \
-} while (0)
-
-#define RETURN_IF_INCOMPLETE do if (cs < http_parser_first_final) { \
-    if (mark) {                                                     \
-        acc = buffer.substr(mark - ps, p - mark);                   \
-        mark = nullptr;                                             \
-    }                                                               \
-    return pos;                                                     \
-} while (0)
-
-#define RETURN_IF_MAX_BODY_SIZE(current_size) do if (current_size > max_body_size) {    /
-    message->error(max_body_size ? errc::body_too_large : errc::unexpected_body);       /
-    return pos;                                                                         /
-} while (0)
-
-template <class F1, class F2>
-size_t Parser::parse (const string& buffer, F1&& headers_finished_cb, F2&& no_body_cb) {
-    auto   len = buffer.length();
-    size_t pos = 0;
-
-    while (pos != len) switch (message->state()) {
-        case State::headers:
-            pos = machine_exec(buffer, pos);
-            RETURN_IF_PARSE_ERROR;
-
-            headers_so_far += pos;
-            if (headers_so_far > max_headers_size) {
-                message->error(errc::headers_too_large);
-                return pos;
-            }
-            
-            RETURN_IF_INCOMPLETE;
-            
-            if (!headers_finished_cb()) return pos;
-
-            if (message->chunked) {
-                message->state(State::chunk);
-                cs = http_parser_en_first_chunk;
-            }
-            else if (content_length > 0) {
-                message->state(State::body);
-                RETURN_IF_MAX_BODY_SIZE(content_length);
-            }
-            else if (!no_body_cb()) return pos;
-            
-            continue;
-
-        case State::body:
-            auto have = len - pos;
-            
-            if (content_length) {
-                auto left = content_length - body_so_far;
-                if (have >= left) {
-                    message->body.parts.push_back(buffer.substr(pos, left));
-                    message->state(State::done);
-                    return pos + left;
-                }
-                else {
-                    body_so_far += have;
-                    message->body.parts.push_back(buffer.substr(pos));
-                    return len;
-                }
-            }
-
-            body_so_far += have;
-            RETURN_IF_MAX_BODY_SIZE(body_so_far);
-            message->body.parts.push_back(buffer.substr(pos));
-            return len;
-
-        case State::chunk:
-            pos = machine_exec(buffer, pos);
-            RETURN_IF_PARSE_ERROR;
-            RETURN_IF_INCOMPLETE;
-
-            if (!chunk_length) { // final chunk
-                message->state(State::chunk_trailer);
-                cs = http_parser_en_chunk_trailer;
-                continue;
-            }
-
-            body_so_far += chunk_length;
-            RETURN_IF_MAX_BODY_SIZE(body_so_far);
-
-            chunk_so_far = 0;
-            message->state(State::chunk_body);
-            continue;
-
-        case State::chunk_body:
-            auto left = chunk_length - chunk_so_far;
-            auto have = len - pos;
-
-            if (have >= left) {
-                message->body.parts.push_back(buffer.substr(off, left));
-                message->state(State::chunk);
-                cs = http_parser_en_chunk;
-                pos += left;
-                continue;
-            } else {
-                message->body.parts.push_back(buffer.substr(pos));
-                chunk_so_far += have;
-                return len;
-            }
-
-        case State::chunk_trailer:
-            pos = machine_exec(buffer, pos);
-            RETURN_IF_PARSE_ERROR;
-            RETURN_IF_INCOMPLETE;
-            message->state(State::done);
-            return pos;
-    }
-}
+#endif
 
 }}}

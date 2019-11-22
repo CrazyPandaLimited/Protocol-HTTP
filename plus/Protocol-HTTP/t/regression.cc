@@ -41,9 +41,9 @@ TEST("additional final chunk before other chunks") {
     ;
     auto result = p.parse(raw);
     auto req = result.request;
-    CHECK(result.state == State::done);
-    CHECK_FALSE(result.error);
     CHECK(result.position == 75); //stoped at first final chunk
+    CHECK_FALSE(req->error());
+    CHECK(req->state() == State::done);
     CHECK(req->body.to_string() == "");
 }
 
@@ -51,7 +51,7 @@ TEST("response chunks #1") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
-    p.set_request(req);
+    p.set_context_request(req);
 
     std::vector<string> v = {
         "HTTP/1.1 200 OK\r\n"
@@ -69,27 +69,25 @@ TEST("response chunks #1") {
         "ans2"
     };
 
-    auto result = p.parse_shift(v[0]);
-    auto res = result.response;
-    CHECK(result.state != State::done);
+    auto res = p.parse_shift(v[0]);
+    CHECK(res->state() != State::done);
     CHECK(res->body.to_string() == "");
     CHECK_FALSE(v[0]);
 
-    result = p.parse_shift(v[1]);
-    CHECK(result.state != State::done);
+    res = p.parse_shift(v[1]);
+    CHECK(res->state() != State::done);
     CHECK(res->body.to_string() == "ans1");
     CHECK_FALSE(v[1]);
 
-    result = p.parse_shift(v[2]);
-    CHECK(result.state == State::done);
+    res = p.parse_shift(v[2]);
+    CHECK(res->state() == State::done);
     CHECK(res->body.to_string() == "ans1");
     CHECK(v[2][0] == 'H');
 
-    p.set_request(req);
-    result = p.parse_shift(v[2]);
-    res = result.response;
-    CHECK(result.state == State::done);
-    CHECK_FALSE(result.error);
+    p.set_context_request(req);
+    res = p.parse_shift(v[2]);
+    CHECK(res->state() == State::done);
+    CHECK_FALSE(res->error());
     CHECK(res->body.to_string() == "ans2");
     CHECK_FALSE(v[2]);
 }
@@ -98,7 +96,7 @@ TEST("google response 0") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
-    p.set_request(req);
+    p.set_context_request(req);
     
     string raw =
         "HTTP/1.1 302 Found\r\n"
@@ -116,26 +114,26 @@ TEST("google response 0") {
         "<A HREF=\"http://www.google.ru/?gfe_rd=cr&amp;dcr=0&amp;ei=dlSVWsfRFMiG7gT1wK8Q\">here</A>.\r\n"
         "</BODY></HTML>\r\n";
 
-    auto result = p.parse(raw);
-    CHECK(result.state == State::done);
-    REQUIRE(result.response->http_version == 11);
+    auto res = p.parse_shift(raw);
+    CHECK(res->state() == State::done);
+    CHECK(res->http_version == 11);
 }
 
 TEST("google response 1") {
     ResponseParser p;
     RequestSP req = new Request();
     req->method = Method::GET;
-    p.set_request(req);
+    p.set_context_request(req);
     
-    ResponseParser::Result result;
+    ResponseSP res;
     auto DIR = ROOT+"1";
     for (auto fname : read_directory(DIR)) {
-        CHECK(result.state != State::done);
+        if (res) CHECK(res->state() != State::done);
         std::ifstream file(DIR+"/"+fname, std::ios::binary);
         std::string str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-        result = p.parse(string(str.c_str()));
+        res = p.parse(string(str.c_str())).response;
     }
-    CHECK(result.state == State::done);
 
-    REQUIRE(result.response->http_version == 11);
+    CHECK(res->state() == State::done);
+    CHECK(res->http_version == 11);
 }

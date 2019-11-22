@@ -93,7 +93,7 @@ protected:
     }
 
 private:
-    friend struct Parser;
+    friend struct Parser; friend struct RequestParser; friend struct ResponseParser;
 
     State           _state = State::headers;
     std::error_code _error;
@@ -105,6 +105,7 @@ private:
         _state = State::error;
     }
 };
+using MessageSP = iptr<Message>;
 
 template <class T>
 struct Message::Builder {
