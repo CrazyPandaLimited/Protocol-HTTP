@@ -9,10 +9,8 @@ TEST("get") {
         "Host: host1\r\n"
         "\r\n";
 
-    auto result = p.parse(raw);
-    CHECK(result.state == State::done);
-
-    auto req = result.request;
+    auto req = p.parse(raw).request;
+    CHECK(req->state() == State::done);
     CHECK(req->method == Method::GET);
     CHECK(req->http_version == 10);
     CHECK(req->uri->to_string() == "/");
@@ -27,10 +25,8 @@ TEST("post") {
         "Wikipedia in\r\n\r\nchunks."
         ;
 
-    auto result = p.parse(raw);
-    CHECK(result.state == State::done);
-
-    auto req = result.request;
+    auto req = p.parse(raw).request;
+    CHECK(req->state() == State::done);
     CHECK(req->method == Method::POST);
     CHECK(req->http_version == 11);
     CHECK(req->uri->to_string() == "/upload");
@@ -44,9 +40,8 @@ TEST("request without length") {
         "Host: host1\r\n"
         "\r\n" + body;
 
-    auto fres = p.parse(raw);
-    CHECK(fres.state == State::done);
-    auto req = fres.request;
+    auto req = p.parse(raw).request;
+    CHECK(req->state() == State::done);
     CHECK(req->http_version == 11);
     CHECK_FALSE(req->body.length());
 }
@@ -60,14 +55,12 @@ TEST("fragmented method") {
         "\r\n"
     };
 
-    RequestParser::Result result;
+    RequestSP req;
     for (auto s : v) {
-        CHECK(result.state != State::done);
-        result = p.parse(s);
+        if (req) CHECK(req->state() != State::done);
+        req = p.parse(s).request;
     }
-    CHECK(result.state == State::done);
-
-    auto req = result.request;
+    CHECK(req->state() == State::done);
     CHECK(req->method == Method::GET);
     CHECK(req->http_version == 10);
     CHECK(req->headers.get("Header1") == "header1");
@@ -82,15 +75,13 @@ TEST("parsing request byte by byte") {
         "\r\n";
 
     const size_t CHUNK = GENERATE(1, 10);
-    RequestParser::Result result;
+    RequestSP req;
     while (s) {
-        CHECK(result.state != State::done);
-        result = p.parse(s.substr(0, CHUNK));
+        if (req) CHECK(req->state() != State::done);
+        req = p.parse(s.substr(0, CHUNK)).request;
         s.offset(CHUNK < s.length() ? CHUNK : s.length());
     }
-    CHECK(result.state == State::done);
-
-    auto req = result.request;
+    CHECK(req->state() == State::done);
     CHECK(req->method == Method::GET);
     CHECK(req->http_version == 10);
     CHECK(req->headers.get("Header1") == "header1");
@@ -105,12 +96,10 @@ TEST("double first line") {
         "Host: host1\r\n"
         "\r\n";
 
-    auto result = p.parse(raw);
-    REQUIRE(result.error);
-
-    auto req = result.request;
-    REQUIRE(req->method == Method::GET);
-    REQUIRE(req->http_version == 10);
+    auto req = p.parse(raw).request;
+    CHECK(req->error());
+    CHECK(req->method == Method::GET);
+    CHECK(req->http_version == 10);
 }
 
 TEST("bad first line") {
@@ -120,5 +109,5 @@ TEST("bad first line") {
         "GET / HTTP/1.0\r\n"
         "Host: host1\r\n"
         "\r\n";
-    REQUIRE(p.parse(raw).error);
+    CHECK(p.parse(raw).request->error());
 }

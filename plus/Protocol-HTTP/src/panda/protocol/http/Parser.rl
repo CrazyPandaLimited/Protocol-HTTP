@@ -14,6 +14,7 @@
     action add_header {
         string value;
         SAVE(value);
+        if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
         if (!headers_finished) message->headers.add(field_name, value);
         else {} // trailing header after chunks, currently we just ignore them
     }
@@ -52,12 +53,11 @@
 
     ################################## HEADERS ########################################
     field_name     = token >mark %{SAVE(field_name)} %unmark;
-    field_vchar    = VCHAR | obs_text;
-    field_content  = field_vchar (WSP+ field_vchar)?;
+    field_vchar    = VCHAR | obs_text | WSP;
     field_value    = field_vchar* >mark %add_header %unmark; # TODO: obsolete support: "*( field-content / obs-fold )"
-    header_field   = field_name ":" OWS <: field_value OWS;
-    content_length = /Content-Length/i ":" SP* digit+ >content_length_start ${ADD_DIGIT(content_length)};
-    te_chunked     = /Transfer-Encoding/i ":" SP* /chunked/i %{message->chunked = true;};
+    header_field   = field_name ":" OWS <: field_value;
+    content_length = /Content-Length/i ":" OWS digit+ >content_length_start ${ADD_DIGIT(content_length)} OWS;
+    te_chunked     = /Transfer-Encoding/i ":" OWS /chunked/i %{message->chunked = true;} OWS;
     header         = content_length | te_chunked | header_field;
     headers        = (header CRLF)* CRLF;
     
