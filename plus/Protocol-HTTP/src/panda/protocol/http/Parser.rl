@@ -4,11 +4,12 @@
     machine http_parser;
     
     action mark {
-        mark = fpc - ps;
+        mark   = fpc - ps;
+        marked = true;
     }
     
     action unmark {
-        mark = -1;
+        marked = false;
     }
     
     action add_header {

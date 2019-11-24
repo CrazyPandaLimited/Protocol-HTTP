@@ -3,7 +3,7 @@
 #include "Parser.h"
 
 
-#line 97 "src/panda/protocol/http/Parser.rl"
+#line 98 "src/panda/protocol/http/Parser.rl"
 
 
 namespace panda { namespace protocol { namespace http {
@@ -21,7 +21,7 @@ static const int http_parser_en_request = 92;
 static const int http_parser_en_response = 1;
 
 
-#line 102 "src/panda/protocol/http/Parser.rl"
+#line 103 "src/panda/protocol/http/Parser.rl"
 
 #ifndef PARSER_CONSTANTS
 
@@ -3070,73 +3070,74 @@ case 189:
 f2:
 #line 6 "src/panda/protocol/http/Parser.rl"
 	{
-        mark = p - ps;
+        mark   = p - ps;
+        marked = true;
     }
 	goto _again;
 f5:
-#line 36 "src/panda/protocol/http/Parser.rl"
+#line 37 "src/panda/protocol/http/Parser.rl"
 	{
         {p++; goto _out; }
     }
 	goto _again;
 f0:
-#line 56 "src/panda/protocol/http/Parser.rl"
+#line 57 "src/panda/protocol/http/Parser.rl"
 	{message->http_version = 10;}
 	goto _again;
 f13:
-#line 56 "src/panda/protocol/http/Parser.rl"
+#line 57 "src/panda/protocol/http/Parser.rl"
 	{message->http_version = 11;}
 	goto _again;
 f10:
-#line 63 "src/panda/protocol/http/Parser.rl"
+#line 64 "src/panda/protocol/http/Parser.rl"
 	{ADD_DIGIT(content_length)}
 	goto _again;
 f11:
-#line 64 "src/panda/protocol/http/Parser.rl"
+#line 65 "src/panda/protocol/http/Parser.rl"
 	{message->chunked = true;}
 	goto _again;
 f15:
-#line 69 "src/panda/protocol/http/Parser.rl"
+#line 70 "src/panda/protocol/http/Parser.rl"
 	{ADD_XDIGIT(chunk_length)}
 	goto _again;
 f21:
-#line 79 "src/panda/protocol/http/Parser.rl"
+#line 80 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::OPTIONS; }
 	goto _again;
 f19:
-#line 80 "src/panda/protocol/http/Parser.rl"
+#line 81 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::GET; }
 	goto _again;
 f20:
-#line 81 "src/panda/protocol/http/Parser.rl"
+#line 82 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::HEAD; }
 	goto _again;
 f22:
-#line 82 "src/panda/protocol/http/Parser.rl"
+#line 83 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::POST; }
 	goto _again;
 f23:
-#line 83 "src/panda/protocol/http/Parser.rl"
+#line 84 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::PUT; }
 	goto _again;
 f18:
-#line 84 "src/panda/protocol/http/Parser.rl"
+#line 85 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::DELETE; }
 	goto _again;
 f24:
-#line 85 "src/panda/protocol/http/Parser.rl"
+#line 86 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::TRACE; }
 	goto _again;
 f16:
-#line 86 "src/panda/protocol/http/Parser.rl"
+#line 87 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::CONNECT; }
 	goto _again;
 f1:
-#line 93 "src/panda/protocol/http/Parser.rl"
+#line 94 "src/panda/protocol/http/Parser.rl"
 	{ADD_DIGIT(response->code)}
 	goto _again;
 f8:
-#line 14 "src/panda/protocol/http/Parser.rl"
+#line 15 "src/panda/protocol/http/Parser.rl"
 	{
         string value;
         SAVE(value);
@@ -3144,51 +3145,52 @@ f8:
         if (!headers_finished) message->headers.add(field_name, value);
         else {} // trailing header after chunks, currently we just ignore them
     }
-#line 10 "src/panda/protocol/http/Parser.rl"
+#line 11 "src/panda/protocol/http/Parser.rl"
 	{
-        mark = -1;
+        marked = false;
     }
 	goto _again;
 f17:
-#line 30 "src/panda/protocol/http/Parser.rl"
+#line 31 "src/panda/protocol/http/Parser.rl"
 	{
         string target;
         SAVE(target);
         request->uri = new URI(target);
     }
-#line 10 "src/panda/protocol/http/Parser.rl"
+#line 11 "src/panda/protocol/http/Parser.rl"
 	{
-        mark = -1;
+        marked = false;
     }
 	goto _again;
 f6:
-#line 59 "src/panda/protocol/http/Parser.rl"
+#line 60 "src/panda/protocol/http/Parser.rl"
 	{SAVE(field_name)}
-#line 10 "src/panda/protocol/http/Parser.rl"
+#line 11 "src/panda/protocol/http/Parser.rl"
 	{
-        mark = -1;
+        marked = false;
     }
 	goto _again;
 f14:
-#line 69 "src/panda/protocol/http/Parser.rl"
+#line 70 "src/panda/protocol/http/Parser.rl"
 	{chunk_length = 0;}
-#line 69 "src/panda/protocol/http/Parser.rl"
+#line 70 "src/panda/protocol/http/Parser.rl"
 	{ADD_XDIGIT(chunk_length)}
 	goto _again;
 f4:
-#line 94 "src/panda/protocol/http/Parser.rl"
+#line 95 "src/panda/protocol/http/Parser.rl"
 	{SAVE(response->message)}
-#line 10 "src/panda/protocol/http/Parser.rl"
+#line 11 "src/panda/protocol/http/Parser.rl"
 	{
-        mark = -1;
+        marked = false;
     }
 	goto _again;
 f7:
 #line 6 "src/panda/protocol/http/Parser.rl"
 	{
-        mark = p - ps;
+        mark   = p - ps;
+        marked = true;
     }
-#line 14 "src/panda/protocol/http/Parser.rl"
+#line 15 "src/panda/protocol/http/Parser.rl"
 	{
         string value;
         SAVE(value);
@@ -3196,25 +3198,26 @@ f7:
         if (!headers_finished) message->headers.add(field_name, value);
         else {} // trailing header after chunks, currently we just ignore them
     }
-#line 10 "src/panda/protocol/http/Parser.rl"
+#line 11 "src/panda/protocol/http/Parser.rl"
 	{
-        mark = -1;
+        marked = false;
     }
 	goto _again;
 f3:
 #line 6 "src/panda/protocol/http/Parser.rl"
 	{
-        mark = p - ps;
+        mark   = p - ps;
+        marked = true;
     }
-#line 94 "src/panda/protocol/http/Parser.rl"
+#line 95 "src/panda/protocol/http/Parser.rl"
 	{SAVE(response->message)}
-#line 10 "src/panda/protocol/http/Parser.rl"
+#line 11 "src/panda/protocol/http/Parser.rl"
 	{
-        mark = -1;
+        marked = false;
     }
 	goto _again;
 f9:
-#line 22 "src/panda/protocol/http/Parser.rl"
+#line 23 "src/panda/protocol/http/Parser.rl"
 	{
         if (has_content_length) {
             cs = http_parser_error;
@@ -3222,17 +3225,18 @@ f9:
         }
         has_content_length = true;
     }
-#line 63 "src/panda/protocol/http/Parser.rl"
+#line 64 "src/panda/protocol/http/Parser.rl"
 	{ADD_DIGIT(content_length)}
 #line 6 "src/panda/protocol/http/Parser.rl"
 	{
-        mark = p - ps;
+        mark   = p - ps;
+        marked = true;
     }
 	goto _again;
 f12:
-#line 64 "src/panda/protocol/http/Parser.rl"
+#line 65 "src/panda/protocol/http/Parser.rl"
 	{message->chunked = true;}
-#line 14 "src/panda/protocol/http/Parser.rl"
+#line 15 "src/panda/protocol/http/Parser.rl"
 	{
         string value;
         SAVE(value);
@@ -3240,9 +3244,9 @@ f12:
         if (!headers_finished) message->headers.add(field_name, value);
         else {} // trailing header after chunks, currently we just ignore them
     }
-#line 10 "src/panda/protocol/http/Parser.rl"
+#line 11 "src/panda/protocol/http/Parser.rl"
 	{
-        mark = -1;
+        marked = false;
     }
 	goto _again;
 
@@ -3255,7 +3259,7 @@ _again:
 	_out: {}
 	}
 
-#line 125 "src/panda/protocol/http/Parser.rl"
+#line 126 "src/panda/protocol/http/Parser.rl"
     return p - ps;
 }
 

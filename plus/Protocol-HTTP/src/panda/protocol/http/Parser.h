@@ -28,6 +28,7 @@ protected:
         request            = nullptr;
         response           = nullptr;
         mark               = -1;
+        marked             = false;
         headers_so_far     = 0;
         headers_finished   = false;
         has_content_length = false;
@@ -39,6 +40,7 @@ protected:
 
 private:
     ptrdiff_t  mark;
+    bool       marked;
     string     acc; // contains unfinished field and used to parse messages that come in fragments
     string     field_name;
     size_t     headers_so_far;
