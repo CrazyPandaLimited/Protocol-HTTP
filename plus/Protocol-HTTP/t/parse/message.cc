@@ -193,14 +193,14 @@ TEST("message fragmented by lines") {
 
 TEST("max_headers_size") {
     RequestParser p;
-    p.max_headers_size = 19;
+    p.max_headers_size = 37;
     string raw =
         "GET / HTTP/1.1\r\n"
-        "Content-Length: 0\r\n" // len = 19
+        "Content-Length: 0\r\n"
         "\r\n";
     CHECK_FALSE(p.parse(raw).request->error());
 
-    p.max_headers_size = 18;
+    p.max_headers_size = 36;
     CHECK(p.parse(raw).request->error() == errc::headers_too_large);
 }
 

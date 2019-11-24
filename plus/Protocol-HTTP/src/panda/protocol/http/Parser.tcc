@@ -12,7 +12,7 @@ namespace panda { namespace protocol { namespace http {
 } while (0)
 
 #define RETURN_IF_INCOMPLETE do if (cs < http_parser_first_final) { \
-    if (mark) {                                                     \
+    if (mark != -1) {                                               \
         acc = buffer.substr(mark, len - mark);                      \
         mark = -1;                                                  \
     }                                                               \

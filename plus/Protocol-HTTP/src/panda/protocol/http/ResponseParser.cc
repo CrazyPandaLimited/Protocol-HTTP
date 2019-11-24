@@ -3,7 +3,9 @@
 
 namespace panda { namespace protocol { namespace http {
 
-ResponseParser::ResponseParser () {}
+ResponseParser::ResponseParser () {
+    reset();
+}
 
 void ResponseParser::_reset (bool keep_context) {
     Parser::reset();

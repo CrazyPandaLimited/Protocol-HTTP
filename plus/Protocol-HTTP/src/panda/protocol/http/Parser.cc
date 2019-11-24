@@ -2848,7 +2848,7 @@ case 189:
 	tr8: cs = 9; goto _again;
 	tr10: cs = 10; goto f0;
 	tr76: cs = 10; goto f12;
-	tr11: cs = 11; goto _again;
+	tr11: cs = 11; goto f1;
 	tr12: cs = 12; goto f1;
 	tr13: cs = 13; goto f1;
 	tr14: cs = 14; goto _again;

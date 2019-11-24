@@ -7,8 +7,8 @@ namespace panda { namespace protocol { namespace http {
 constexpr const size_t SIZE_UNLIMITED = size_t(-1);
 
 struct Parser {
-    size_t max_headers_size;
-    size_t max_body_size;
+    size_t max_headers_size = SIZE_UNLIMITED;
+    size_t max_body_size    = SIZE_UNLIMITED;
 
 protected:
     MessageSP  message;
@@ -18,10 +18,7 @@ protected:
     bool       has_content_length;
     uint64_t   content_length;
 
-    Parser () {
-        max_headers_size = SIZE_UNLIMITED;
-        max_body_size    = SIZE_UNLIMITED;
-    }
+    Parser () {}
 
     Parser (const Parser&) = delete;
     Parser (Parser&&)      = default;

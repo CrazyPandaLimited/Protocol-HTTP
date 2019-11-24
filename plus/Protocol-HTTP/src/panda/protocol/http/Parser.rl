@@ -86,7 +86,7 @@
     request       := request_line headers;
     
     ################################## RESPONSE ########################################
-    status_code = [1-9] digit{2} ${ADD_DIGIT(response->code)};
+    status_code = ([1-9] digit{2}) ${ADD_DIGIT(response->code)};
     reason_phrase = (VCHAR | WSP | obs_text)* >mark %{SAVE(response->message)} %unmark;
     status_line = http_version SP status_code SP reason_phrase :> CRLF;
     response := status_line headers;
