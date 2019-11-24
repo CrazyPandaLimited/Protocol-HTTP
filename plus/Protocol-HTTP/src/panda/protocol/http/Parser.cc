@@ -3,7 +3,7 @@
 #include "Parser.h"
 
 
-#line 93 "src/panda/protocol/http/Parser.rl"
+#line 97 "src/panda/protocol/http/Parser.rl"
 
 
 namespace panda { namespace protocol { namespace http {
@@ -21,7 +21,7 @@ static const int http_parser_en_request = 92;
 static const int http_parser_en_response = 1;
 
 
-#line 98 "src/panda/protocol/http/Parser.rl"
+#line 102 "src/panda/protocol/http/Parser.rl"
 
 #ifndef PARSER_CONSTANTS
 
@@ -2952,17 +2952,17 @@ case 189:
 	tr122: cs = 97; goto _again;
 	tr123: cs = 98; goto _again;
 	tr124: cs = 99; goto _again;
-	tr125: cs = 100; goto f19;
-	tr202: cs = 100; goto f22;
-	tr205: cs = 100; goto f23;
-	tr209: cs = 100; goto f24;
-	tr216: cs = 100; goto f25;
-	tr221: cs = 100; goto f26;
-	tr223: cs = 100; goto f27;
-	tr228: cs = 100; goto f28;
+	tr125: cs = 100; goto f16;
+	tr202: cs = 100; goto f18;
+	tr205: cs = 100; goto f19;
+	tr209: cs = 100; goto f20;
+	tr216: cs = 100; goto f21;
+	tr221: cs = 100; goto f22;
+	tr223: cs = 100; goto f23;
+	tr228: cs = 100; goto f24;
 	tr128: cs = 101; goto _again;
 	tr126: cs = 101; goto f2;
-	tr127: cs = 102; goto f20;
+	tr127: cs = 102; goto f17;
 	tr129: cs = 103; goto _again;
 	tr130: cs = 104; goto _again;
 	tr131: cs = 105; goto _again;
@@ -3062,10 +3062,10 @@ case 189:
 	tr226: cs = 188; goto _again;
 	tr227: cs = 189; goto _again;
 	tr24: cs = 190; goto f5;
-	tr81: cs = 191; goto f16;
-	tr94: cs = 192; goto f17;
-	tr103: cs = 193; goto f18;
-	tr144: cs = 194; goto f21;
+	tr81: cs = 191; goto f5;
+	tr94: cs = 192; goto f5;
+	tr103: cs = 193; goto f5;
+	tr144: cs = 194; goto f5;
 
 f2:
 #line 6 "src/panda/protocol/http/Parser.rl"
@@ -3073,81 +3073,67 @@ f2:
         mark = p - ps;
     }
 	goto _again;
+f5:
+#line 36 "src/panda/protocol/http/Parser.rl"
+	{
+        {p++; goto _out; }
+    }
+	goto _again;
 f0:
-#line 52 "src/panda/protocol/http/Parser.rl"
+#line 56 "src/panda/protocol/http/Parser.rl"
 	{message->http_version = 10;}
 	goto _again;
 f13:
-#line 52 "src/panda/protocol/http/Parser.rl"
+#line 56 "src/panda/protocol/http/Parser.rl"
 	{message->http_version = 11;}
 	goto _again;
 f10:
-#line 59 "src/panda/protocol/http/Parser.rl"
+#line 63 "src/panda/protocol/http/Parser.rl"
 	{ADD_DIGIT(content_length)}
 	goto _again;
 f11:
-#line 60 "src/panda/protocol/http/Parser.rl"
+#line 64 "src/panda/protocol/http/Parser.rl"
 	{message->chunked = true;}
 	goto _again;
 f15:
-#line 65 "src/panda/protocol/http/Parser.rl"
+#line 69 "src/panda/protocol/http/Parser.rl"
 	{ADD_XDIGIT(chunk_length)}
 	goto _again;
-f16:
-#line 70 "src/panda/protocol/http/Parser.rl"
-	{{p++; goto _out; }}
-	goto _again;
-f17:
-#line 71 "src/panda/protocol/http/Parser.rl"
-	{{p++; goto _out; }}
-	goto _again;
-f18:
-#line 72 "src/panda/protocol/http/Parser.rl"
-	{{p++; goto _out; }}
-	goto _again;
-f25:
-#line 75 "src/panda/protocol/http/Parser.rl"
+f21:
+#line 79 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::OPTIONS; }
 	goto _again;
-f23:
-#line 76 "src/panda/protocol/http/Parser.rl"
+f19:
+#line 80 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::GET; }
 	goto _again;
-f24:
-#line 77 "src/panda/protocol/http/Parser.rl"
+f20:
+#line 81 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::HEAD; }
 	goto _again;
-f26:
-#line 78 "src/panda/protocol/http/Parser.rl"
+f22:
+#line 82 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::POST; }
 	goto _again;
-f27:
-#line 79 "src/panda/protocol/http/Parser.rl"
+f23:
+#line 83 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::PUT; }
 	goto _again;
-f22:
-#line 80 "src/panda/protocol/http/Parser.rl"
+f18:
+#line 84 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::DELETE; }
 	goto _again;
-f28:
-#line 81 "src/panda/protocol/http/Parser.rl"
+f24:
+#line 85 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::TRACE; }
 	goto _again;
-f19:
-#line 82 "src/panda/protocol/http/Parser.rl"
+f16:
+#line 86 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::CONNECT; }
 	goto _again;
-f21:
-#line 86 "src/panda/protocol/http/Parser.rl"
-	{{p++; goto _out; }}
-	goto _again;
 f1:
-#line 89 "src/panda/protocol/http/Parser.rl"
+#line 93 "src/panda/protocol/http/Parser.rl"
 	{ADD_DIGIT(response->code)}
-	goto _again;
-f5:
-#line 92 "src/panda/protocol/http/Parser.rl"
-	{{p++; goto _out; }}
 	goto _again;
 f8:
 #line 14 "src/panda/protocol/http/Parser.rl"
@@ -3163,7 +3149,7 @@ f8:
         mark = -1;
     }
 	goto _again;
-f20:
+f17:
 #line 30 "src/panda/protocol/http/Parser.rl"
 	{
         string target;
@@ -3176,7 +3162,7 @@ f20:
     }
 	goto _again;
 f6:
-#line 55 "src/panda/protocol/http/Parser.rl"
+#line 59 "src/panda/protocol/http/Parser.rl"
 	{SAVE(field_name)}
 #line 10 "src/panda/protocol/http/Parser.rl"
 	{
@@ -3184,13 +3170,13 @@ f6:
     }
 	goto _again;
 f14:
-#line 65 "src/panda/protocol/http/Parser.rl"
+#line 69 "src/panda/protocol/http/Parser.rl"
 	{chunk_length = 0;}
-#line 65 "src/panda/protocol/http/Parser.rl"
+#line 69 "src/panda/protocol/http/Parser.rl"
 	{ADD_XDIGIT(chunk_length)}
 	goto _again;
 f4:
-#line 90 "src/panda/protocol/http/Parser.rl"
+#line 94 "src/panda/protocol/http/Parser.rl"
 	{SAVE(response->message)}
 #line 10 "src/panda/protocol/http/Parser.rl"
 	{
@@ -3220,7 +3206,7 @@ f3:
 	{
         mark = p - ps;
     }
-#line 90 "src/panda/protocol/http/Parser.rl"
+#line 94 "src/panda/protocol/http/Parser.rl"
 	{SAVE(response->message)}
 #line 10 "src/panda/protocol/http/Parser.rl"
 	{
@@ -3236,7 +3222,7 @@ f9:
         }
         has_content_length = true;
     }
-#line 59 "src/panda/protocol/http/Parser.rl"
+#line 63 "src/panda/protocol/http/Parser.rl"
 	{ADD_DIGIT(content_length)}
 #line 6 "src/panda/protocol/http/Parser.rl"
 	{
@@ -3244,7 +3230,7 @@ f9:
     }
 	goto _again;
 f12:
-#line 60 "src/panda/protocol/http/Parser.rl"
+#line 64 "src/panda/protocol/http/Parser.rl"
 	{message->chunked = true;}
 #line 14 "src/panda/protocol/http/Parser.rl"
 	{
@@ -3269,7 +3255,7 @@ _again:
 	_out: {}
 	}
 
-#line 121 "src/panda/protocol/http/Parser.rl"
+#line 125 "src/panda/protocol/http/Parser.rl"
     return p - ps;
 }
 

@@ -327,6 +327,7 @@ TEST("parsing pipelined messages") {
 
     result = p.parse(s);
     s.offset(result.position);
+    req = result.request;
     CHECK(req->state() == State::done);
     CHECK(req->uri->to_string() == "/r2");
     CHECK(req->http_version == 10);
@@ -334,7 +335,7 @@ TEST("parsing pipelined messages") {
     CHECK(req->headers.get("Header5") == "header5");
     CHECK(req->headers.get("Header6") == "header6");
 
-    p.parse_shift(s);
+    req = p.parse_shift(s);
     CHECK(req->state() == State::done);
     CHECK(req->http_version == 10);
     CHECK(req->uri->to_string() == "/r3");
