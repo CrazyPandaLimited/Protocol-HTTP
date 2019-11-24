@@ -1,5 +1,6 @@
 #pragma once
 #include "Body.h"
+#include "Error.h"
 #include "Header.h"
 #include <array>
 #include <panda/refcnt.h>

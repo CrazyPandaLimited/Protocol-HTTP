@@ -23,6 +23,7 @@
     action content_length_start {
         if (has_content_length) {
             cs = http_parser_error;
+            message->error(errc::multiple_content_length);
             fbreak;
         }
         has_content_length = true;
@@ -108,8 +109,9 @@ namespace panda { namespace protocol { namespace http {
     dest += *p - '0';
     
 #define ADD_XDIGIT(dest) \
+    char fc = *p | 0x20; \
     dest *= 16;          \
-    dest += (*p | 0x20) >= 'a' ? (*p - 'a' + 10) : (*p - '0');
+    dest += fc >= 'a' ? (fc - 'a' + 10) : (fc - '0');
 
 #define SAVE(dest)                                              \
     if (mark != -1) dest = buffer.substr(mark, p - ps - mark);  \

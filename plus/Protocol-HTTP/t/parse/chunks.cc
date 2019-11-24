@@ -22,11 +22,11 @@ TEST("trivial chunks") {
 
     auto req = p.parse(raw).request;
     CHECK(req->state() == State::done);
+    CHECK(req->chunked);
     CHECK(req->headers.fields.size() == 1);
     CHECK(req->headers.get("Transfer-Encoding") == "chunked");
     CHECK(req->body.parts.size() == 3);
     CHECK(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
-    CHECK(req->chunked);
 }
 
 TEST("chunks with extension") {
@@ -117,30 +117,3 @@ TEST("fragmented chunks") {
     CHECK(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
 }
 
-TEST("bad chunk size") {
-    RequestParser p;
-    string raw = GENERATE(
-        string(
-            "POST /upload HTTP/1.1\r\n"
-            "Transfer-Encoding: chunked\r\n"
-            "\r\n"
-            "12345678901234567890\r\n"
-            "1234\r\n"
-            "0\r\n"
-            "\r\n")
-        ,
-        string(
-            "POST /upload HTTP/1.1\r\n"
-            "Transfer-Encoding: chunked\r\n"
-            "\r\n"
-            "82222222222222222\r\n"
-            "12345678901234567890\r\n"
-            "1234\r\n"
-            "0\r\n"
-            "\r\n"
-        )
-    );
-    auto req = p.parse(raw).request;
-    CHECK(req->error());
-    CHECK(req->method == Method::POST);
-}

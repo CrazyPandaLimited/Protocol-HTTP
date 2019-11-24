@@ -73,32 +73,15 @@ TEST("case insensitive") {
     CHECK(req->body.to_string() == "1");
 }
 
-TEST("unreal content length request") {
+TEST("multiple content length header") {
     string raw = GENERATE(
         string("POST /upload HTTP/1.1\r\n"
-        "Content-Length: 100500999999999999099999999\r\n"
-        "\r\n"
-        "1234567890")
-    );
-
-    RequestParser p;
-    CHECK(p.parse(raw).request->error());
-}
-
-TEST("unreal content length response") {
-    string raw = GENERATE(
-        string("HTTP/1.1 200 OK\r\n"
-        "Content-Length: 100500999999999999099999999\r\n"
-        "\r\n"
-        "1234567890")
-        ,
-        string("HTTP/1.1 11111 OK\r\n"
+        "Content-Length: 10\r\n"
         "Content-Length: 10\r\n"
         "\r\n"
         "1234567890")
     );
 
-    ResponseParser p;
-    p.set_context_request(new Request(Method::GET, new URI("http://dev/"), Header(), Body()));
-    CHECK(p.parse(raw).response->error());
+    RequestParser p;
+    CHECK(p.parse(raw).request->error() == errc::multiple_content_length);
 }

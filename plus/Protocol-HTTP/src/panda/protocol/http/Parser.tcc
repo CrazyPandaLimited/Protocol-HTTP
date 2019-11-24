@@ -28,7 +28,7 @@ namespace panda { namespace protocol { namespace http {
 } while (0)
 
 template <class F1, class F2>
-size_t Parser::parse (const string& buffer, F1&& headers_finished_cb, F2&& no_body_cb) {
+size_t Parser::parse (const string& buffer, F1&& after_headers_cb, F2&& no_body_cb) {
     auto   len = buffer.length();
     size_t pos = 0;
     //printf("parse: %s\n", buffer.c_str());
@@ -47,7 +47,8 @@ size_t Parser::parse (const string& buffer, F1&& headers_finished_cb, F2&& no_bo
             
             RETURN_IF_INCOMPLETE;
             
-            if (!headers_finished_cb()) return pos;
+            headers_finished = true;
+            if (!after_headers_cb()) return pos;
 
             if (message->chunked) {
                 message->state(State::chunk);
@@ -90,7 +91,7 @@ size_t Parser::parse (const string& buffer, F1&& headers_finished_cb, F2&& no_bo
             return len;
         }
         case State::chunk: {
-            //printf("chunk\n");
+            //printf("chunk. rest: %s\n", buffer.substr(pos).c_str());
             pos = machine_exec(buffer, pos);
             RETURN_IF_PARSE_ERROR;
             RETURN_IF_INCOMPLETE;
@@ -100,6 +101,7 @@ size_t Parser::parse (const string& buffer, F1&& headers_finished_cb, F2&& no_bo
                 cs = http_parser_en_chunk_trailer;
                 continue;
             }
+            //printf("chunk len = %llu\n", chunk_length);
 
             body_so_far += chunk_length;
             RETURN_IF_MAX_BODY_SIZE(body_so_far);
