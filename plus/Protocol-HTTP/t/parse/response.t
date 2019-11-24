@@ -10,54 +10,54 @@ catch_run('[parse-response]');
 
 subtest "basic" => sub {
     my $p = Protocol::HTTP::ResponseParser->new;
-    $p->set_request(new Protocol::HTTP::Request({method => METHOD_GET}));
+    $p->set_context_request(new Protocol::HTTP::Request({method => METHOD_GET}));
     my $raw =
         "HTTP/1.0 200 OK\r\n".
         "Host: host1\r\n".
         "\r\n";
 
-    my ($res, $state, $pos) = $p->parse($raw);
+    my ($res, $pos) = $p->parse($raw);
 
-    ok $state != STATE_DONE;
+    ok $res->state != STATE_DONE;
     is $res->http_version, 10;
     is $res->code, 200;
     is $res->message, "OK";
     is $res->header("Host"), "host1";
     is $pos, length($raw);
 
-    (undef, $state) = $p->eof;
-    is $state, STATE_DONE;
+    $res = $p->eof;
+    is $res->state, STATE_DONE;
 };
 
 subtest 'error' => sub {
     my $p = Protocol::HTTP::ResponseParser->new;
-    $p->set_request(new Protocol::HTTP::Request({method => METHOD_GET}));
+    $p->set_context_request(new Protocol::HTTP::Request({method => METHOD_GET}));
 
-    my ($res, $state, $pos, $error) = $p->parse("EPTA");
-    is $state, STATE_ERROR;
-    ok $error;
+    my ($res, $pos) = $p->parse("EPTA");
+    is $res->state, STATE_ERROR;
+    ok $res->error;
 };
 
 subtest 'reset' => sub {
     my $p = Protocol::HTTP::ResponseParser->new;
-    $p->set_request(new Protocol::HTTP::Request({method => METHOD_GET}));
+    $p->set_context_request(new Protocol::HTTP::Request({method => METHOD_GET}));
     $p->parse("HT");
     
     $p->reset;
-    $p->set_request(new Protocol::HTTP::Request({method => METHOD_GET}));
+    $p->set_context_request(new Protocol::HTTP::Request({method => METHOD_GET}));
     
-    my ($res, $state) = $p->parse("HTTP/1.0 200 OK\r\nContent-Length: 0\r\n\r\n");
-    is $state, STATE_DONE;
+    my ($res) = $p->parse("HTTP/1.0 200 OK\r\nContent-Length: 0\r\n\r\n");
+    is $res->state, STATE_DONE;
     is $res->code, 200;
 };
 
 subtest 'backref' => sub {
     my $p = Protocol::HTTP::ResponseParser->new;
-    $p->set_request(new Protocol::HTTP::Request({method => METHOD_GET}));
+    $p->set_context_request(new Protocol::HTTP::Request({method => METHOD_GET}));
     
-    my ($res)          = $p->parse("HTTP/1.0 200 OK\r\n");
-    my ($res2, $state) = $p->parse("Content-Length: 0\r\n\r\n");
-    is $state, STATE_DONE;
+    my ($res)  = $p->parse("HTTP/1.0 200 OK\r\n");
+    my ($res2) = $p->parse("Content-Length: 0\r\n\r\n");
+    is $res2->state, STATE_DONE;
     is $res, $res2;
 };
 

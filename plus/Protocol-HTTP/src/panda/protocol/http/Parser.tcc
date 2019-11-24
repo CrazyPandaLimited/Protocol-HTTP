@@ -53,9 +53,14 @@ size_t Parser::parse (const string& buffer, F1&& headers_finished_cb, F2&& no_bo
                 message->state(State::chunk);
                 cs = http_parser_en_first_chunk;
             }
-            else if (content_length > 0) {
-                message->state(State::body);
-                RETURN_IF_MAX_BODY_SIZE(content_length);
+            else if (has_content_length) {
+                if (content_length > 0) {
+                    message->state(State::body);
+                    RETURN_IF_MAX_BODY_SIZE(content_length);
+                } else {
+                    message->state(State::done);
+                    return pos;
+                }
             }
             else if (!no_body_cb()) return pos;
             

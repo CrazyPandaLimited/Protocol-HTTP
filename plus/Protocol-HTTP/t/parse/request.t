@@ -11,13 +11,13 @@ catch_run('[parse-request]');
 subtest "get" => sub {
     my $p = Protocol::HTTP::RequestParser->new;
 
-    my ($req, $state, $pos) = $p->parse(
+    my ($req, $pos) = $p->parse(
         "GET / HTTP/1.0\r\n".
         "Host: host1\r\n".
         "\r\n"
     );
     
-    is $state, Protocol::HTTP::Message::STATE_DONE;
+    is $req->state, Protocol::HTTP::Message::STATE_DONE;
     is $req->method, Protocol::HTTP::Request::METHOD_GET;
     is $req->http_version, 10;
     is $req->uri, "/";
@@ -36,9 +36,9 @@ subtest "post" => sub {
         "Wikipedia in\r\n\r\nchunks."
     ;
 
-    my ($req, $state) = $p->parse_shift($raw);
+    my $req = $p->parse_shift($raw);
     
-    is $state, STATE_DONE;
+    is $req->state, STATE_DONE;
     is $req->method, METHOD_POST;
     is $req->http_version, 11;
     is $req->uri, "/upload";
@@ -49,9 +49,9 @@ subtest "post" => sub {
 
 subtest 'error' => sub {
     my $p = Protocol::HTTP::RequestParser->new;
-    my (undef, $state, $pos, $error) = $p->parse("EPTA");
-    is $state, STATE_ERROR;
-    ok $error;
+    my ($req) = $p->parse("EPTA");
+    is $req->state, STATE_ERROR;
+    ok $req->error;
 };
 
 subtest 'reset' => sub {
@@ -60,17 +60,17 @@ subtest 'reset' => sub {
     
     $p->reset;
     
-    my ($req, $state) = $p->parse("GET / HTTP/1.0\r\n\r\n");
-    is $state, STATE_DONE;
+    my ($req) = $p->parse("GET / HTTP/1.0\r\n\r\n");
+    is $req->state, STATE_DONE;
     is $req->method, METHOD_GET;
 };
 
 subtest 'backref' => sub {
     my $p = Protocol::HTTP::RequestParser->new;
     
-    my ($req)          = $p->parse("GET / HTTP/1.0\r\n");
-    my ($req2, $state) = $p->parse("Host: host1\r\n\r\n");
-    is $state, STATE_DONE;
+    my ($req)  = $p->parse("GET / HTTP/1.0\r\n");
+    my ($req2) = $p->parse("Host: host1\r\n\r\n");
+    is $req2->state, STATE_DONE;
     is $req, $req2;
 };
 

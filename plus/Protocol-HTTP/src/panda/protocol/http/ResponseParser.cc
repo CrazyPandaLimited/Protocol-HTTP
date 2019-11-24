@@ -23,8 +23,11 @@ ResponseParser::Result ResponseParser::parse (const string& buffer) {
     auto pos = Parser::parse(buffer,
         [this] {
             if (_context_request->method == Request::Method::HEAD || response->code  < 200 || response->code == 204 || response->code == 304) {
-                if (response->chunked || content_length > 0) response->error(errc::unexpected_body);
-                else                                         response->state(State::done);
+                if (response->chunked || (content_length > 0 && _context_request->method != Request::Method::HEAD)) {
+                    response->error(errc::unexpected_body);
+                } else {
+                    response->state(State::done);
+                }
                 return false;
             }
             return true;
