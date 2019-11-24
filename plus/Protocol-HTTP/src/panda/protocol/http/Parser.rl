@@ -67,9 +67,9 @@
     chunk_ext_val   = token | quoted_string;
     chunk_extension = ( ";" chunk_ext_name ("=" chunk_ext_val)? )+;
     _first_chunk    = chunk_size chunk_extension? CRLF;
-    first_chunk    := _first_chunk;
-    chunk          := CRLF _first_chunk;
-    chunk_trailer  := (header_field CRLF)* CRLF;
+    first_chunk    := _first_chunk @{fbreak;};
+    chunk          := CRLF _first_chunk @{fbreak;};
+    chunk_trailer  := (header_field CRLF)* CRLF @{fbreak;};
     
     ################################## REQUEST ########################################
     method = (  "OPTIONS" %{request->method = Request::Method::OPTIONS; }
@@ -83,13 +83,13 @@
              );
     request_target = VCHAR+ >mark %request_target %unmark;
     request_line   = method SP request_target SP http_version :> CRLF;
-    request       := request_line headers;
+    request       := request_line headers @{fbreak;};
     
     ################################## RESPONSE ########################################
     status_code = ([1-9] digit{2}) ${ADD_DIGIT(response->code)};
     reason_phrase = (VCHAR | WSP | obs_text)* >mark %{SAVE(response->message)} %unmark;
     status_line = http_version SP status_code SP reason_phrase :> CRLF;
-    response := status_line headers;
+    response := status_line headers @{fbreak;};
 }%%
 
 namespace panda { namespace protocol { namespace http {

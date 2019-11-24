@@ -2847,7 +2847,7 @@ case 189:
 	tr7: cs = 8; goto _again;
 	tr8: cs = 9; goto _again;
 	tr10: cs = 10; goto f0;
-	tr76: cs = 10; goto f12;
+	tr76: cs = 10; goto f13;
 	tr11: cs = 11; goto f1;
 	tr12: cs = 12; goto f1;
 	tr13: cs = 13; goto f1;
@@ -2856,18 +2856,18 @@ case 189:
 	tr15: cs = 15; goto f2;
 	tr16: cs = 16; goto f3;
 	tr18: cs = 16; goto f4;
-	tr29: cs = 16; goto f6;
-	tr31: cs = 16; goto f7;
-	tr75: cs = 16; goto f11;
+	tr29: cs = 16; goto f7;
+	tr31: cs = 16; goto f8;
+	tr75: cs = 16; goto f12;
 	tr19: cs = 17; goto _again;
 	tr20: cs = 18; goto _again;
 	tr25: cs = 19; goto _again;
 	tr21: cs = 19; goto f2;
 	tr28: cs = 20; goto _again;
-	tr26: cs = 20; goto f5;
+	tr26: cs = 20; goto f6;
 	tr30: cs = 21; goto _again;
 	tr27: cs = 21; goto f2;
-	tr74: cs = 21; goto f10;
+	tr74: cs = 21; goto f11;
 	tr22: cs = 22; goto f2;
 	tr32: cs = 23; goto _again;
 	tr33: cs = 24; goto _again;
@@ -2883,9 +2883,9 @@ case 189:
 	tr43: cs = 34; goto _again;
 	tr44: cs = 35; goto _again;
 	tr46: cs = 36; goto _again;
-	tr45: cs = 36; goto f5;
-	tr47: cs = 37; goto f8;
-	tr48: cs = 37; goto f9;
+	tr45: cs = 36; goto f6;
+	tr47: cs = 37; goto f9;
+	tr48: cs = 37; goto f10;
 	tr23: cs = 38; goto f2;
 	tr49: cs = 39; goto _again;
 	tr50: cs = 40; goto _again;
@@ -2904,7 +2904,7 @@ case 189:
 	tr63: cs = 53; goto _again;
 	tr64: cs = 54; goto _again;
 	tr66: cs = 55; goto _again;
-	tr65: cs = 55; goto f5;
+	tr65: cs = 55; goto f6;
 	tr67: cs = 56; goto f2;
 	tr68: cs = 57; goto _again;
 	tr69: cs = 58; goto _again;
@@ -2913,8 +2913,8 @@ case 189:
 	tr72: cs = 61; goto _again;
 	tr73: cs = 62; goto _again;
 	tr9: cs = 63; goto _again;
-	tr77: cs = 65; goto f13;
-	tr79: cs = 65; goto f14;
+	tr77: cs = 65; goto f14;
+	tr79: cs = 65; goto f15;
 	tr78: cs = 66; goto _again;
 	tr80: cs = 67; goto _again;
 	tr82: cs = 68; goto _again;
@@ -2925,8 +2925,8 @@ case 189:
 	tr87: cs = 73; goto _again;
 	tr88: cs = 75; goto _again;
 	tr89: cs = 76; goto _again;
-	tr90: cs = 77; goto f13;
-	tr92: cs = 77; goto f14;
+	tr90: cs = 77; goto f14;
+	tr92: cs = 77; goto f15;
 	tr91: cs = 78; goto _again;
 	tr93: cs = 79; goto _again;
 	tr95: cs = 80; goto _again;
@@ -2940,11 +2940,11 @@ case 189:
 	tr104: cs = 88; goto _again;
 	tr102: cs = 88; goto f2;
 	tr107: cs = 89; goto _again;
-	tr105: cs = 89; goto f5;
+	tr105: cs = 89; goto f6;
 	tr109: cs = 90; goto _again;
 	tr106: cs = 90; goto f2;
-	tr108: cs = 91; goto f6;
-	tr110: cs = 91; goto f7;
+	tr108: cs = 91; goto f7;
+	tr110: cs = 91; goto f8;
 	tr112: cs = 93; goto _again;
 	tr119: cs = 94; goto _again;
 	tr120: cs = 95; goto _again;
@@ -2952,17 +2952,17 @@ case 189:
 	tr122: cs = 97; goto _again;
 	tr123: cs = 98; goto _again;
 	tr124: cs = 99; goto _again;
-	tr125: cs = 100; goto f15;
-	tr202: cs = 100; goto f17;
-	tr205: cs = 100; goto f18;
-	tr209: cs = 100; goto f19;
-	tr216: cs = 100; goto f20;
-	tr221: cs = 100; goto f21;
-	tr223: cs = 100; goto f22;
-	tr228: cs = 100; goto f23;
+	tr125: cs = 100; goto f19;
+	tr202: cs = 100; goto f22;
+	tr205: cs = 100; goto f23;
+	tr209: cs = 100; goto f24;
+	tr216: cs = 100; goto f25;
+	tr221: cs = 100; goto f26;
+	tr223: cs = 100; goto f27;
+	tr228: cs = 100; goto f28;
 	tr128: cs = 101; goto _again;
 	tr126: cs = 101; goto f2;
-	tr127: cs = 102; goto f16;
+	tr127: cs = 102; goto f20;
 	tr129: cs = 103; goto _again;
 	tr130: cs = 104; goto _again;
 	tr131: cs = 105; goto _again;
@@ -2972,19 +2972,19 @@ case 189:
 	tr135: cs = 109; goto _again;
 	tr136: cs = 110; goto _again;
 	tr138: cs = 111; goto f0;
-	tr149: cs = 111; goto f6;
-	tr151: cs = 111; goto f7;
-	tr195: cs = 111; goto f11;
-	tr196: cs = 111; goto f12;
+	tr149: cs = 111; goto f7;
+	tr151: cs = 111; goto f8;
+	tr195: cs = 111; goto f12;
+	tr196: cs = 111; goto f13;
 	tr139: cs = 112; goto _again;
 	tr140: cs = 113; goto _again;
 	tr145: cs = 114; goto _again;
 	tr141: cs = 114; goto f2;
 	tr148: cs = 115; goto _again;
-	tr146: cs = 115; goto f5;
+	tr146: cs = 115; goto f6;
 	tr150: cs = 116; goto _again;
 	tr147: cs = 116; goto f2;
-	tr194: cs = 116; goto f10;
+	tr194: cs = 116; goto f11;
 	tr142: cs = 117; goto f2;
 	tr152: cs = 118; goto _again;
 	tr153: cs = 119; goto _again;
@@ -3000,9 +3000,9 @@ case 189:
 	tr163: cs = 129; goto _again;
 	tr164: cs = 130; goto _again;
 	tr166: cs = 131; goto _again;
-	tr165: cs = 131; goto f5;
-	tr167: cs = 132; goto f8;
-	tr168: cs = 132; goto f9;
+	tr165: cs = 131; goto f6;
+	tr167: cs = 132; goto f9;
+	tr168: cs = 132; goto f10;
 	tr143: cs = 133; goto f2;
 	tr169: cs = 134; goto _again;
 	tr170: cs = 135; goto _again;
@@ -3021,7 +3021,7 @@ case 189:
 	tr183: cs = 148; goto _again;
 	tr184: cs = 149; goto _again;
 	tr186: cs = 150; goto _again;
-	tr185: cs = 150; goto f5;
+	tr185: cs = 150; goto f6;
 	tr187: cs = 151; goto f2;
 	tr188: cs = 152; goto _again;
 	tr189: cs = 153; goto _again;
@@ -3061,11 +3061,11 @@ case 189:
 	tr225: cs = 187; goto _again;
 	tr226: cs = 188; goto _again;
 	tr227: cs = 189; goto _again;
-	tr24: cs = 190; goto _again;
-	tr81: cs = 191; goto _again;
-	tr94: cs = 192; goto _again;
-	tr103: cs = 193; goto _again;
-	tr144: cs = 194; goto _again;
+	tr24: cs = 190; goto f5;
+	tr81: cs = 191; goto f16;
+	tr94: cs = 192; goto f17;
+	tr103: cs = 193; goto f18;
+	tr144: cs = 194; goto f21;
 
 f2:
 #line 6 "src/panda/protocol/http/Parser.rl"
@@ -3077,59 +3077,79 @@ f0:
 #line 52 "src/panda/protocol/http/Parser.rl"
 	{message->http_version = 10;}
 	goto _again;
-f12:
+f13:
 #line 52 "src/panda/protocol/http/Parser.rl"
 	{message->http_version = 11;}
 	goto _again;
-f9:
+f10:
 #line 59 "src/panda/protocol/http/Parser.rl"
 	{ADD_DIGIT(content_length)}
 	goto _again;
-f10:
+f11:
 #line 60 "src/panda/protocol/http/Parser.rl"
 	{message->chunked = true;}
 	goto _again;
-f14:
+f15:
 #line 65 "src/panda/protocol/http/Parser.rl"
 	{ADD_XDIGIT(chunk_length)}
 	goto _again;
-f20:
+f16:
+#line 70 "src/panda/protocol/http/Parser.rl"
+	{{p++; goto _out; }}
+	goto _again;
+f17:
+#line 71 "src/panda/protocol/http/Parser.rl"
+	{{p++; goto _out; }}
+	goto _again;
+f18:
+#line 72 "src/panda/protocol/http/Parser.rl"
+	{{p++; goto _out; }}
+	goto _again;
+f25:
 #line 75 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::OPTIONS; }
 	goto _again;
-f18:
+f23:
 #line 76 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::GET; }
 	goto _again;
-f19:
+f24:
 #line 77 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::HEAD; }
 	goto _again;
-f21:
+f26:
 #line 78 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::POST; }
 	goto _again;
-f22:
+f27:
 #line 79 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::PUT; }
 	goto _again;
-f17:
+f22:
 #line 80 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::DELETE; }
 	goto _again;
-f23:
+f28:
 #line 81 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::TRACE; }
 	goto _again;
-f15:
+f19:
 #line 82 "src/panda/protocol/http/Parser.rl"
 	{request->method = Request::Method::CONNECT; }
+	goto _again;
+f21:
+#line 86 "src/panda/protocol/http/Parser.rl"
+	{{p++; goto _out; }}
 	goto _again;
 f1:
 #line 89 "src/panda/protocol/http/Parser.rl"
 	{ADD_DIGIT(response->code)}
 	goto _again;
-f7:
+f5:
+#line 92 "src/panda/protocol/http/Parser.rl"
+	{{p++; goto _out; }}
+	goto _again;
+f8:
 #line 14 "src/panda/protocol/http/Parser.rl"
 	{
         string value;
@@ -3143,7 +3163,7 @@ f7:
         mark = -1;
     }
 	goto _again;
-f16:
+f20:
 #line 30 "src/panda/protocol/http/Parser.rl"
 	{
         string target;
@@ -3155,7 +3175,7 @@ f16:
         mark = -1;
     }
 	goto _again;
-f5:
+f6:
 #line 55 "src/panda/protocol/http/Parser.rl"
 	{SAVE(field_name)}
 #line 10 "src/panda/protocol/http/Parser.rl"
@@ -3163,7 +3183,7 @@ f5:
         mark = -1;
     }
 	goto _again;
-f13:
+f14:
 #line 65 "src/panda/protocol/http/Parser.rl"
 	{chunk_length = 0;}
 #line 65 "src/panda/protocol/http/Parser.rl"
@@ -3177,7 +3197,7 @@ f4:
         mark = -1;
     }
 	goto _again;
-f6:
+f7:
 #line 6 "src/panda/protocol/http/Parser.rl"
 	{
         mark = p - ps;
@@ -3207,7 +3227,7 @@ f3:
         mark = -1;
     }
 	goto _again;
-f8:
+f9:
 #line 22 "src/panda/protocol/http/Parser.rl"
 	{
         if (has_content_length) {
@@ -3223,7 +3243,7 @@ f8:
         mark = p - ps;
     }
 	goto _again;
-f11:
+f12:
 #line 60 "src/panda/protocol/http/Parser.rl"
 	{message->chunked = true;}
 #line 14 "src/panda/protocol/http/Parser.rl"

@@ -28,9 +28,11 @@ template <class F1, class F2>
 size_t Parser::parse (const string& buffer, F1&& headers_finished_cb, F2&& no_body_cb) {
     auto   len = buffer.length();
     size_t pos = 0;
+    //printf("parse: %s\n", buffer.c_str());
 
     while (pos != len) switch (message->state()) {
         case State::headers: {
+            //printf("headers\n");
             pos = machine_exec(buffer, pos);
             RETURN_IF_PARSE_ERROR;
 
@@ -57,6 +59,7 @@ size_t Parser::parse (const string& buffer, F1&& headers_finished_cb, F2&& no_bo
             continue;
         }
         case State::body: {
+            //printf("body\n");
             auto have = len - pos;
             
             if (content_length) {
@@ -79,6 +82,7 @@ size_t Parser::parse (const string& buffer, F1&& headers_finished_cb, F2&& no_bo
             return len;
         }
         case State::chunk: {
+            //printf("chunk\n");
             pos = machine_exec(buffer, pos);
             RETURN_IF_PARSE_ERROR;
             RETURN_IF_INCOMPLETE;
@@ -97,6 +101,7 @@ size_t Parser::parse (const string& buffer, F1&& headers_finished_cb, F2&& no_bo
             continue;
         }
         case State::chunk_body: {
+            //printf("chunk body\n");
             auto left = chunk_length - chunk_so_far;
             auto have = len - pos;
 
@@ -113,6 +118,7 @@ size_t Parser::parse (const string& buffer, F1&& headers_finished_cb, F2&& no_bo
             }
         }
         case State::chunk_trailer: {
+            //printf("chjunk trailer\n");
             pos = machine_exec(buffer, pos);
             RETURN_IF_PARSE_ERROR;
             RETURN_IF_INCOMPLETE;
