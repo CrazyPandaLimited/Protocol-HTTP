@@ -10,8 +10,10 @@ struct IRequestFactory {
 
 struct RequestParser : Parser {
     struct Result {
-        RequestSP request;
-        size_t    position;
+        RequestSP       request;
+        size_t          position;
+        State           state;
+        std::error_code error;
     };
 
     struct IFactory {
@@ -23,10 +25,11 @@ struct RequestParser : Parser {
 
     Result parse (const string&);
 
-    RequestSP parse_shift (string& s) {
+    Result parse_shift (string& s) {
         auto result = parse(s);
         s.offset(result.position);
-        return result.request;
+        result.position = 0;
+        return result;
     }
 
     void reset ();

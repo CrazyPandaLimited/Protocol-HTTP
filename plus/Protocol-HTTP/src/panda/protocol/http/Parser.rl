@@ -23,7 +23,7 @@
     action content_length_start {
         if (has_content_length) {
             cs = http_parser_error;
-            message->error(errc::multiple_content_length);
+            set_error(errc::multiple_content_length);
             fbreak;
         }
         has_content_length = true;

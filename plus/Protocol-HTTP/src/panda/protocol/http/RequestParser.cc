@@ -21,12 +21,12 @@ RequestParser::Result RequestParser::parse (const string& buffer) {
     auto pos = Parser::parse(buffer,
         []{ return true; },
         [this] {
-            request->state(State::done);
+            state = State::done;
             return false;
         }
     );
-    Result ret = {request, pos};
-    if (request->state() >= State::done) reset();
+    Result ret = {request, pos, state, error};
+    if (state >= State::done) reset();
     return ret;
 }
 

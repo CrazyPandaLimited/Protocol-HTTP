@@ -6,8 +6,10 @@ namespace panda { namespace protocol { namespace http {
 
 struct ResponseParser : Parser {
     struct Result {
-        ResponseSP response;
-        size_t     position;
+        ResponseSP      response;
+        size_t          position;
+        State           state;
+        std::error_code error;
     };
 
     ResponseParser ();
@@ -22,13 +24,14 @@ struct ResponseParser : Parser {
 
     Result parse (const string& buffer);
 
-    ResponseSP parse_shift (string& s) {
+    Result parse_shift (string& s) {
         auto result = parse(s);
         s.offset(result.position);
-        return result.response;
+        result.position = 0;
+        return result;
     }
 
-    ResponseSP eof ();
+    Result eof ();
 
     void reset () { _reset(false); }
 

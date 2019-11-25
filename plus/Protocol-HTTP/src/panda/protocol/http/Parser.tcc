@@ -7,7 +7,7 @@
 namespace panda { namespace protocol { namespace http {
 
 #define RETURN_IF_PARSE_ERROR do if (cs == http_parser_error) { \
-    if (!message->error()) message->error(errc::lexical_error); \
+    if (!error) set_error(errc::lexical_error);                 \
     return pos;                                                 \
 } while (0)
 
@@ -23,7 +23,7 @@ namespace panda { namespace protocol { namespace http {
 } while (0)
 
 #define RETURN_IF_MAX_BODY_SIZE(current_size) do if (current_size > max_body_size) {    \
-    message->error(max_body_size ? errc::body_too_large : errc::unexpected_body);       \
+    set_error(max_body_size ? errc::body_too_large : errc::unexpected_body);            \
     return pos;                                                                         \
 } while (0)
 
@@ -33,7 +33,7 @@ size_t Parser::parse (const string& buffer, F1&& after_headers_cb, F2&& no_body_
     size_t pos = 0;
     //printf("parse: %s\n", buffer.c_str());
 
-    while (pos != len) switch (message->state()) {
+    while (pos != len) switch (state) {
         case State::headers: {
             //printf("headers\n");
             pos = machine_exec(buffer, pos);
@@ -41,7 +41,7 @@ size_t Parser::parse (const string& buffer, F1&& after_headers_cb, F2&& no_body_
 
             headers_so_far += pos;
             if (headers_so_far > max_headers_size) {
-                message->error(errc::headers_too_large);
+                set_error(errc::headers_too_large);
                 return pos;
             }
             
@@ -51,15 +51,15 @@ size_t Parser::parse (const string& buffer, F1&& after_headers_cb, F2&& no_body_
             if (!after_headers_cb()) return pos;
 
             if (message->chunked) {
-                message->state(State::chunk);
+                state = State::chunk;
                 cs = http_parser_en_first_chunk;
             }
             else if (has_content_length) {
                 if (content_length > 0) {
-                    message->state(State::body);
+                    state = State::body;
                     RETURN_IF_MAX_BODY_SIZE(content_length);
                 } else {
-                    message->state(State::done);
+                    state = State::done;
                     return pos;
                 }
             }
@@ -75,7 +75,7 @@ size_t Parser::parse (const string& buffer, F1&& after_headers_cb, F2&& no_body_
                 auto left = content_length - body_so_far;
                 if (have >= left) {
                     message->body.parts.push_back(buffer.substr(pos, left));
-                    message->state(State::done);
+                    state = State::done;
                     return pos + left;
                 }
                 else {
@@ -97,7 +97,7 @@ size_t Parser::parse (const string& buffer, F1&& after_headers_cb, F2&& no_body_
             RETURN_IF_INCOMPLETE;
 
             if (!chunk_length) { // final chunk
-                message->state(State::chunk_trailer);
+                state = State::chunk_trailer;
                 cs = http_parser_en_chunk_trailer;
                 continue;
             }
@@ -107,7 +107,7 @@ size_t Parser::parse (const string& buffer, F1&& after_headers_cb, F2&& no_body_
             RETURN_IF_MAX_BODY_SIZE(body_so_far);
 
             chunk_so_far = 0;
-            message->state(State::chunk_body);
+            state = State::chunk_body;
             continue;
         }
         case State::chunk_body: {
@@ -117,7 +117,7 @@ size_t Parser::parse (const string& buffer, F1&& after_headers_cb, F2&& no_body_
 
             if (have >= left) {
                 message->body.parts.push_back(buffer.substr(pos, left));
-                message->state(State::chunk);
+                state = State::chunk;
                 cs = http_parser_en_chunk;
                 pos += left;
                 continue;
@@ -132,7 +132,7 @@ size_t Parser::parse (const string& buffer, F1&& after_headers_cb, F2&& no_body_
             pos = machine_exec(buffer, pos);
             RETURN_IF_PARSE_ERROR;
             RETURN_IF_INCOMPLETE;
-            message->state(State::done);
+            state = State::done;
             return pos;
         }
         default: abort();

@@ -14,15 +14,15 @@ TEST("trivial get response") {
     CHECK(result.position == raw.length());
 
     auto res = result.response;
-    CHECK(res->state() != State::done);
+    CHECK(result.state != State::done);
     CHECK(res->http_version == 10);
     CHECK(res->code == 200);
     CHECK(res->message == "OK");
     CHECK(res->headers.get("Host") == "host1");
 
-    auto res2 = p.eof();
-    CHECK(res2 == res);
-    CHECK(res->state() == State::done);
+    result = p.eof();
+    CHECK(result.response == res);
+    CHECK(result.state == State::done);
 }
 
 TEST("trivial head response") {
@@ -34,8 +34,9 @@ TEST("trivial head response") {
         "Content-Length: 100500\r\n" // parser won't expect real body here for HEAD response
         "\r\n";
 
-    auto res = p.parse_shift(raw);
-    CHECK(res->state() == State::done);
+    auto result = p.parse_shift(raw);
+    auto res = result.response;
+    CHECK(result.state == State::done);
     CHECK(res->http_version == 10);
     CHECK(res->code == 200);
     CHECK(res->message == "OK");
@@ -55,8 +56,9 @@ TEST("redirect response") {
         "\r\n"
         "<html><head><title>Moved</title></head><body><h1>Moved</h1><p>This page has moved to <a href=\"http://localhost:35615\">http://localhost:35615</a>.</p></body></html>\r\n";
 
-    auto res = p.parse(raw).response;
-    CHECK(res->state() == State::done);
+    auto result = p.parse(raw);
+    auto res = result.response;
+    CHECK(result.state == State::done);
     CHECK(res->http_version == 11);
     CHECK(res->code == 301);
     CHECK(res->message == "Moved Permanently");
@@ -74,14 +76,15 @@ TEST("trivial connection close") {
         "\r\n"
         "body";
 
-    auto res = p.parse(raw).response;
-    CHECK(res->state() != State::done);
+    auto result = p.parse(raw);
+    auto res = result.response;
+    CHECK(result.state != State::done);
     CHECK(res->http_version == 11);
     CHECK(res->headers.get("Host") == "host1");
     CHECK(res->body.to_string() == "body");
 
-    p.eof();
-    CHECK(res->state() == State::done);
+    result = p.eof();
+    CHECK(result.state == State::done);
     CHECK(res->body.to_string() == "body");
 }
 
@@ -97,10 +100,10 @@ TEST("connection close priority") {
         "\r\n"
         "1";
 
-    auto res = p.parse(raw).response;
-    CHECK_FALSE(res->error());
-    p.eof();
-    CHECK(res->error());
+    auto result = p.parse(raw);
+    CHECK_FALSE(result.error);
+    result = p.eof();
+    CHECK(result.error);
 }
 
 TEST("eof after full message") {
@@ -114,17 +117,18 @@ TEST("eof after full message") {
         "Content-Length: " + to_string(body.length()) + "\r\n"
         "\r\n" + body;
 
-    auto res = p.parse(raw).response;
-    CHECK(res->state() == State::done);
+    auto result = p.parse(raw);
+    CHECK(result.state == State::done);
 
-    auto res2 = p.eof();
-    CHECK_FALSE(res2);
+    result = p.eof();
+    CHECK_FALSE(result.response);
+    CHECK(result.state == State::headers);
 }
 
 TEST("response with chunks") {
     ResponseParser p;
     p.set_context_request(new Request());
-    string s =
+    string raw =
         "HTTP/1.1 200 OK\r\n"
         "Transfer-Encoding: chunked\r\n"
         "Connection: keep-alive\r\n"
@@ -134,8 +138,9 @@ TEST("response with chunks") {
         "8\r\n"
         "epta dva\r\n"
         "0\r\n\r\n";
-    auto res = p.parse(s).response;
-    CHECK(res->state() == State::done);
+    auto result = p.parse(raw);
+    auto res = result.response;
+    CHECK(result.state == State::done);
     CHECK(res->body.length() == 16);
     CHECK(res->body.to_string() == "epta razepta dva");
     CHECK(res->chunked);
@@ -156,14 +161,15 @@ TEST("parsing response byte by byte") {
         "\r\n";
 
     const size_t CHUNK = GENERATE(1, 10);
-    ResponseSP res;
+    ResponseParser::Result result;
     while (s) {
-        if (res) CHECK(res->state() != State::done);
-        res = p.parse(s.substr(0, CHUNK)).response;
+        if (result.response) CHECK(result.state != State::done);
+        result = p.parse(s.substr(0, CHUNK));
         s.offset(CHUNK < s.length() ? CHUNK : s.length());
     }
+    auto res = result.response;
+    CHECK(result.state == State::done);
     REQUIRE(res);
-    CHECK(res->state() == State::done);
     CHECK(res->http_version == 11);
     CHECK(res->code == 101);
     CHECK(res->full_message() == "101 Switching Protocols");

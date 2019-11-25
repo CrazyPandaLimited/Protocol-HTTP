@@ -20,8 +20,9 @@ TEST("trivial chunks") {
         "\r\n"
         ;
 
-    auto req = p.parse(raw).request;
-    CHECK(req->state() == State::done);
+    auto result = p.parse(raw);
+    auto req = result.request;
+    CHECK(result.state == State::done);
     CHECK(req->chunked);
     CHECK(req->headers.fields.size() == 1);
     CHECK(req->headers.get("Transfer-Encoding") == "chunked");
@@ -47,8 +48,9 @@ TEST("chunks with extension") {
         "\r\n"
         ;
 
-    auto req = p.parse(raw).request;
-    CHECK(req->state() == State::done);
+    auto result = p.parse(raw);
+    auto req = result.request;
+    CHECK(result.state == State::done);
     CHECK(req->headers.fields.size() == 1);
     CHECK(req->headers.get("Transfer-Encoding") == "chunked");
     CHECK(req->body.parts.size() == 3);
@@ -75,8 +77,9 @@ TEST("chunks with trailer header") {
         "\r\n"
         ;
 
-    auto req = p.parse(raw).request;
-    CHECK(req->state() == State::done);
+    auto result = p.parse(raw);
+    auto req = result.request;
+    CHECK(result.state == State::done);
     CHECK(req->headers.fields.size() == 2);
     CHECK(req->headers.get("Transfer-Encoding") == "chunked");
     CHECK(req->body.parts.size() == 3);
@@ -104,12 +107,14 @@ TEST("fragmented chunks") {
         "\r\n"
     };
 
-    RequestSP req;
+    RequestParser::Result result;
     for (auto s : v) {
-        if (req) CHECK(req->state() != State::done);
-        req = p.parse(s).request;
+        if (result.request) CHECK(result.state != State::done);
+        result = p.parse(s);
     }
-    CHECK(req->state() == State::done);
+
+    auto req = result.request;
+    CHECK(result.state == State::done);
     CHECK(req->method == Method::POST);
     CHECK(req->http_version == 11);
     CHECK(req->headers.get("Transfer-Encoding") == "chunked");

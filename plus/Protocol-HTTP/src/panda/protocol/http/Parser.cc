@@ -3222,7 +3222,7 @@ f9:
 	{
         if (has_content_length) {
             cs = http_parser_error;
-            message->error(errc::multiple_content_length);
+            set_error(errc::multiple_content_length);
             {p++; goto _out; }
         }
         has_content_length = true;

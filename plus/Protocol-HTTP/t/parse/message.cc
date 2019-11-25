@@ -9,8 +9,9 @@ TEST("trivial") {
         "Host: host1\r\n"
         "\r\n";
 
-    auto req = p.parse(raw).request;
-    CHECK(req->state() == State::done);
+    auto result = p.parse(raw);
+    auto req = result.request;
+    CHECK(result.state == State::done);
     CHECK(req->http_version == 10);
     CHECK(req->headers.get("Host") == "host1");
 }
@@ -22,8 +23,9 @@ TEST("trimming spaces from header value") {
         "Host: host \r\n"
         "\r\n";
 
-    auto req = p.parse(raw).request;
-    CHECK(req->state() == State::done);
+    auto result = p.parse(raw);
+    auto req = result.request;
+    CHECK(result.state == State::done);
     CHECK(req->http_version == 10);
     CHECK(req->headers.fields.size() == 1);
     CHECK(req->headers.get("Host") == "host");
@@ -36,8 +38,9 @@ TEST("no space after header field") {
         "Host:host\r\n"
         "\r\n";
 
-    auto req = p.parse(raw).request;
-    CHECK(req->state() == State::done);
+    auto result = p.parse(raw);
+    auto req = result.request;
+    CHECK(result.state == State::done);
     CHECK(req->http_version == 10);
     CHECK(req->headers.get("Host") == "host");
     CHECK(req->headers.fields.size() == 1);
@@ -49,8 +52,9 @@ TEST("no header at all") {
         "GET / HTTP/1.0\r\n"
         "\r\n";
 
-    auto req = p.parse(raw).request;
-    CHECK(req->state() == State::done);
+    auto result = p.parse(raw);
+    auto req = result.request;
+    CHECK(result.state == State::done);
     CHECK(req->http_version == 10);
     CHECK(req->headers.fields.size() == 0);
 }
@@ -62,8 +66,9 @@ TEST("space in header value") {
         "Host: ho  st\r\n"
         "\r\n";
 
-    auto req = p.parse(raw).request;
-    CHECK(req->state() == State::done);
+    auto result = p.parse(raw);
+    auto req = result.request;
+    CHECK(result.state == State::done);
     CHECK(req->http_version == 10);
     CHECK(req->headers.get("Host") == "ho  st");
     CHECK(req->headers.fields.size() == 1);
@@ -76,8 +81,9 @@ TEST("colon in header 1") {
         "Host:: host\r\n"
         "\r\n";
 
-    auto req = p.parse(raw).request;
-    CHECK(req->state() == State::done);
+    auto result = p.parse(raw);
+    auto req = result.request;
+    CHECK(result.state == State::done);
     CHECK(req->http_version == 10);
     CHECK(req->headers.get("Host") == ": host");
     CHECK(req->headers.fields.size() == 1);
@@ -90,8 +96,9 @@ TEST("colon in header 2") {
         "Host: h:ost\r\n"
         "\r\n";
 
-    auto req = p.parse(raw).request;
-    CHECK(req->state() == State::done);
+    auto result = p.parse(raw);
+    auto req = result.request;
+    CHECK(result.state == State::done);
     CHECK(req->http_version == 10);
     CHECK(req->headers.get("Host") == "h:ost");
     CHECK(req->headers.fields.size() == 1);
@@ -103,7 +110,7 @@ TEST("space before colon in header field") {
         "GET / HTTP/1.0\r\n"
         "Host : host1\r\n"
         "\r\n";
-    CHECK(p.parse(raw).request->error());
+    CHECK(p.parse(raw).error);
 }
 
 TEST("space before header field") {
@@ -113,7 +120,7 @@ TEST("space before header field") {
         "GET / HTTP/1.0\r\n"
         " Host: host1\r\n"
         "\r\n";
-    CHECK(p.parse(raw).request->error());
+    CHECK(p.parse(raw).error);
 }
 
 TEST("multiple spaces in header") {
@@ -123,8 +130,9 @@ TEST("multiple spaces in header") {
         "Host: hh oo ss tt\r\n"
         "\r\n";
 
-    auto req = p.parse(raw).request;
-    CHECK(req->state() == State::done);
+    auto result = p.parse(raw);
+    auto req = result.request;
+    CHECK(result.state == State::done);
     CHECK(req->http_version == 10);
     CHECK(req->headers.get("Host") == "hh oo ss tt");
     CHECK(req->headers.fields.size() == 1);
@@ -138,8 +146,9 @@ TEST("duplicated header field") {
         "Host: host2\r\n"
         "\r\n";
 
-    auto req = p.parse(raw).request;
-    CHECK(req->state() == State::done);
+    auto result = p.parse(raw);
+    auto req = result.request;
+    CHECK(result.state == State::done);
     CHECK(req->http_version == 10);
     CHECK(req->headers.get("Host") == "host2");
     CHECK(req->headers.fields.size() == 2);
@@ -156,12 +165,13 @@ TEST("fragmented header") {
         "\r\n"
     };
 
-    RequestSP req;
+    RequestParser::Result result;
     for (auto s : v) {
-        if (req) CHECK(req->state() != State::done);
-        req = p.parse(s).request;
+        if (result.request) CHECK(result.state != State::done);
+        result = p.parse(s);
     }
-    CHECK(req->state() == State::done);
+    auto req = result.request;
+    CHECK(result.state == State::done);
     CHECK(req->http_version == 10);
     CHECK(req->headers.get("Header1") == "header1");
     CHECK(req->headers.get("Header2") == "header2");
@@ -179,12 +189,13 @@ TEST("message fragmented by lines") {
         "\r\n"
     };
 
-    RequestSP req;
+    RequestParser::Result result;
     for (auto s : v) {
-        if (req) CHECK(req->state() != State::done);
-        req = p.parse(s).request;
+        if (result.request) CHECK(result.state != State::done);
+        result = p.parse(s);
     }
-    CHECK(req->state() == State::done);
+    auto req = result.request;
+    CHECK(result.state == State::done);
     CHECK(req->http_version == 10);
     CHECK(req->headers.get("Header1") == "header1");
     CHECK(req->headers.get("Header2") == "header2");
@@ -198,10 +209,10 @@ TEST("max_headers_size") {
         "GET / HTTP/1.1\r\n"
         "Content-Length: 0\r\n"
         "\r\n";
-    CHECK_FALSE(p.parse(raw).request->error());
+    CHECK_FALSE(p.parse(raw).error);
 
     p.max_headers_size = 36;
-    CHECK(p.parse(raw).request->error() == errc::headers_too_large);
+    CHECK(p.parse(raw).error == errc::headers_too_large);
 }
 
 TEST("max_body_size with content-length") {
@@ -217,14 +228,14 @@ TEST("max_body_size with content-length") {
         "Content-Length: 10\r\n"
         "\r\n";
 
-    auto req = p.parse(raw).request;
+    auto result = p.parse(raw);
     if (sz == 10) {
-        CHECK(req->state() == State::body);
-        CHECK_FALSE(req->error());
+        CHECK(result.state == State::body);
+        CHECK_FALSE(result.error);
     } else if (sz) {
-        CHECK(req->error() == errc::body_too_large);
+        CHECK(result.error == errc::body_too_large);
     } else {
-        CHECK(req->error() == errc::unexpected_body);
+        CHECK(result.error == errc::unexpected_body);
     }
 }
 
@@ -242,21 +253,21 @@ TEST("max_body_size without content-length") {
         "HTTP/1.0 200 OK\r\n"
         "\r\n";
 
-    auto res = p.parse(raw).response;
-    CHECK(res->state() == State::body);
-    CHECK_FALSE(res->error());
+    auto result = p.parse(raw);
+    CHECK(result.state == State::body);
+    CHECK_FALSE(result.error);
 
-    p.parse("1234567890");
+    result = p.parse("1234567890");
     if (sz == 10) {
-        CHECK(res->state() == State::body);
-        CHECK_FALSE(res->error());
-        p.eof();
-        CHECK(res->state() == State::done);
-        CHECK_FALSE(res->error());
+        CHECK(result.state == State::body);
+        CHECK_FALSE(result.error);
+        result = p.eof();
+        CHECK(result.state == State::done);
+        CHECK_FALSE(result.error);
     } else if (sz) {
-        CHECK(res->error() == errc::body_too_large);
+        CHECK(result.error == errc::body_too_large);
     } else {
-        CHECK(res->error() == errc::unexpected_body);
+        CHECK(result.error == errc::unexpected_body);
     }
 }
 
@@ -274,24 +285,24 @@ TEST("max_body_size chunked") {
         "Transfer-Encoding: chunked\r\n"
         "\r\n";
 
-    auto req = p.parse(raw).request;
-    CHECK(req->state() == State::chunk);
-    CHECK_FALSE(req->error());
+    auto result = p.parse(raw);
+    CHECK(result.state == State::chunk);
+    CHECK_FALSE(result.error);
 
-    p.parse("a\r\n");
+    result = p.parse("a\r\n");
     if (sz == 10) {
-        CHECK(req->state() != State::done);
-        CHECK_FALSE(req->error());
-        p.parse("1234567890\r\n");
-        CHECK(req->state() != State::done);
-        CHECK_FALSE(req->error());
-        p.parse("0\r\n\r\n");
-        CHECK(req->state() == State::done);
-        CHECK_FALSE(req->error());
+        CHECK(result.state != State::done);
+        CHECK_FALSE(result.error);
+        result = p.parse("1234567890\r\n");
+        CHECK(result.state != State::done);
+        CHECK_FALSE(result.error);
+        result = p.parse("0\r\n\r\n");
+        CHECK(result.state == State::done);
+        CHECK_FALSE(result.error);
     } else if (sz) {
-        CHECK(req->error() == errc::body_too_large);
+        CHECK(result.error == errc::body_too_large);
     } else {
-        CHECK(req->error() == errc::unexpected_body);
+        CHECK(result.error == errc::unexpected_body);
     }
 }
 
@@ -316,9 +327,9 @@ TEST("parsing pipelined messages") {
         "\r\n";
 
     auto result = p.parse(s);
-    s.offset(result.position);
     auto req = result.request;
-    CHECK(req->state() == State::done);
+    s.offset(result.position);
+    CHECK(result.state == State::done);
     CHECK(req->http_version == 10);
     CHECK(req->uri->to_string() == "/r1");
     CHECK(req->headers.get("Header1") == "header1");
@@ -326,17 +337,18 @@ TEST("parsing pipelined messages") {
     CHECK(req->headers.get("Header3") == "header3");
 
     result = p.parse(s);
-    s.offset(result.position);
     req = result.request;
-    CHECK(req->state() == State::done);
+    s.offset(result.position);
+    CHECK(result.state == State::done);
     CHECK(req->uri->to_string() == "/r2");
     CHECK(req->http_version == 10);
     CHECK(req->headers.get("Header4") == "header4");
     CHECK(req->headers.get("Header5") == "header5");
     CHECK(req->headers.get("Header6") == "header6");
 
-    req = p.parse_shift(s);
-    CHECK(req->state() == State::done);
+    result = p.parse_shift(s);
+    req = result.request;
+    CHECK(result.state == State::done);
     CHECK(req->http_version == 10);
     CHECK(req->uri->to_string() == "/r3");
     CHECK(req->headers.get("Header7") == "header7");
@@ -354,9 +366,9 @@ TEST("correct result position in messages with body") {
         "\r\n"
         "epta nah111";
     auto result = p.parse(s);
-    CHECK(result.position == 46);
     auto req = result.request;
-    CHECK(req->state() == State::done);
+    CHECK(result.position == 46);
+    CHECK(result.state == State::done);
     CHECK(req->headers.get("Content-Length") == "8");
     CHECK(req->body.length() == 8);
 }

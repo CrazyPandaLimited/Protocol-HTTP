@@ -23,9 +23,6 @@ struct Message : virtual Refcnt {
         headers(std::move(headers)), body(std::move(body)), chunked(chunked), http_version(http_version)
     {}
 
-    State                  state () const { return _state; }
-    const std::error_code& error () const { return _error; }
-
     bool keep_alive () const;
     void keep_alive (bool val) { val ? headers.connection("keep-alive") : headers.connection("close"); }
 
@@ -94,17 +91,7 @@ protected:
     }
 
 private:
-    friend struct Parser; friend struct RequestParser; friend struct ResponseParser;
-
-    State           _state = State::headers;
-    std::error_code _error;
-
-    void state (State s) { _state = s; }
-
-    void error (const std::error_code& e) {
-        _error = e;
-        _state = State::error;
-    }
+    //friend struct Parser; friend struct RequestParser; friend struct ResponseParser;
 };
 using MessageSP = iptr<Message>;
 

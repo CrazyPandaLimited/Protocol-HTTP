@@ -24,9 +24,9 @@ ResponseParser::Result ResponseParser::parse (const string& buffer) {
         [this] {
             if (_context_request->method == Request::Method::HEAD || response->code  < 200 || response->code == 204 || response->code == 304) {
                 if (response->chunked || (content_length > 0 && _context_request->method != Request::Method::HEAD)) {
-                    response->error(errc::unexpected_body);
+                    set_error(errc::unexpected_body);
                 } else {
-                    response->state(State::done);
+                    state = State::done;
                 }
                 return false;
             }
@@ -34,18 +34,21 @@ ResponseParser::Result ResponseParser::parse (const string& buffer) {
         },
         [this] {
             response->headers.set("Connection", "close");
-            response->state(State::body);
+            state = State::body;
             return true;
         }
     );
 
-    Result ret = {response, pos};
+    Result ret = {response, pos, state, error};
 
-    if (response->state() >= State::done) {
+    if (state >= State::done) {
         bool keep_context = false;
-        if (response->code == 100 && !response->error()) {
-            if (!_context_request->expects_continue()) response->error(errc::unexpected_continue);
-            else                                       keep_context = true;
+        if (response->code == 100 && !error) {
+            if (_context_request->expects_continue()) keep_context = true;
+            else {
+                ret.error = errc::unexpected_continue;
+                ret.state = State::error;
+            }
         }
         _reset(keep_context);
     }
@@ -53,16 +56,18 @@ ResponseParser::Result ResponseParser::parse (const string& buffer) {
     return ret;
 }
 
-ResponseSP ResponseParser::eof () {
+ResponseParser::Result ResponseParser::eof () {
     if (!_context_request) return {};
 
-    if (response && !response->keep_alive() && !content_length && !response->chunked && response->state() == State::body) {
-        response->state(State::done);
+    if (response && !response->keep_alive() && !content_length && !response->chunked && state == State::body) {
+        state = State::done;
     } else {
-        response->error(errc::unexpected_eof);
+        set_error(errc::unexpected_eof);
     }
 
-    return response;
+    Result ret = {response, 0, state, error};
+    reset();
+    return ret;
 }
 
 }}}

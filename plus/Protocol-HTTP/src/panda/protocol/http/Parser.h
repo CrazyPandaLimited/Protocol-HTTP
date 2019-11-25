@@ -11,12 +11,14 @@ struct Parser {
     size_t max_body_size    = SIZE_UNLIMITED;
 
 protected:
-    MessageSP  message;
-    RequestSP  request;
-    ResponseSP response;
-    int        cs; // ragel state
-    bool       has_content_length;
-    uint64_t   content_length;
+    MessageSP       message;
+    RequestSP       request;
+    ResponseSP      response;
+    State           state; // high-level state
+    int             cs;    // ragel state
+    bool            has_content_length;
+    uint64_t        content_length;
+    std::error_code error;
 
     Parser () {}
 
@@ -27,6 +29,7 @@ protected:
         message            = nullptr;
         request            = nullptr;
         response           = nullptr;
+        state              = State::headers;
         mark               = -1;
         marked             = false;
         headers_so_far     = 0;
@@ -34,9 +37,15 @@ protected:
         has_content_length = false;
         content_length     = 0;
         body_so_far        = 0;
+        error.clear();
     }
 
     template <class F1, class F2> size_t parse (const string& buffer, F1&& after_headers_cb, F2&& no_body_cb);
+
+    void set_error (const std::error_code& e) {
+        error = e;
+        state = State::error;
+    }
 
 private:
     ptrdiff_t  mark;
