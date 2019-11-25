@@ -105,6 +105,15 @@ TEST("request context: follow http_version unless explicitly specified") {
     );
 }
 
+TEST("response for HEAD request with content-length") {
+    auto res = Response::Builder().header("Content-Length", "100500").build();
+    CHECK(res->to_string() ==
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Length: 100500\r\n"
+        "\r\n"
+    );
+}
+
 TEST("example") {
     auto res = Response::Builder()
         .code(500)
