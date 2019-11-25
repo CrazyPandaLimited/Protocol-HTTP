@@ -59,7 +59,7 @@
 
     ################################## HEADERS ########################################
     field_name     = token >mark %{SAVE(field_name)} %unmark;
-    field_vchar    = VCHAR | obs_text | WSP;
+    field_vchar    = VCHAR | WSP | obs_text;
     field_value    = field_vchar* >mark %add_header %unmark; # TODO: obsolete support: "*( field-content / obs-fold )"
     header_field   = field_name ":" OWS <: field_value;
     content_length = /Content-Length/i ":" OWS digit+ >content_length_start ${ADD_DIGIT(content_length)} OWS;
