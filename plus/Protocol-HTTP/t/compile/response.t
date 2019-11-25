@@ -4,6 +4,8 @@ use MyTest;
 use Test::More;
 use Test::Catch;
 
+catch_run('[compile-response]');
+
 subtest 'basic' => sub {
     my $res = Protocol::HTTP::Response->new({
         code    => 500,

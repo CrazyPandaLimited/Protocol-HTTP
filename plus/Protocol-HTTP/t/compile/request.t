@@ -5,6 +5,8 @@ use Test::More;
 use Test::Catch;
 use Protocol::HTTP::Request;
 
+catch_run('[compile-request]');
+
 subtest 'basic' => sub {
     my $req = Protocol::HTTP::Request->new({
         method       => METHOD_GET,

@@ -119,7 +119,7 @@ struct Message::Builder {
         return self();
     }
 
-    T& version (int http_version) {
+    T& http_version (int http_version) {
         _http_version = http_version;
         return self();
     }

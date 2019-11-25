@@ -37,3 +37,17 @@ TEST("204 no content") {
     CHECK(result.state == State::done);
     CHECK(result.response->code == 204);
 }
+
+TEST("HEAD response with content length") {
+    ResponseParser p;
+    p.set_context_request(new Request(Method::HEAD, new URI("/")));
+    string raw =
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Length: 100500\r\n"
+        "\r\n";
+
+    auto result = p.parse(raw);
+    CHECK(result.state == State::done);
+    CHECK(result.response->code == 200);
+    CHECK(result.response->headers.get("content-length") == "100500");
+}
