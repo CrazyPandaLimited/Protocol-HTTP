@@ -35,31 +35,57 @@ TEST("empty chunk is not a final chunk - it gets ignored") {
     CHECK(v[2] == "");
 }
 
-//TEST("chunked message with all content given now") {
-//    Body body;
-//    body.parts.push_back("hello ");
-//    body.parts.push_back("world");
-//    auto req = Request::Builder().body(std::move(body)).chunked().build();
-//    WARN(req->to_string());
-//    WARN(        "GET / HTTP/1.1\r\n"
-//        "Transfer-Encoding: chunked\r\n"
-//        "\r\n"
-//        "6\r\n"
-//        "hello \r\n"
-//        "5\r\n"
-//        "world\r\n"
-//        "0\r\n"
-//        "\r\n"
-//);
-//    CHECK(req->to_string() ==
-//        "GET / HTTP/1.1\r\n"
-//        "Transfer-Encoding: chunked\r\n"
-//        "\r\n"
-//        "6\r\n"
-//        "hello \r\n"
-//        "5\r\n"
-//        "world\r\n"
-//        "0\r\n"
-//        "\r\n"
-//    );
-//}
+TEST("chunked message with all content given now") {
+    Body body;
+    body.parts.push_back("hello ");
+    body.parts.push_back("world");
+    auto req = Request::Builder().body(std::move(body)).chunked().build();
+    CHECK(req->to_string() ==
+        "GET / HTTP/1.1\r\n"
+        "Transfer-Encoding: chunked\r\n"
+        "\r\n"
+        "6\r\n"
+        "hello \r\n"
+        "5\r\n"
+        "world\r\n"
+        "0\r\n"
+        "\r\n"
+    );
+}
+
+TEST("chunks in vector mode doesn't get copied") {
+    Body body;
+    string hello = "hello ";
+    string world = "world";
+    body.parts.push_back(hello);
+    body.parts.push_back(world);
+    auto req = Request::Builder().body(std::move(body)).chunked().build();
+
+    auto v = req->to_vector();
+
+    CHECK(v.size() == 8); // 1 for headers, 3 per each chunk (chunk header, chunk body, chunk end), 1 for final chunk
+
+    CHECK(v[0] ==
+        "GET / HTTP/1.1\r\n"
+        "Transfer-Encoding: chunked\r\n"
+        "\r\n"
+    );
+
+    CHECK(v[1] == "6\r\n");
+    CHECK(v[2] == hello);
+    CHECK(v[2].data() == hello.data());
+    CHECK(v[3] == "\r\n");
+
+    CHECK(v[4] == "5\r\n");
+    CHECK(v[5] == world);
+    CHECK(v[5].data() == world.data());
+    CHECK(v[6] == "\r\n");
+
+    CHECK(v[7] == "0\r\n\r\n");
+}
+
+TEST("multiple to_string/vector calls doesn't pollute message") {
+    auto req = Request::Builder().body("hello").chunked().build();
+    auto s1 = req->to_string();
+    CHECK(s1 == req->to_string());
+}

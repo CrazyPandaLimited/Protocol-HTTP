@@ -37,7 +37,8 @@ protected:
     inline void _compile_prepare () {
         if (chunked) {
             http_version = 11;
-            headers.add("Transfer-Encoding", "chunked");
+            // need set(), not add(), otherwise multiple to_string/to_vector calls would result in multiple TEnc headers
+            headers.set("Transfer-Encoding", "chunked");
         }
         else if (!headers.has("Content-Length")) {
             headers.add("Content-Length", panda::to_string(body.length()));
