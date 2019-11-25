@@ -1,11 +1,12 @@
 #pragma once
 #include "Message.h"
+#include <panda/memory.h>
 
 namespace panda { namespace protocol { namespace http {
 
 struct Request;
 
-struct Response : Message {
+struct Response : Message, AllocatedObject<Response> {
     struct Builder; template <class T> struct BuilderImpl;
 
     int    code;

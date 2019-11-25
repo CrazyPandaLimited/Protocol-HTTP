@@ -1,7 +1,7 @@
 #pragma once
 #include "Response.h"
-#include <panda/uri/URI.h>
 #include <panda/memory.h>
+#include <panda/uri/URI.h>
 
 namespace panda { namespace protocol { namespace http {
 
