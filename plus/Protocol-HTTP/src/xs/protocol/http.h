@@ -32,6 +32,13 @@ namespace xs { namespace protocol { namespace http {
 
 namespace xs {
 
+template <>
+struct Typemap<panda::protocol::http::State> : TypemapBase<panda::protocol::http::State> {
+    using State = panda::protocol::http::State;
+    static inline State in  (SV* arg)                     { return (State)SvIV(arg); }
+    static inline Sv    out (State var, const Sv& = Sv()) { return Simple((int)var); }
+};
+
 template <class TYPE>
 struct Typemap<panda::protocol::http::Message*, TYPE> : TypemapObject<panda::protocol::http::Message*, TYPE, ObjectTypeRefcntPtr, ObjectStorageMGBackref> {};
 

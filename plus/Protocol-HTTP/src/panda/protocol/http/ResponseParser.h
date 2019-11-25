@@ -38,6 +38,14 @@ struct ResponseParser : Parser {
 private:
     RequestSP _context_request;
 
+    void ensure_response_created () {
+        if (!response) {
+            if (!_context_request) throw ParserError("Cannot create response as there are no corresponding request");
+            response = _context_request->new_response();
+            message  = response;
+        }
+    }
+
     void _reset (bool keep_context);
 
 };

@@ -14,11 +14,7 @@ void ResponseParser::_reset (bool keep_context) {
 }
 
 ResponseParser::Result ResponseParser::parse (const string& buffer) {
-    if (!response) {
-        if (!_context_request) throw ParserError("Cannot create response as there are no corresponding request");
-        response = _context_request->new_response();
-        message  = response;
-    }
+    ensure_response_created();
 
     auto pos = Parser::parse(buffer,
         [this] {
@@ -57,11 +53,12 @@ ResponseParser::Result ResponseParser::parse (const string& buffer) {
 }
 
 ResponseParser::Result ResponseParser::eof () {
-    if (!_context_request) return {};
+    if (!_context_request) return {{}, 0, State::headers, {}};
 
     if (response && !response->keep_alive() && !content_length && !response->chunked && state == State::body) {
         state = State::done;
     } else {
+        ensure_response_created();
         set_error(errc::unexpected_eof);
     }
 

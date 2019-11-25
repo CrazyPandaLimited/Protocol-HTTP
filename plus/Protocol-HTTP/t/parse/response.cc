@@ -177,3 +177,22 @@ TEST("parsing response byte by byte") {
     CHECK(res->headers.get("Connection") == "Upgrade");
     CHECK(res->headers.get("Sec-WebSocket-Extensions") == "permessage-deflate; client_max_window_bits=15");
 }
+
+TEST("eof when nothing expected") {
+    ResponseParser p;
+    auto result = p.eof();
+    CHECK_FALSE(result.response);
+    CHECK(result.position == 0);
+    CHECK(result.state == State::headers);
+    CHECK_FALSE(result.error);
+}
+
+TEST("eof when expected but not yet parsed anything") {
+    ResponseParser p;
+    p.set_context_request(new Request());
+    auto result = p.eof();
+    CHECK(result.response);
+    CHECK(result.position == 0);
+    CHECK(result.state == State::error);
+    CHECK(result.error == errc::unexpected_eof);
+}
