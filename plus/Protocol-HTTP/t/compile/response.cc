@@ -47,45 +47,25 @@ TEST("request context: follow connection type unless explicitly specified") {
     auto res = Response::Builder().build();
     SECTION("request is c=close") {
         req->headers.connection("close");
-        SECTION("keep") {
-            CHECK(res->to_string(req) ==
-                "HTTP/1.1 200 OK\r\n"
-                "Content-Length: 0\r\n"
-                "Connection: close\r\n"
-                "\r\n"
-            );
-        }
-        SECTION("change - ignored") {
-            res->headers.connection("keep-alive");
-            // can't join with first variant because of how set headers works inside - the order of headers has changed in this case
-            // in our example, user has set "Connection" header earlier than auto-added "Content-Length" so it appears earlier in this case despite of
-            // it's value being auto-changed to another
-            CHECK(res->to_string(req) ==
-                "HTTP/1.1 200 OK\r\n"
-                "Connection: close\r\n"
-                "Content-Length: 0\r\n"
-                "\r\n"
-            );
-        }
+        SECTION("keep") {}
+        SECTION("change - ignored") { res->headers.connection("keep-alive"); }
+        CHECK(res->to_string(req) ==
+            "HTTP/1.1 200 OK\r\n"
+            "Connection: close\r\n"
+            "Content-Length: 0\r\n"
+            "\r\n"
+        );
     }
     SECTION("request is keep-alive") {
-        SECTION("keep") {
-            CHECK(res->to_string(req) ==
-                "HTTP/1.1 200 OK\r\n"
-                "Content-Length: 0\r\n"
-                "Connection: keep-alive\r\n"
-                "\r\n"
-            );
-        }
-        SECTION("change - ignored") {
-            res->headers.connection("close");
-            CHECK(res->to_string(req) ==
-                "HTTP/1.1 200 OK\r\n"
-                "Connection: close\r\n"
-                "Content-Length: 0\r\n"
-                "\r\n"
-            );
-        }
+        string chk;
+        SECTION("keep")             { chk = "keep-alive"; }
+        SECTION("change - ignored") { chk = "close"; res->headers.connection("close"); }
+        CHECK(res->to_string(req) ==
+            "HTTP/1.1 200 OK\r\n"
+            "Connection: " + chk + "\r\n"
+            "Content-Length: 0\r\n"
+            "\r\n"
+        );
     }
 }
 
@@ -99,8 +79,8 @@ TEST("request context: follow http_version unless explicitly specified") {
 
     CHECK(res->to_string(req) ==
         string("HTTP/") + chk + " 200 OK\r\n"
-        "Content-Length: 0\r\n"
         "Connection: close\r\n"
+        "Content-Length: 0\r\n"
         "\r\n"
     );
 }

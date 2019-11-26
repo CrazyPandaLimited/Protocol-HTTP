@@ -10,7 +10,6 @@ TEST("headers") {
         "GET / HTTP/1.1\r\n"
         "a: 1\r\n"
         "b: 2\r\n"
-        "Content-Length: 0\r\n"
         "\r\n"
     );
 }
@@ -22,7 +21,6 @@ TEST("headers()+header() - add") {
         "a: 1\r\n"
         "b: 2\r\n"
         "c: 3\r\n"
-        "Content-Length: 0\r\n"
         "\r\n"
     );
 }
@@ -33,7 +31,6 @@ TEST("header()+headers() - overwrite") {
         "GET / HTTP/1.1\r\n"
         "a: 1\r\n"
         "b: 2\r\n"
-        "Content-Length: 0\r\n"
         "\r\n"
     );
 }

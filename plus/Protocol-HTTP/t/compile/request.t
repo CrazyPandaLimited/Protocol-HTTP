@@ -30,22 +30,12 @@ subtest 'no netloc in uri' => sub {
     my $req = Protocol::HTTP::Request->new({
         uri => "/hello",
     });
-    
-    is $req->to_string,
-        "GET /hello HTTP/1.1\r\n".
-        "Content-Length: 0\r\n".
-        "\r\n"
-    ;
+    is $req->to_string, "GET /hello HTTP/1.1\r\n\r\n";
 };
 
 subtest 'no uri' => sub {
     my $req = Protocol::HTTP::Request->new({});
-    
-    is $req->to_string,
-        "GET / HTTP/1.1\r\n".
-        "Content-Length: 0\r\n".
-        "\r\n"
-    ;
+    is $req->to_string, "GET / HTTP/1.1\r\n\r\n";
 };
 
 done_testing();

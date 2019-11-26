@@ -40,9 +40,7 @@ protected:
             // need set(), not add(), otherwise multiple to_string/to_vector calls would result in multiple TEnc headers
             headers.set("Transfer-Encoding", "chunked");
         }
-        else if (!headers.has("Content-Length")) {
-            headers.add("Content-Length", panda::to_string(body.length()));
-        }
+        // content-length logic is in request/response because it slightly differs
     }
 
     template <class T>

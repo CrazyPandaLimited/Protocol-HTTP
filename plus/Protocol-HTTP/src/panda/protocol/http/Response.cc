@@ -12,6 +12,8 @@ string Response::_http_header (const Request* req, size_t reserve) {
     }
     if (!message) message = message_for_code(code);
 
+    if (!chunked && !headers.has("Content-Length")) headers.add("Content-Length", panda::to_string(body.length()));
+
     string s(5 + 4 + 4 + message.length() + 2 + headers.length() + 2 + reserve);
 
     s += "HTTP/";

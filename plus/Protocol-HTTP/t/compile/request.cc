@@ -14,36 +14,23 @@ TEST("method") {
     SECTION("TRACE")   { mstr = "TRACE";   req->method = Method::TRACE; }
     SECTION("CONNECT") { mstr = "CONNECT"; req->method = Method::CONNECT; }
 
-    CHECK(req->to_string() ==
-        mstr + " / HTTP/1.1\r\n"
-        "Content-Length: 0\r\n"
-        "\r\n"
-    );
+    CHECK(req->to_string() == mstr + " / HTTP/1.1\r\n\r\n" );
 }
 
 TEST("default method is GET") {
     auto req = Request::Builder().uri("/").build();
-    CHECK(req->to_string() ==
-        "GET / HTTP/1.1\r\n"
-        "Content-Length: 0\r\n"
-        "\r\n"
-    );
+    CHECK(req->to_string() == "GET / HTTP/1.1\r\n\r\n");
 }
 
 TEST("relative uri") {
     auto req = Request::Builder().uri("/hello").build();
-    CHECK(req->to_string() ==
-        "GET /hello HTTP/1.1\r\n"
-        "Content-Length: 0\r\n"
-        "\r\n"
-    );
+    CHECK(req->to_string() == "GET /hello HTTP/1.1\r\n\r\n");
 }
 
 TEST("absolute uri") {
     auto req = Request::Builder().uri("https://epta.ru/hello").build();
     CHECK(req->to_string() ==
         "GET /hello HTTP/1.1\r\n"
-        "Content-Length: 0\r\n"
         "Host: epta.ru\r\n"
         "\r\n"
     );
@@ -51,11 +38,7 @@ TEST("absolute uri") {
 
 TEST("default uri is '/'") {
     auto req = Request::Builder().build();
-    CHECK(req->to_string() ==
-        "GET / HTTP/1.1\r\n"
-        "Content-Length: 0\r\n"
-        "\r\n"
-    );
+    CHECK(req->to_string() == "GET / HTTP/1.1\r\n\r\n");
 }
 
 TEST("uri as URI object") {
@@ -63,11 +46,7 @@ TEST("uri as URI object") {
     uri->path("/here");
     uri->param("is", "hello world");
     auto req = Request::Builder().uri(uri).build();
-    CHECK(req->to_string() ==
-        "GET /here?is=hello%20world HTTP/1.1\r\n"
-        "Content-Length: 0\r\n"
-        "\r\n"
-    );
+    CHECK(req->to_string() == "GET /here?is=hello%20world HTTP/1.1\r\n\r\n");
 }
 
 TEST("http version") {
@@ -76,11 +55,7 @@ TEST("http version") {
     SECTION("default is 1.1") {}
     SECTION("1.1")            { req->http_version = 11; }
     SECTION("1.0")            { req->http_version = 10; chk = "1.0"; }
-    CHECK(req->to_string() ==
-        string("GET / HTTP/") + chk + "\r\n"
-        "Content-Length: 0\r\n"
-        "\r\n"
-    );
+    CHECK(req->to_string() == string("GET / HTTP/") + chk + "\r\n\r\n");
 }
 
 TEST("example") {

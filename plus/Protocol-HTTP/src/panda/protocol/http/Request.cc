@@ -22,6 +22,8 @@ string Request::_http_header (size_t reserve) {
     auto reluri  = uri ? uri->relative() : string("/");
     if (!http_version) http_version = 11;
 
+    if (!chunked && body.parts.size() && !headers.has("Content-Length")) headers.add("Content-Length", panda::to_string(body.length()));
+
     if (!headers.has("Host") && uri && uri->host()) {
         // Host field builder
         // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Host
