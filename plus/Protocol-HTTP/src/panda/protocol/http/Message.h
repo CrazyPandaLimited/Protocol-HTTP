@@ -132,9 +132,9 @@ struct Message::Builder {
 protected:
     Header _headers;
     Body   _body;
-    int    _http_version;
+    int    _http_version = 0;
+    bool   _chunked      = false;
     string _content_type;
-    bool   _chunked;
 
     Builder () : _chunked() {}
 

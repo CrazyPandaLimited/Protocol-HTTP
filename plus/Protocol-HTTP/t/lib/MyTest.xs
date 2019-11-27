@@ -7,6 +7,13 @@ using namespace panda::protocol::http;
 MODULE = MyTest                PACKAGE = MyTest
 PROTOTYPES: DISABLE
 
+uint64_t bench_iequals (string_view a, string_view b) {
+    RETVAL = 0;
+    for (auto i = 0; i < 1000; ++i) {
+        RETVAL += iequals(a, b);
+    }
+}
+
 void _benchmark () {
     RequestParser p;
     string buf =

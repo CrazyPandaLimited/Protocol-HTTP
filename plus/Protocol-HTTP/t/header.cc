@@ -39,3 +39,17 @@ TEST("multi") {
     CHECK(*it++ == "world");
     CHECK(it == r.end());
 }
+
+TEST("iequals") {
+    CHECK(iequals("a", "A"));
+    CHECK(iequals("aa", "aA"));
+    CHECK(iequals("Aaa", "aaA"));
+    CHECK(iequals("AaaA", "aAAa"));
+    CHECK(iequals("Aaaaa", "aaaaA"));
+    CHECK(iequals("Aaaaaa", "aaaaaA"));
+    CHECK(iequals("Aaaaaaa", "aaaaaaA"));
+    CHECK(iequals("Aaaaaaaa", "aaaaaaaA"));
+    CHECK(iequals("Aaaaaaaaa", "aaaaaaaaA"));
+    CHECK_FALSE(iequals("a", "Transfer-Encoding"));
+    CHECK_FALSE(iequals("a", "transfer-encoding"));
+}

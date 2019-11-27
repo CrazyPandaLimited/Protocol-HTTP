@@ -12,7 +12,42 @@ namespace panda { namespace protocol { namespace http {
 static constexpr int const DEFAULT_FIELDS_RESERVE = 10;
 
 inline bool iequals (string_view a, string_view b) {
-    return a.length() == b.length() && std::equal(a.begin(), a.end(), b.begin(), [](char a, char b) { return a == b || tolower(a) == tolower(b); });
+    auto sz = a.length();
+    if (sz != b.length()) return false;
+
+    const char* ap = a.data();
+    const char* bp = b.data();
+    size_t l = sz / 8;
+    const char* e = ap + l*8;
+    for (; ap != e; ap += 8, bp += 8) {
+        uint64_t av, bv;
+        memcpy(&av, ap, 8);
+        memcpy(&bv, bp, 8);
+        if ((av|0x2020202020202020ULL) != (bv|0x2020202020202020ULL)) return false;
+    }
+
+    auto left = sz - l*8;
+    if (left & 4) {
+        unsigned int av, bv;
+        memcpy(&av, ap, 4);
+        memcpy(&bv, bp, 4);
+        if ((av|0x20202020) != (bv|0x20202020)) return false;
+        ap += 4;
+        bp += 4;
+    }
+
+    if (left & 2) {
+        unsigned short av, bv;
+        memcpy(&av, ap, 2);
+        memcpy(&bv, bp, 2);
+        if ((av|0x2020) != (bv|0x2020)) return false;
+        ap += 2;
+        bp += 2;
+    }
+
+    if (left & 1) return (*ap|0x20) == (*bp|0x20);
+
+    return true;
 }
 
 struct Header {
@@ -20,8 +55,6 @@ struct Header {
         string name;
         string value;
         Field (const string& k, const string& v) : name(k), value(v) {}
-        bool operator== (const Field &rhs) const { return iequals(name, rhs.name) && value == rhs.value; }
-        bool operator!= (const Field& rhs) const { return !(*this == rhs); }
     };
     using Container = boost::container::small_vector<Field, DEFAULT_FIELDS_RESERVE>;
 

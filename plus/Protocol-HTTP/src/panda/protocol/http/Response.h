@@ -54,7 +54,7 @@ struct Response::BuilderImpl : Message::Builder<T> {
     }
 
 protected:
-    int    _code;
+    int    _code = 0;
     string _message;
 };
 struct Response::Builder : Response::BuilderImpl<Builder> {};
