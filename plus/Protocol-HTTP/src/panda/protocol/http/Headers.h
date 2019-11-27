@@ -2,14 +2,11 @@
 #include <vector>
 #include <iosfwd>
 #include <panda/string.h>
-
-#include <boost/container/small_vector.hpp>
 #include <range/v3/view/filter.hpp>
 #include <range/v3/view/transform.hpp>
+#include <boost/container/small_vector.hpp>
 
 namespace panda { namespace protocol { namespace http {
-
-static constexpr int const DEFAULT_FIELDS_RESERVE = 10;
 
 inline bool iequals (string_view a, string_view b) {
     auto sz = a.length();
@@ -50,26 +47,26 @@ inline bool iequals (string_view a, string_view b) {
     return true;
 }
 
-struct Header {
+struct Headers {
     struct Field {
         string name;
         string value;
         Field (const string& k, const string& v) : name(k), value(v) {}
     };
-    using Container = boost::container::small_vector<Field, DEFAULT_FIELDS_RESERVE>;
+    using Container = boost::container::small_vector<Field, 15>;
 
     Container fields;
 
-    Header () {}
-    Header (const Container& fields) : fields(fields) {}
-    Header (Container&& fields)      : fields(std::move(fields)) {}
+    Headers () {}
+    Headers (const Container& fields) : fields(fields) {}
+    Headers (Container&& fields)      : fields(std::move(fields)) {}
 
-    bool     has    (string_view key) const;
-    string   get    (string_view key, const string& default_val = "") const;
-    Header&  add    (const string& key, const string& value) &  { fields.emplace_back(key, value); return *this; }
-    Header&& add    (const string& key, const string& value) && { add(key, value); return std::move(*this); }
-    void     set    (const string& key, const string& value);
-    void     remove (string_view key);
+    bool      has    (string_view key) const;
+    string    get    (string_view key, const string& default_val = "") const;
+    Headers&  add    (const string& key, const string& value) &  { fields.emplace_back(key, value); return *this; }
+    Headers&& add    (const string& key, const string& value) && { add(key, value); return std::move(*this); }
+    void      set    (const string& key, const string& value);
+    void      remove (string_view key);
 
     bool   empty () const { return fields.empty(); }
     size_t size  () const { return fields.size(); }
@@ -88,18 +85,18 @@ struct Header {
     string location   () const { return get("Location", ""); }
     bool   is_chunked () const { return get("Transfer-Encoding", "") == "chunked"; }
 
-    Header&  connection      (const string& ctype) &     { return add("Connection", ctype); }
-    Header&& connection      (const string& ctype) &&    { return std::move(*this).add("Connection", ctype); }
-    Header&  date            (const string& date) &      { return add("Date", date); }
-    Header&& date            (const string& date) &&     { return std::move(*this).add("Date", date); }
-    Header&  host            (const string& host) &      { return add("Host", host); }
-    Header&& host            (const string& host) &&     { return std::move(*this).add("Host", host); }
-    Header&  location        (const string& location) &  { return add("Location", location); }
-    Header&& location        (const string& location) && { return std::move(*this).add("Location", location); }
-    Header&  chunked         () &                        { return add("Transfer-Encoding", "chunked"); }
-    Header&& chunked         () &&                       { return std::move(*this).add("Transfer-Encoding", "chunked"); }
-    Header&  expect_continue () &                        { return add("Expect", "100-continue"); }
-    Header&& expect_continue () &&                       { return std::move(*this).add("Expect", "100-continue"); }
+    Headers&  connection      (const string& ctype) &     { return add("Connection", ctype); }
+    Headers&& connection      (const string& ctype) &&    { return std::move(*this).add("Connection", ctype); }
+    Headers&  date            (const string& date) &      { return add("Date", date); }
+    Headers&& date            (const string& date) &&     { return std::move(*this).add("Date", date); }
+    Headers&  host            (const string& host) &      { return add("Host", host); }
+    Headers&& host            (const string& host) &&     { return std::move(*this).add("Host", host); }
+    Headers&  location        (const string& location) &  { return add("Location", location); }
+    Headers&& location        (const string& location) && { return std::move(*this).add("Location", location); }
+    Headers&  chunked         () &                        { return add("Transfer-Encoding", "chunked"); }
+    Headers&& chunked         () &&                       { return std::move(*this).add("Transfer-Encoding", "chunked"); }
+    Headers&  expect_continue () &                        { return add("Expect", "100-continue"); }
+    Headers&& expect_continue () &&                       { return std::move(*this).add("Expect", "100-continue"); }
 
     Container::iterator       find (string_view key);
     Container::const_iterator find (string_view key) const;
@@ -123,7 +120,7 @@ struct Header {
     }
 };
 
-std::ostream& operator<< (std::ostream&, const Header::Field&);
-std::ostream& operator<< (std::ostream&, const Header&);
+std::ostream& operator<< (std::ostream&, const Headers::Field&);
+std::ostream& operator<< (std::ostream&, const Headers&);
 
 }}}

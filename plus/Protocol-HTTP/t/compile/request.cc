@@ -63,7 +63,7 @@ TEST("example") {
         .method(Method::POST)
         .uri("http://crazypanda.ru/hello/world")
         .http_version(10)
-        .headers(Header().add("MyHeader", "my value"))
+        .headers(Headers().add("MyHeader", "my value"))
         .body("my body")
         .build();
 

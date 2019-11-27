@@ -1,7 +1,7 @@
 #pragma once
 #include "Body.h"
 #include "Error.h"
-#include "Header.h"
+#include "Headers.h"
 #include <array>
 #include <panda/refcnt.h>
 
@@ -12,14 +12,14 @@ enum class State {headers, body, chunk, chunk_body, chunk_trailer, done, error};
 struct Message : virtual Refcnt {
     template <class T> struct Builder;
 
-    Header headers;
-    Body   body;
-    bool   chunked;
-    int    http_version;
+    Headers headers;
+    Body    body;
+    bool    chunked;
+    int     http_version;
 
     Message () : chunked(), http_version() {}
 
-    Message (Header&& headers, Body&& body, bool chunked = false, int http_version = 0) :
+    Message (Headers&& headers, Body&& body, bool chunked = false, int http_version = 0) :
         headers(std::move(headers)), body(std::move(body)), chunked(chunked), http_version(http_version)
     {}
 
@@ -96,7 +96,7 @@ using MessageSP = iptr<Message>;
 
 template <class T>
 struct Message::Builder {
-    T& headers (Header&& headers) {
+    T& headers (Headers&& headers) {
         _headers = std::move(headers);
         return self();
     }
@@ -130,11 +130,11 @@ struct Message::Builder {
     }
 
 protected:
-    Header _headers;
-    Body   _body;
-    int    _http_version = 0;
-    bool   _chunked      = false;
-    string _content_type;
+    Headers _headers;
+    Body    _body;
+    int     _http_version = 0;
+    bool    _chunked      = false;
+    string  _content_type;
 
     Builder () : _chunked() {}
 

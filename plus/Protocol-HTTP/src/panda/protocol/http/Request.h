@@ -18,11 +18,13 @@ struct Request : Message, AllocatedObject<Request> {
 
     Request () : method(Method::GET) {}
 
-    Request (Method method, const URISP& uri, Header&& header = Header(), Body&& body = Body(), bool chunked = false, int http_version = 0) :
+    Request (Method method, const URISP& uri, Headers&& header = Headers(), Body&& body = Body(), bool chunked = false, int http_version = 0) :
         Message(std::move(header), std::move(body), chunked, http_version), method(method), uri(uri)
     {}
 
     bool expects_continue () const;
+
+
 
     std::vector<string> to_vector ();
     string              to_string ();

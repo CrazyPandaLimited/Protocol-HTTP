@@ -3,13 +3,13 @@
 #define TEST(name) TEST_CASE("header: " name, "[header]")
 
 TEST("case insensitive") {
-    Header h;
+    Headers h;
     h.add("Aa", "value");
     CHECK(h.get("AA") == "value");
 }
 
 TEST("basic") {
-    Header h;
+    Headers h;
     CHECK(h.length() == 0);
     CHECK(h.get("Content-Length", "default") == "default");
 
@@ -26,7 +26,7 @@ TEST("basic") {
 }
 
 TEST("multi") {
-    Header h;
+    Headers h;
 
     h.add("key", "hello");
     h.add("Key", "world");

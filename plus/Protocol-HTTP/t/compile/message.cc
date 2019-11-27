@@ -5,7 +5,7 @@
 TEST("headers") {
     RequestSP req;
     SECTION("via header()")  { req = Request::Builder().header("a", "1").header("b", "2").build(); }
-    SECTION("via headers()") { req = Request::Builder().headers(Header().add("a", "1").add("b", "2")).build(); }
+    SECTION("via headers()") { req = Request::Builder().headers(Headers().add("a", "1").add("b", "2")).build(); }
     CHECK(req->to_string() ==
         "GET / HTTP/1.1\r\n"
         "a: 1\r\n"
@@ -15,7 +15,7 @@ TEST("headers") {
 }
 
 TEST("headers()+header() - add") {
-    auto req = Request::Builder().headers(Header().add("a", "1").add("b", "2")).header("c", "3").build();
+    auto req = Request::Builder().headers(Headers().add("a", "1").add("b", "2")).header("c", "3").build();
     CHECK(req->to_string() ==
         "GET / HTTP/1.1\r\n"
         "a: 1\r\n"
@@ -26,7 +26,7 @@ TEST("headers()+header() - add") {
 }
 
 TEST("header()+headers() - overwrite") {
-    auto req = Request::Builder().header("c", "3").headers(Header().add("a", "1").add("b", "2")).build();
+    auto req = Request::Builder().header("c", "3").headers(Headers().add("a", "1").add("b", "2")).build();
     CHECK(req->to_string() ==
         "GET / HTTP/1.1\r\n"
         "a: 1\r\n"

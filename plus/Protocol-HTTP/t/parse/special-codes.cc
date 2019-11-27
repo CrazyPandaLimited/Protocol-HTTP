@@ -4,7 +4,7 @@
 
 TEST("100 continue") {
     ResponseParser p;
-    p.set_context_request(new Request(Method::GET, new URI("/"), Header().add("Expect", "100-continue")));
+    p.set_context_request(new Request(Method::GET, new URI("/"), Headers().add("Expect", "100-continue")));
 
     auto result = p.parse("HTTP/1.1 100 Continue\r\n\r\n");
     auto res = result.response;

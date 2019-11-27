@@ -98,7 +98,7 @@ TEST("example") {
     auto res = Response::Builder()
         .code(500)
         .message("epta")
-        .headers(Header().add("a", "1").add("b", "2"))
+        .headers(Headers().add("a", "1").add("b", "2"))
         .body("hello")
         .build();
 

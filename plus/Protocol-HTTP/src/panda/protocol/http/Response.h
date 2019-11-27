@@ -14,7 +14,7 @@ struct Response : Message, AllocatedObject<Response> {
 
     Response () : code() {}
 
-    Response (int code, Header&& header = Header(), Body&& body = Body(), bool chunked = false, int http_version = 0, const string& message = {}) :
+    Response (int code, Headers&& header = Headers(), Body&& body = Body(), bool chunked = false, int http_version = 0, const string& message = {}) :
         Message(std::move(header), std::move(body), chunked, http_version), code(code), message(message)
     {}
 
