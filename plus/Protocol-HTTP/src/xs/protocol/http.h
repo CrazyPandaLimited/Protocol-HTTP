@@ -9,8 +9,10 @@ namespace xs { namespace protocol { namespace http {
     void fill (Request*,  const Hash&);
     void fill (Response*, const Hash&);
 
-    void set_headers (Message* p, const Hash& headers);
-    void set_method  (Request* req, const Sv& method);
+    void set_headers          (Message*,  const Hash&);
+    void set_method           (Request*,  const Sv&);
+    void set_request_cookies  (Request*,  const Hash&);
+    void set_response_cookies (Response*, const Hash&);
 
     template <typename T>
     Simple strings_to_sv (const T& v) {
@@ -72,6 +74,13 @@ struct Typemap<panda::protocol::http::ResponseSP, panda::iptr<TYPE>> : Typemap<T
         xs::protocol::http::fill(ret.get(), arg);
         return ret;
     }
+};
+
+template <>
+struct Typemap<panda::protocol::http::Response::Cookie> : TypemapBase<panda::protocol::http::Response::Cookie> {
+    using Cookie = panda::protocol::http::Response::Cookie;
+    static Cookie in  (const Hash& arg);
+    static Sv     out (const Cookie&, const Sv& = {});
 };
 
 template <class TYPE>
