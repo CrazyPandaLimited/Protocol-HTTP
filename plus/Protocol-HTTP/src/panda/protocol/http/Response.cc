@@ -4,8 +4,6 @@
 
 namespace panda { namespace protocol { namespace http {
 
-const char Response::Cookie::AUTO[1] = {0};
-
 int64_t Response::Cookie::max_age_any () const {
     if (_max_age || !_expires) return _max_age;
     return Date(_expires).epoch() - std::time(nullptr);
@@ -24,7 +22,7 @@ string Response::Cookie::to_string (const string& name, const Request* req) cons
     str += '=';
     str += _value;
 
-    const string& domain = _domain.data() == AUTO && req ? req->headers.get("Host") : _domain;
+    const string& domain = !_domain && req ? req->headers.get("Host") : _domain;
     if (domain) {
         str += "; Domain=";
         str += domain;

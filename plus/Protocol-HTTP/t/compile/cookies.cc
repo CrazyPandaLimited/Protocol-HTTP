@@ -39,15 +39,16 @@ TEST("response cookie in vacuum") {
         CHECK(coo.value("").to_string("k") == "k=");
     }
     SECTION("domain") {
-        SECTION("standart") {
+        SECTION("specified") {
             CHECK(coo.domain("crazypanda.ru").to_string("k") == "k=v; Domain=crazypanda.ru");
         }
-        SECTION("auto without req") {
-            CHECK(coo.domain(Response::Cookie::AUTO).to_string("k") == "k=v");
-        }
-        SECTION("auto with req") {
+        SECTION("specified with req") {
             auto req = Request::Builder().header("Host", "wpc.ru").build();
-            CHECK(coo.domain(Response::Cookie::AUTO).to_string("k", req) == "k=v; Domain=wpc.ru");
+            CHECK(coo.domain("override.crazypanda.ru").to_string("k", req) == "k=v; Domain=override.crazypanda.ru");
+        }
+        SECTION("not specified with req") {
+            auto req = Request::Builder().header("Host", "wpc.ru").build();
+            CHECK(coo.to_string("k", req) == "k=v; Domain=wpc.ru");
         }
     }
     SECTION("path") {
