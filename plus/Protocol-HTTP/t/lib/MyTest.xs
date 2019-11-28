@@ -1,5 +1,4 @@
-#include <xs.h>
-#include <panda/protocol/http.h>
+#include <xs/protocol/http.h>
 
 using namespace panda;
 using namespace panda::protocol::http;
@@ -111,5 +110,63 @@ void bench3 () {
         "\r\n";
     for (auto i = 0; i < 1000; ++i) {
         p.parse(buf);
+    }
+}
+
+uint64_t bench_headers_move (RequestSP req) {
+    RETVAL = 0;
+    Headers headers;
+    for (size_t i = 0; i < 1000; ++i) {
+        headers = std::move(req->headers);
+        RETVAL += headers.size();
+        req->headers = std::move(headers);
+        RETVAL += req->headers.size();
+    }
+}
+
+uint64_t bench_string_move (string s) {
+    RETVAL = 0;
+    auto ss = std::move(s);
+    for (size_t i = 0; i < 1000000; ++i) {
+        s = std::move(ss);
+        ss = std::move(s);
+    }
+}
+
+uint64_t bench_sm_move (RequestSP req) {
+    RETVAL = 0;
+    decltype(req->headers.fields) f;
+    for (size_t i = 0; i < 1000; ++i) {
+        f = std::move(req->headers.fields);
+        RETVAL += f.size();
+        req->headers.fields = std::move(f);
+        RETVAL += req->headers.fields.size();
+    }
+}
+
+uint64_t bench_sm_move2 (RequestSP req) {
+    RETVAL = 0;
+    struct Epta {
+        string a;
+        string b;
+        Epta (const string& a, const string& b) : a(a), b(b) {}
+        Epta (Epta&&) = default;
+    };
+    boost::container::small_vector<Epta, 15> f1;
+    boost::container::small_vector<Epta, 15> f2;
+    
+    auto sz = req->headers.fields.size();
+    for (size_t i = 0; i < sz; ++i) f2.push_back({req->headers.fields[i].name, req->headers.fields[i].value});
+    
+    for (size_t i = 0; i < 1000; ++i) {
+        f1.clear();
+        for (size_t i = 0; i < sz; ++i) f1.push_back(std::move(f2[i]));
+        RETVAL += f1.size();
+        sz = f1.size();
+
+        f2.clear();
+        for (size_t i = 0; i < sz; ++i) f2.push_back(std::move(f2[i]));
+        RETVAL += f2.size();
+        sz = f2.size();
     }
 }

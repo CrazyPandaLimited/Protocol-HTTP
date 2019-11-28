@@ -11,20 +11,20 @@ using panda::uri::URISP;
 struct Request : Message, AllocatedObject<Request> {
     enum class Method {OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT};
 
-    struct Builder; template <class T = void> struct BuilderImpl;
+    struct Builder; template <class, class> struct BuilderImpl;
+    using Cookies = Fields<string, true, 3>;
 
-    Method method;
-    URISP  uri;
+    Method  method = Method::GET;
+    URISP   uri;
+    Cookies cookies;
 
-    Request () : method(Method::GET) {}
+    Request () {}
 
     Request (Method method, const URISP& uri, Headers&& header = Headers(), Body&& body = Body(), bool chunked = false, int http_version = 0) :
         Message(std::move(header), std::move(body), chunked, http_version), method(method), uri(uri)
     {}
 
     bool expects_continue () const;
-
-
 
     std::vector<string> to_vector ();
     string              to_string ();
@@ -41,33 +41,33 @@ private:
 };
 using RequestSP = iptr<Request>;
 
-template <class T>
-struct Request::BuilderImpl : Message::Builder<T> {
-    BuilderImpl () : _method(Request::Method::GET) {}
+template <class T, class R>
+struct Request::BuilderImpl : Message::Builder<T, R> {
+    using Message::Builder<T, R>::Builder;
 
     T& method (Request::Method method) {
-        _method = method;
+        this->_message->method = method;
         return this->self();
     }
 
     T& uri (const string& uri) {
-        _uri = new URI(uri);
+        this->_message->uri = new URI(uri);
         return this->self();
     }
 
     T& uri (const URISP& uri) {
-        _uri = uri;
+        this->_message->uri = uri;
         return this->self();
     }
 
-    RequestSP build () {
-        return new Request(_method, _uri, std::move(this->_headers), std::move(this->_body), this->_chunked, this->_http_version);
+    T& cookie (const string& name, const string& value) {
+        this->_message->cookies.add(name, value);
+        return this->self();
     }
-
-protected:
-    Request::Method _method;
-    URISP           _uri;
 };
-struct Request::Builder : Request::BuilderImpl<Builder> {};
+
+struct Request::Builder : Request::BuilderImpl<Builder, RequestSP> {
+    Builder () : BuilderImpl(new Request()) {}
+};
 
 }}}

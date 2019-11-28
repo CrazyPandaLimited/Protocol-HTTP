@@ -1,16 +1,70 @@
 #pragma once
 #include "Message.h"
+#include <panda/date.h>
 #include <panda/memory.h>
+#include <panda/optional.h>
 
 namespace panda { namespace protocol { namespace http {
 
 struct Request;
 
 struct Response : Message, AllocatedObject<Response> {
-    struct Builder; template <class T> struct BuilderImpl;
+    using Date = panda::date::Date;
+    struct Builder; template <class, class> struct BuilderImpl;
 
-    int    code;
-    string message;
+    struct Cookie {
+        enum class SameSite { disabled = 0, Strict, Lax };
+        static const char AUTO[1];
+
+        Cookie (const string& value = "", const string& domain = "", const string& path = "", uint64_t max_age = 0, bool secure = false,
+                bool http_only = false, SameSite same_site = SameSite::disabled) :
+            _value(value), _domain(domain), _path(path), _max_age(max_age), _secure(secure), _http_only(http_only), _same_site(same_site)
+        {}
+
+        const string&  value       () const { return _value; }
+        const string&  domain      () const { return _domain; }
+        const string&  path        () const { return _path; }
+        uint64_t       max_age     () const { return _max_age; }
+        optional<Date> expires     () const { if (!_expires) return {}; return Date(_expires); }
+        bool           secure      () const { return _secure; }
+        bool           http_only   () const { return _http_only; }
+        SameSite       same_site   () const { return _same_site; }
+        int64_t        max_age_any () const;
+        optional<Date> expires_any () const;
+
+        Cookie& value     (const string& v) { _value     = v; return *this; }
+        Cookie& domain    (const string& v) { _domain    = v; return *this; }
+        Cookie& path      (const string& v) { _path      = v; return *this; }
+        Cookie& max_age   (uint64_t v)      { _max_age   = v; _expires.clear(); return *this; }
+        Cookie& expires   (const Date& d)   { _expires = d.iso(); _max_age = 0; return *this; }
+        Cookie& secure    (bool v)          { _secure    = v; return *this; }
+        Cookie& http_only (bool v)          { _http_only = v; return *this; }
+        Cookie& same_site (SameSite v)      { _same_site = v; return *this; }
+
+        string to_string (const string& cookie_name, const Request* context = nullptr) const;
+
+    private:
+        string   _value;
+        string   _domain;
+        string   _path;
+        uint64_t _max_age   = 0;
+        string   _expires;
+        bool     _secure    = false;
+        bool     _http_only = false;
+        SameSite _same_site = SameSite::disabled;
+    };
+
+    struct Cookies : Fields<Cookie, true, 2> {
+        optional<Cookie> get (const string& key) {
+            auto it = find(key);
+            if (it == fields.cend()) return {};
+            return it->value;
+        }
+    };
+
+    int     code = 0;
+    string  message;
+    Cookies cookies;
 
     Response () : code() {}
 
@@ -35,28 +89,28 @@ private:
 };
 using ResponseSP = iptr<Response>;
 
-template <class T>
-struct Response::BuilderImpl : Message::Builder<T> {
-    BuilderImpl () {}
+template <class T, class R>
+struct Response::BuilderImpl : Message::Builder<T, R> {
+    using Message::Builder<T, R>::Builder;
 
     T& code (int code) {
-        _code = code;
+        this->_message->code = code;
         return this->self();
     }
 
     T& message (const string& message) {
-        _message = message;
+        this->_message->message = message;
         return this->self();
     }
 
-    ResponseSP build () {
-        return new Response(_code, std::move(this->_headers), std::move(this->_body), this->_chunked, this->_http_version, _message);
+    T& cookie (const string& name, const Response::Cookie& coo) {
+        this->_message->cookies.add(name, coo);
+        return this->self();
     }
-
-protected:
-    int    _code = 0;
-    string _message;
 };
-struct Response::Builder : Response::BuilderImpl<Builder> {};
+
+struct Response::Builder : Response::BuilderImpl<Builder, ResponseSP> {
+    Builder () : BuilderImpl(new Response()) {}
+};
 
 }}}

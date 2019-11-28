@@ -1,7 +1,57 @@
 #include "Response.h"
 #include "Request.h"
+#include <ctime>
 
 namespace panda { namespace protocol { namespace http {
+
+const char Response::Cookie::AUTO[1] = {0};
+
+int64_t Response::Cookie::max_age_any () const {
+    if (_max_age || !_expires) return _max_age;
+    return Date(_expires).epoch() - std::time(nullptr);
+}
+
+optional<date::Date> Response::Cookie::expires_any () const {
+    if (!_max_age) return expires();
+    auto ret = Date::now();
+    ret.epoch(ret.epoch() + _max_age);
+    return ret;
+}
+
+string Response::Cookie::to_string (const string& name, const Request* req) const {
+    string str(200); // should be enough for average set-cookie header
+    str += name;
+    str += '=';
+    str += _value;
+
+    const string& domain = _domain.data() == AUTO && req ? req->headers.get("Host") : _domain;
+    if (domain) {
+        str += "; Domain=";
+        str += domain;
+    }
+
+    if (_path) {
+        str += "; Path=";
+        str += _path;
+    }
+
+    if (_max_age) {
+        str += "; Max-Age=";
+        str += panda::to_string(_max_age);
+    }
+    else if (_expires) {
+        str += "; Expires=";
+        str += _expires;
+    }
+
+    if (_secure)    str += "; Secure";
+    if (_http_only) str += "; HttpOnly";
+
+    if      (_same_site == SameSite::Strict) str += "; SameSite";
+    else if (_same_site == SameSite::Lax   ) str += "; SameSite=Lax";
+
+    return str;
+}
 
 string Response::_http_header (const Request* req, size_t reserve) {
     if (!code) code = 200;
@@ -13,6 +63,8 @@ string Response::_http_header (const Request* req, size_t reserve) {
     if (!message) message = message_for_code(code);
 
     if (!chunked && !headers.has("Content-Length")) headers.add("Content-Length", panda::to_string(body.length()));
+
+    for (const auto& item : cookies.fields) headers.add("Set-Cookie", item.value.to_string(item.name, req));
 
     string s(5 + 4 + 4 + message.length() + 2 + headers.length() + 2 + reserve);
 

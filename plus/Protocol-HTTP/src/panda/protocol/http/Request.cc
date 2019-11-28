@@ -36,6 +36,21 @@ string Request::_http_header (size_t reserve) {
         headers.add("Host", host);
     }
 
+    if (cookies.size()) {
+        size_t len = 0;
+        for (const auto& f : cookies.fields) len += f.name.length() + f.value.length() + 3; // 3 for ' ', '=' and ';' for each pair
+        string coo(len);
+        auto sz = cookies.size();
+        for (size_t i = 0; i < sz; ++i) {
+            if (i) { coo += "; "; }
+            const auto& f = cookies.fields[i];
+            coo += f.name;
+            coo += '=';
+            coo += f.value;
+        }
+        headers.add("Cookie", coo);
+    }
+
     string s(meth.length() + 1 + reluri.length() + 6 + 5 + headers.length() + 2 + reserve);
 
     s += meth;

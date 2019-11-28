@@ -10,14 +10,14 @@ namespace panda { namespace protocol { namespace http {
 enum class State {headers, body, chunk, chunk_body, chunk_trailer, done, error};
 
 struct Message : virtual Refcnt {
-    template <class T> struct Builder;
+    template <class, class> struct Builder;
 
     Headers headers;
     Body    body;
-    bool    chunked;
-    int     http_version;
+    bool    chunked      = false;
+    int     http_version = 0;
 
-    Message () : chunked(), http_version() {}
+    Message () {}
 
     Message (Headers&& headers, Body&& body, bool chunked = false, int http_version = 0) :
         headers(std::move(headers)), body(std::move(body)), chunked(chunked), http_version(http_version)
@@ -94,49 +94,47 @@ private:
 };
 using MessageSP = iptr<Message>;
 
-template <class T>
+template <class T, class MP>
 struct Message::Builder {
     T& headers (Headers&& headers) {
-        _headers = std::move(headers);
+        _message->headers = std::move(headers);
         return self();
     }
 
     T& header (const string& k, const string& v) {
-        _headers.add(k, v);
+        _message->headers.add(k, v);
         return self();
     }
 
     T& body (Body&& val, const string& content_type = "") {
-        _body = std::move(val);
-        if (content_type) _headers.add("Content-Type", content_type);
+        _message->body = std::move(val);
+        if (content_type) _message->headers.add("Content-Type", content_type);
         return self();
     }
 
     T& body (const string& body, const string& content_type = "") {
-        _body = body;
-        if (content_type) _headers.add("Content-Type", content_type);
+        _message->body = body;
+        if (content_type) _message->headers.add("Content-Type", content_type);
         return self();
     }
 
     T& http_version (int http_version) {
-        _http_version = http_version;
+        _message->http_version = http_version;
         return self();
     }
 
     T& chunked (const string& content_type = "") {
-        _chunked = true;
-        if (content_type) _headers.add("Content-Type", content_type);
+        _message->chunked = true;
+        if (content_type) _message->headers.add("Content-Type", content_type);
         return self();
     }
 
-protected:
-    Headers _headers;
-    Body    _body;
-    int     _http_version = 0;
-    bool    _chunked      = false;
-    string  _content_type;
+    MP build () { return _message; }
 
-    Builder () : _chunked() {}
+protected:
+    MP _message;
+
+    Builder (const MP& msg) : _message(msg) {}
 
     T& self () { return static_cast<T&>(*this); }
 };

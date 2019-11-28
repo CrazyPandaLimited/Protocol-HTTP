@@ -17,7 +17,6 @@ TEST("basic") {
     CHECK(h.get("field1", "default") == "value1");
 
 
-    WARN(h);
     h.set("field1", "value2");
     CHECK(h.get("field1", "default") == "value2");
 
