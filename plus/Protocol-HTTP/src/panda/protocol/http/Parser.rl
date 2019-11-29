@@ -39,6 +39,18 @@
         fbreak;
     }
     
+    action mark2 {
+        printf("asdfsdf\n");
+    }
+    
+    action unmark2 {
+        
+    }
+    
+    action save2 {
+        
+    }
+    
     ################################## ALPHABETS ########################################
     CRLF          = "\r\n";
     CTL           = cntrl | 127;
@@ -56,16 +68,33 @@
     quoted_string = '"' (qdtext | quoted_pair)* '"';
      
     http_version  = "HTTP/1." (("0" %{message->http_version = 10;}) | ("1" %{message->http_version = 11;}));
+    
+    ################################## COOKIES ########################################
+    cookie_octet      = any - (CTL | WSP | '"' | ',' | ';' | '\\');
+    cookie_name       = token;
+    cookie_value      = cookie_octet* | ('"' cookie_octet* '"');
+    cookie_pair       = cookie_name >mark2 %save2 %unmark2  "=" cookie_value >mark2 %save2 %unmark2;
+    cookie_string     = cookie_pair ("; " cookie_pair)*;
+    cookie_header     = /Cookie/i ":" OWS cookie_string OWS;
+    expires_av        = "Expires=" (alnum | SP | ":" | ",") >mark2 %save2 %unmark2; # RFC 1123, will be lazy-parsed later by panda::date framework
+    max_age_av        = "Max-Age=" ([1-9] digit*)  >mark2 %save2 %unmark2;
+    domain_av         = "Domain=" (alnum | "." | "-")+  >mark2 %save2 %unmark2;
+    path_av           = "Path=" ((any - CTL) - ";")+  >mark2 %save2 %unmark2;
+    secure_av         = "Secure"  >mark2 %save2 %unmark2;
+    httponly_av       = "HttpOnly"  >mark2 %save2 %unmark2;
+    extension_av      = ((any - CTL) - ";")+  >mark2 %save2 %unmark2;
+    cookie_av         = expires_av | max_age_av | domain_av | path_av | secure_av | httponly_av | extension_av;
+    set_cookie_string = cookie_pair ("; " cookie_av)*;
+    set_cookie_header = /Set-Cookie/i ": " set_cookie_string;
 
     ################################## HEADERS ########################################
     field_name     = token >mark %{SAVE(field_name)} %unmark;
-    field_vchar    = VCHAR | WSP | obs_text;
-    field_value    = field_vchar* >mark %add_header %unmark; # TODO: obsolete support: "*( field-content / obs-fold )"
+    field_vchar    = VCHAR | WSP | obs_text; # we do not support obs-text (codes > 127) for perfomance reasons
+    field_value    = field_vchar* >mark %add_header %unmark;
     header_field   = field_name ":" OWS <: field_value;
     content_length = /Content-Length/i ":" OWS digit+ >content_length_start ${ADD_DIGIT(content_length)} OWS;
     te_chunked     = /Transfer-Encoding/i ":" OWS /chunked/i %{message->chunked = true;} OWS;
     header         = content_length | te_chunked | header_field;
-    headers        = (header CRLF)* CRLF;
     
     ################################## CHUNKS ########################################
     chunk_size      = xdigit+ >{chunk_length = 0;} ${ADD_XDIGIT(chunk_length)};
@@ -87,15 +116,21 @@
               | "TRACE"   %{request->method = Request::Method::TRACE; }
               | "CONNECT" %{request->method = Request::Method::CONNECT; }
              );
-    request_target = VCHAR+ >mark %request_target %unmark;
-    request_line   = method SP request_target SP http_version :> CRLF;
-    request       := request_line headers @done;
+    request_target  = VCHAR+ >mark %request_target %unmark;
+    request_line    = method SP request_target SP http_version :> CRLF;
+request_header  = cookie_header | header;
+#request_header  = header;
+    request_headers = (request_header CRLF)* CRLF;
+    request        := request_line request_headers @done;
     
     ################################## RESPONSE ########################################
-    status_code = ([1-9] digit{2}) ${ADD_DIGIT(response->code)};
-    reason_phrase = (VCHAR | WSP | obs_text)* >mark %{SAVE(response->message)} %unmark;
-    status_line = http_version SP status_code SP reason_phrase :> CRLF;
-    response := status_line headers @done;
+    status_code      = ([1-9] digit{2}) ${ADD_DIGIT(response->code)};
+    reason_phrase    = (VCHAR | WSP | obs_text)* >mark %{SAVE(response->message)} %unmark;
+    status_line      = http_version SP status_code SP reason_phrase :> CRLF;
+response_header  = set_cookie_header | header;
+#response_header  = header;
+    response_headers = (response_header CRLF)* CRLF;
+    response        := status_line response_headers @done;
 }%%
 
 namespace panda { namespace protocol { namespace http {
