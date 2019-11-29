@@ -11,14 +11,18 @@ namespace panda { namespace protocol { namespace http {
     return pos;                                                 \
 } while (0)
 
+#define SAVE_MARK(mark, marked, acc)                \
+    if (marked) {                                   \
+        if (mark != -1) {                           \
+            acc = buffer.substr(mark, len - mark);  \
+            mark = -1;                              \
+        }                                           \
+        else acc += buffer;                         \
+    }
+
 #define RETURN_IF_INCOMPLETE do if (cs < http_parser_first_final) { \
-    if (marked) {                                                   \
-        if (mark != -1) {                                           \
-            acc = buffer.substr(mark, len - mark);                  \
-            mark = -1;                                              \
-        }                                                           \
-        else acc += buffer;                                         \
-    }                                                               \
+    SAVE_MARK(mark, marked, acc);                                   \
+    SAVE_MARK(submark, submarked, subacc);                          \
     return pos;                                                     \
 } while (0)
 

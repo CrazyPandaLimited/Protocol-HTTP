@@ -7,16 +7,35 @@
         mark   = fpc - ps;
         marked = true;
     }
-    
+
     action unmark {
         marked = false;
     }
+
+    action submark {
+        submark   = fpc - ps;
+        submarked = true;
+    }
+
+    action subunmark {
+        submarked = false;
+    }
+
+    action header_name {
+        if (!headers_finished) {
+            string value;
+            SAVE(value);
+            message->headers.add(value, {});
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
     
-    action add_header {
-        string value;
-        SAVE(value);
-        if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
-        if (!headers_finished) message->headers.add(field_name, value);
+    action header_value {
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
         else {} // trailing header after chunks, currently we just ignore them
     }
     
@@ -29,6 +48,28 @@
         has_content_length = true;
     }
     
+    action req_cookie_name {
+        string v;
+        SUBSAVE(v);
+        request->cookies.add(v, {});
+    }
+    
+    action req_cookie_value {
+        string& v = request->cookies.fields.back().value;
+        SUBSAVE(v);
+    }
+
+    action res_cookie_name {
+        string v;
+        SUBSAVE(v);
+        response->cookies.add(v, {});
+    }
+
+    action res_cookie_value {
+        string& v = response->cookies.fields.back().value._value;
+        SUBSAVE(v);
+    }
+    
     action request_target {
         string target;
         SAVE(target);
@@ -37,14 +78,6 @@
     
     action done {
         fbreak;
-    }
-    
-    action mark2 {
-        printf("asdfsdf\n");
-    }
-    
-    action unmark2 {
-        
     }
     
     action save2 {
@@ -71,26 +104,24 @@
     
     ################################## COOKIES ########################################
     cookie_octet      = any - (CTL | WSP | '"' | ',' | ';' | '\\');
-    cookie_name       = token;
     cookie_value      = cookie_octet* | ('"' cookie_octet* '"');
-    cookie_pair       = cookie_name >mark2 %save2 %unmark2  "=" cookie_value >mark2 %save2 %unmark2;
-    cookie_string     = cookie_pair ("; " cookie_pair)*;
-    cookie_header     = /Cookie/i ":" OWS cookie_string OWS;
-    expires_av        = "Expires=" (alnum | SP | ":" | ",") >mark2 %save2 %unmark2; # RFC 1123, will be lazy-parsed later by panda::date framework
-    max_age_av        = "Max-Age=" ([1-9] digit*)  >mark2 %save2 %unmark2;
-    domain_av         = "Domain=" (alnum | "." | "-")+  >mark2 %save2 %unmark2;
-    path_av           = "Path=" ((any - CTL) - ";")+  >mark2 %save2 %unmark2;
-    secure_av         = "Secure"  >mark2 %save2 %unmark2;
-    httponly_av       = "HttpOnly"  >mark2 %save2 %unmark2;
-    extension_av      = ((any - CTL) - ";")+  >mark2 %save2 %unmark2;
+    cookie_pair       = token >submark %req_cookie_name %subunmark  "=" cookie_value >submark %req_cookie_value %subunmark;
+    set_cookie_pair   = token >submark %res_cookie_name %subunmark  "=" cookie_value >submark %res_cookie_value %subunmark;
+    cookie_header     = /Cookie/i ":" OWS cookie_pair ("; " cookie_pair)* OWS;
+    expires_av        = "Expires=" (alnum | SP | ":" | ",") >submark %save2 %subunmark; # RFC 1123, will be lazy-parsed later by panda::date framework
+    max_age_av        = "Max-Age=" ([1-9] digit*)  >submark %save2 %subunmark;
+    domain_av         = "Domain=" (alnum | "." | "-")+  >submark %save2 %subunmark;
+    path_av           = "Path=" ((any - CTL) - ";")+  >submark %save2 %subunmark;
+    secure_av         = "Secure"  >submark %save2 %subunmark;
+    httponly_av       = "HttpOnly"  >submark %save2 %subunmark;
+    extension_av      = ((any - CTL) - ";")+  >submark %save2 %subunmark;
     cookie_av         = expires_av | max_age_av | domain_av | path_av | secure_av | httponly_av | extension_av;
-    set_cookie_string = cookie_pair ("; " cookie_av)*;
-    set_cookie_header = /Set-Cookie/i ": " set_cookie_string;
+    set_cookie_header = /Set-Cookie/i ": " set_cookie_pair ("; " cookie_av)*;
 
     ################################## HEADERS ########################################
-    field_name     = token >mark %{SAVE(field_name)} %unmark;
-    field_vchar    = VCHAR | WSP | obs_text; # we do not support obs-text (codes > 127) for perfomance reasons
-    field_value    = field_vchar* >mark %add_header %unmark;
+    field_name     = token >mark %header_name %unmark;
+    field_vchar    = VCHAR | WSP | obs_text;
+    field_value    = field_vchar* >mark %header_value %unmark;
     header_field   = field_name ":" OWS <: field_value;
     content_length = /Content-Length/i ":" OWS digit+ >content_length_start ${ADD_DIGIT(content_length)} OWS;
     te_chunked     = /Transfer-Encoding/i ":" OWS /chunked/i %{message->chunked = true;} OWS;
@@ -118,8 +149,8 @@
              );
     request_target  = VCHAR+ >mark %request_target %unmark;
     request_line    = method SP request_target SP http_version :> CRLF;
-request_header  = cookie_header | header;
-#request_header  = header;
+    request_header  = cookie_header | header;
+    request_headerX  = header;
     request_headers = (request_header CRLF)* CRLF;
     request        := request_line request_headers @done;
     
@@ -127,8 +158,8 @@ request_header  = cookie_header | header;
     status_code      = ([1-9] digit{2}) ${ADD_DIGIT(response->code)};
     reason_phrase    = (VCHAR | WSP | obs_text)* >mark %{SAVE(response->message)} %unmark;
     status_line      = http_version SP status_code SP reason_phrase :> CRLF;
-response_header  = set_cookie_header | header;
-#response_header  = header;
+    response_header  = set_cookie_header | header;
+    response_headerX  = header;
     response_headers = (response_header CRLF)* CRLF;
     response        := status_line response_headers @done;
 }%%
@@ -148,12 +179,15 @@ namespace panda { namespace protocol { namespace http {
     dest *= 16;          \
     dest += fc >= 'a' ? (fc - 'a' + 10) : (fc - '0');
 
-#define SAVE(dest)                                              \
+#define _SAVE(dest, mark, acc)                                  \
     if (mark != -1) dest = buffer.substr(mark, p - ps - mark);  \
     else {                                                      \
         dest = std::move(acc);                                  \
         dest.append(ps, p - ps);                                \
     }
+
+#define SAVE(dest)    _SAVE(dest, mark, acc)
+#define SUBSAVE(dest) _SAVE(dest, submark, subacc)
 
 size_t Parser::machine_exec (const string& buffer, size_t off) {
     const char* ps = buffer.data();

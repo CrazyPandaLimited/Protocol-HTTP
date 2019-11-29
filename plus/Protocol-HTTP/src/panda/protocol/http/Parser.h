@@ -32,6 +32,8 @@ protected:
         state              = State::headers;
         mark               = -1;
         marked             = false;
+        submark            = -1;
+        submarked          = false;
         headers_so_far     = 0;
         headers_finished   = false;
         has_content_length = false;
@@ -50,8 +52,10 @@ protected:
 private:
     ptrdiff_t  mark;
     bool       marked;
-    string     acc; // contains unfinished field and used to parse messages that come in fragments
-    string     field_name;
+    string     acc;
+    ptrdiff_t  submark;
+    bool       submarked;
+    string     subacc;
     size_t     headers_so_far;
     bool       headers_finished;
     size_t     body_so_far;
