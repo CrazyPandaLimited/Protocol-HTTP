@@ -50,14 +50,13 @@ subtest 'response cookies' => sub {
                 max_age   => 1000,
                 secure    => 1,
                 http_only => 1,
-                same_site => COOKIE_SAMESITE_LAX,
+                same_site => COOKIE_SAMESITE_NONE,
             }},
         });
         is $res->to_string,
             "HTTP/1.1 200 OK\r\n".
-            "Connection: keep-alive\r\n".
             "Content-Length: 0\r\n".
-            "Set-Cookie: session=123; Domain=epta.ru; Path=/; Max-Age=1000; Secure; HttpOnly; SameSite=Lax\r\n".
+            "Set-Cookie: session=123; Domain=epta.ru; Path=/; Max-Age=1000; Secure; HttpOnly; SameSite=None\r\n".
             "\r\n";
     };
     subtest 'cookies()' => sub {

@@ -45,19 +45,31 @@ string Response::Cookie::to_string (const string& name, const Request* req) cons
     if (_secure)    str += "; Secure";
     if (_http_only) str += "; HttpOnly";
 
-    if      (_same_site == SameSite::Strict) str += "; SameSite";
-    else if (_same_site == SameSite::Lax   ) str += "; SameSite=Lax";
+    switch (_same_site) {
+        case SameSite::None   : str += "; SameSite=None"; break;
+        case SameSite::Lax    : str += "; SameSite=Lax";  break;
+        case SameSite::Strict : str += "; SameSite";      break;
+        default               : {}
+    }
 
     return str;
 }
 
 string Response::_http_header (const Request* req, size_t reserve) {
     if (!code) code = 200;
+
     if (req) {
         if (!http_version) http_version = req->http_version;
-        if (!req->keep_alive()) headers.set("Connection", "close");
-        else if (!headers.has("Connection")) headers.add("Connection", "keep-alive");
+
+        if (req->keep_alive()) { // user can change connection to 'close'
+            if (http_version == 10 && !headers.has("Connection")) headers.add("Connection", "keep-alive");
+        }
+        else { // user can not change connection to 'keep-alive'
+            if (http_version == 10) headers.remove("Connection");
+            else                    headers.set("Connection", "close");
+        }
     }
+
     if (!message) message = message_for_code(code);
 
     if (!chunked && !headers.has("Content-Length")) headers.add("Content-Length", panda::to_string(body.length()));

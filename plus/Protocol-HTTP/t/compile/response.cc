@@ -57,15 +57,22 @@ TEST("request context: follow connection type unless explicitly specified") {
         );
     }
     SECTION("request is keep-alive") {
-        string chk;
-        SECTION("keep")             { chk = "keep-alive"; }
-        SECTION("change - ignored") { chk = "close"; res->headers.connection("close"); }
-        CHECK(res->to_string(req) ==
-            "HTTP/1.1 200 OK\r\n"
-            "Connection: " + chk + "\r\n"
-            "Content-Length: 0\r\n"
-            "\r\n"
-        );
+        SECTION("keep") {
+            CHECK(res->to_string(req) ==
+                "HTTP/1.1 200 OK\r\n"
+                "Content-Length: 0\r\n"
+                "\r\n"
+            );
+        }
+        SECTION("change") {
+            res->headers.connection("close");
+            CHECK(res->to_string(req) ==
+                "HTTP/1.1 200 OK\r\n"
+                "Connection: close\r\n"
+                "Content-Length: 0\r\n"
+                "\r\n"
+            );
+        }
     }
 }
 
@@ -73,16 +80,22 @@ TEST("request context: follow http_version unless explicitly specified") {
     auto req = Request::Builder().http_version(10).build();
     auto res = Response::Builder().build();
 
-    string chk;
-    SECTION("keep")   { chk = "1.0"; }
-    SECTION("change") { chk = "1.1"; res->http_version = 11; }
-
-    CHECK(res->to_string(req) ==
-        string("HTTP/") + chk + " 200 OK\r\n"
-        "Connection: close\r\n"
-        "Content-Length: 0\r\n"
-        "\r\n"
-    );
+    SECTION("keep") {
+        CHECK(res->to_string(req) ==
+            "HTTP/1.0 200 OK\r\n"
+            "Content-Length: 0\r\n"
+            "\r\n"
+        );
+    }
+    SECTION("change") {
+        res->http_version = 11;
+        CHECK(res->to_string(req) ==
+            "HTTP/1.1 200 OK\r\n"
+            "Connection: close\r\n"
+            "Content-Length: 0\r\n"
+            "\r\n"
+        );
+    }
 }
 
 TEST("response for HEAD request with content-length") {

@@ -13,7 +13,7 @@ struct Response : Message, AllocatedObject<Response> {
     struct Builder; template <class, class> struct BuilderImpl;
 
     struct Cookie {
-        enum class SameSite { disabled = 0, Strict, Lax };
+        enum class SameSite { disabled = 0, Strict, Lax, None };
 
         Cookie (const string& value = "", const string& domain = "", const string& path = "", uint64_t max_age = 0, bool secure = false,
                 bool http_only = false, SameSite same_site = SameSite::disabled) :

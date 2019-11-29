@@ -74,6 +74,9 @@ TEST("response cookie in vacuum") {
         SECTION("Lax") {
             CHECK(coo.same_site(Response::Cookie::SameSite::Lax).to_string("k") == "k=v; SameSite=Lax");
         }
+        SECTION("None") {
+            CHECK(coo.same_site(Response::Cookie::SameSite::None).to_string("k") == "k=v; SameSite=None");
+        }
     }
     SECTION("all together") {
         CHECK(
@@ -88,7 +91,6 @@ TEST("response single cookie") {
     auto res = Response::Builder().cookie("session", Response::Cookie("abcdef").max_age(1000).path("/").http_only(true)).build();
     CHECK(res->to_string(req) ==
         "HTTP/1.1 200 OK\r\n"
-        "Connection: keep-alive\r\n"
         "Content-Length: 0\r\n"
         "Set-Cookie: session=abcdef; Domain=epta.ru; Path=/; Max-Age=1000; HttpOnly\r\n"
         "\r\n"
@@ -100,7 +102,6 @@ TEST("response multiple cookies") {
     auto res = Response::Builder().cookie("session", Response::Cookie("abcdef")).cookie("killmenow", Response::Cookie("yeah")).build();
     CHECK(res->to_string(req) ==
         "HTTP/1.1 200 OK\r\n"
-        "Connection: keep-alive\r\n"
         "Content-Length: 0\r\n"
         "Set-Cookie: session=abcdef; Domain=epta.ru\r\n"
         "Set-Cookie: killmenow=yeah; Domain=epta.ru\r\n"
