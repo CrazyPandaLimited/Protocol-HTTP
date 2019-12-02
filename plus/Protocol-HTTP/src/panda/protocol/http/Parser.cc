@@ -3,7 +3,7 @@
 #include "Parser.h"
 
 
-#line 165 "src/panda/protocol/http/Parser.rl"
+#line 211 "src/panda/protocol/http/Parser.rl"
 
 
 namespace panda { namespace protocol { namespace http {
@@ -11,17 +11,17 @@ namespace panda { namespace protocol { namespace http {
 
 #line 13 "src/panda/protocol/http/Parser.cc"
 static const int http_parser_start = 1;
-static const int http_parser_first_final = 250;
+static const int http_parser_first_final = 289;
 static const int http_parser_error = 0;
 
-static const int http_parser_en_first_chunk = 112;
-static const int http_parser_en_chunk = 122;
-static const int http_parser_en_chunk_trailer = 134;
-static const int http_parser_en_request = 140;
+static const int http_parser_en_first_chunk = 151;
+static const int http_parser_en_chunk = 161;
+static const int http_parser_en_chunk_trailer = 173;
+static const int http_parser_en_request = 179;
 static const int http_parser_en_response = 1;
 
 
-#line 170 "src/panda/protocol/http/Parser.rl"
+#line 216 "src/panda/protocol/http/Parser.rl"
 
 #ifndef PARSER_CONSTANTS
 
@@ -110,7 +110,7 @@ st8:
 case 8:
 	switch( (*p) ) {
 		case 48: goto st9;
-		case 49: goto st111;
+		case 49: goto st150;
 	}
 	goto st0;
 st9:
@@ -121,11 +121,11 @@ case 9:
 		goto tr10;
 	goto st0;
 tr10:
-#line 103 "src/panda/protocol/http/Parser.rl"
+#line 148 "src/panda/protocol/http/Parser.rl"
 	{message->http_version = 10;}
 	goto st10;
-tr133:
-#line 103 "src/panda/protocol/http/Parser.rl"
+tr192:
+#line 148 "src/panda/protocol/http/Parser.rl"
 	{message->http_version = 11;}
 	goto st10;
 st10:
@@ -137,7 +137,7 @@ case 10:
 		goto tr11;
 	goto st0;
 tr11:
-#line 158 "src/panda/protocol/http/Parser.rl"
+#line 204 "src/panda/protocol/http/Parser.rl"
 	{ADD_DIGIT(response->code)}
 	goto st11;
 st11:
@@ -149,7 +149,7 @@ case 11:
 		goto tr12;
 	goto st0;
 tr12:
-#line 158 "src/panda/protocol/http/Parser.rl"
+#line 204 "src/panda/protocol/http/Parser.rl"
 	{ADD_DIGIT(response->code)}
 	goto st12;
 st12:
@@ -161,7 +161,7 @@ case 12:
 		goto tr13;
 	goto st0;
 tr13:
-#line 158 "src/panda/protocol/http/Parser.rl"
+#line 204 "src/panda/protocol/http/Parser.rl"
 	{ADD_DIGIT(response->code)}
 	goto st13;
 st13:
@@ -214,7 +214,7 @@ tr16:
         mark   = p - ps;
         marked = true;
     }
-#line 159 "src/panda/protocol/http/Parser.rl"
+#line 205 "src/panda/protocol/http/Parser.rl"
 	{SAVE(response->message)}
 #line 11 "src/panda/protocol/http/Parser.rl"
 	{
@@ -222,7 +222,7 @@ tr16:
     }
 	goto st16;
 tr18:
-#line 159 "src/panda/protocol/http/Parser.rl"
+#line 205 "src/panda/protocol/http/Parser.rl"
 	{SAVE(response->message)}
 #line 11 "src/panda/protocol/http/Parser.rl"
 	{
@@ -272,7 +272,7 @@ tr65:
     }
 #line 68 "src/panda/protocol/http/Parser.rl"
 	{
-        string& v = response->cookies.fields.back().value._value;
+        auto& v = response->cookies.fields.back().value._value;
         SUBSAVE(v);
     }
 #line 20 "src/panda/protocol/http/Parser.rl"
@@ -296,7 +296,7 @@ tr65:
 tr69:
 #line 68 "src/panda/protocol/http/Parser.rl"
 	{
-        string& v = response->cookies.fields.back().value._value;
+        auto& v = response->cookies.fields.back().value._value;
         SUBSAVE(v);
     }
 #line 20 "src/panda/protocol/http/Parser.rl"
@@ -317,10 +317,11 @@ tr69:
         marked = false;
     }
 	goto st16;
-tr78:
-#line 83 "src/panda/protocol/http/Parser.rl"
+tr87:
+#line 73 "src/panda/protocol/http/Parser.rl"
 	{
-        
+        auto& v = response->cookies.fields.back().value._domain;
+        SUBSAVE(v);
     }
 #line 20 "src/panda/protocol/http/Parser.rl"
 	{
@@ -340,8 +341,180 @@ tr78:
         marked = false;
     }
 	goto st16;
-tr132:
-#line 127 "src/panda/protocol/http/Parser.rl"
+tr97:
+#line 15 "src/panda/protocol/http/Parser.rl"
+	{
+        submark   = p - ps;
+        submarked = true;
+    }
+#line 93 "src/panda/protocol/http/Parser.rl"
+	{
+        auto& v = response->cookies.fields.back().value._expires;
+        SUBSAVE(v);
+    }
+#line 20 "src/panda/protocol/http/Parser.rl"
+	{
+        submarked = false;
+    }
+#line 33 "src/panda/protocol/http/Parser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 11 "src/panda/protocol/http/Parser.rl"
+	{
+        marked = false;
+    }
+	goto st16;
+tr100:
+#line 93 "src/panda/protocol/http/Parser.rl"
+	{
+        auto& v = response->cookies.fields.back().value._expires;
+        SUBSAVE(v);
+    }
+#line 20 "src/panda/protocol/http/Parser.rl"
+	{
+        submarked = false;
+    }
+#line 33 "src/panda/protocol/http/Parser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 11 "src/panda/protocol/http/Parser.rl"
+	{
+        marked = false;
+    }
+	goto st16;
+tr110:
+#line 102 "src/panda/protocol/http/Parser.rl"
+	{
+        response->cookies.fields.back().value._http_only = true;
+    }
+#line 33 "src/panda/protocol/http/Parser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 11 "src/panda/protocol/http/Parser.rl"
+	{
+        marked = false;
+    }
+	goto st16;
+tr127:
+#line 78 "src/panda/protocol/http/Parser.rl"
+	{
+        auto& v = response->cookies.fields.back().value._path;
+        SUBSAVE(v);
+    }
+#line 20 "src/panda/protocol/http/Parser.rl"
+	{
+        submarked = false;
+    }
+#line 33 "src/panda/protocol/http/Parser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 11 "src/panda/protocol/http/Parser.rl"
+	{
+        marked = false;
+    }
+	goto st16;
+tr137:
+#line 106 "src/panda/protocol/http/Parser.rl"
+	{
+        response->cookies.fields.back().value._same_site = Response::Cookie::SameSite::Strict;
+    }
+#line 33 "src/panda/protocol/http/Parser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 11 "src/panda/protocol/http/Parser.rl"
+	{
+        marked = false;
+    }
+	goto st16;
+tr145:
+#line 110 "src/panda/protocol/http/Parser.rl"
+	{
+        response->cookies.fields.back().value._same_site = Response::Cookie::SameSite::Lax;
+    }
+#line 33 "src/panda/protocol/http/Parser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 11 "src/panda/protocol/http/Parser.rl"
+	{
+        marked = false;
+    }
+	goto st16;
+tr150:
+#line 114 "src/panda/protocol/http/Parser.rl"
+	{
+        response->cookies.fields.back().value._same_site = Response::Cookie::SameSite::None;
+    }
+#line 33 "src/panda/protocol/http/Parser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 11 "src/panda/protocol/http/Parser.rl"
+	{
+        marked = false;
+    }
+	goto st16;
+tr161:
+#line 98 "src/panda/protocol/http/Parser.rl"
+	{
+        response->cookies.fields.back().value._secure = true;
+    }
+#line 33 "src/panda/protocol/http/Parser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 11 "src/panda/protocol/http/Parser.rl"
+	{
+        marked = false;
+    }
+	goto st16;
+tr191:
+#line 173 "src/panda/protocol/http/Parser.rl"
 	{message->chunked = true;}
 #line 33 "src/panda/protocol/http/Parser.rl"
 	{
@@ -361,7 +534,7 @@ st16:
 	if ( ++p == pe )
 		goto _test_eof16;
 case 16:
-#line 365 "src/panda/protocol/http/Parser.cc"
+#line 538 "src/panda/protocol/http/Parser.cc"
 	if ( (*p) == 10 )
 		goto st17;
 	goto st0;
@@ -407,16 +580,16 @@ case 18:
 		goto tr25;
 	goto st0;
 tr25:
-#line 79 "src/panda/protocol/http/Parser.rl"
+#line 124 "src/panda/protocol/http/Parser.rl"
 	{
-        {p++; cs = 250; goto _out;}
+        {p++; cs = 289; goto _out;}
     }
-	goto st250;
-st250:
+	goto st289;
+st289:
 	if ( ++p == pe )
-		goto _test_eof250;
-case 250:
-#line 420 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof289;
+case 289:
+#line 593 "src/panda/protocol/http/Parser.cc"
 	goto st0;
 tr21:
 #line 6 "src/panda/protocol/http/Parser.rl"
@@ -429,7 +602,7 @@ st19:
 	if ( ++p == pe )
 		goto _test_eof19;
 case 19:
-#line 433 "src/panda/protocol/http/Parser.cc"
+#line 606 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr27;
@@ -473,7 +646,7 @@ st20:
 	if ( ++p == pe )
 		goto _test_eof20;
 case 20:
-#line 477 "src/panda/protocol/http/Parser.cc"
+#line 650 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
 		case 9: goto st20;
 		case 13: goto tr30;
@@ -490,15 +663,15 @@ tr28:
         marked = true;
     }
 	goto st21;
-tr131:
-#line 127 "src/panda/protocol/http/Parser.rl"
+tr190:
+#line 173 "src/panda/protocol/http/Parser.rl"
 	{message->chunked = true;}
 	goto st21;
 st21:
 	if ( ++p == pe )
 		goto _test_eof21;
 case 21:
-#line 502 "src/panda/protocol/http/Parser.cc"
+#line 675 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
 		case 13: goto tr32;
 		case 127: goto st0;
@@ -520,7 +693,7 @@ st22:
 	if ( ++p == pe )
 		goto _test_eof22;
 case 22:
-#line 524 "src/panda/protocol/http/Parser.cc"
+#line 697 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr27;
@@ -951,7 +1124,7 @@ st36:
 	if ( ++p == pe )
 		goto _test_eof36;
 case 36:
-#line 955 "src/panda/protocol/http/Parser.cc"
+#line 1128 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
 		case 9: goto st36;
 		case 13: goto tr30;
@@ -974,7 +1147,7 @@ tr48:
         }
         has_content_length = true;
     }
-#line 126 "src/panda/protocol/http/Parser.rl"
+#line 172 "src/panda/protocol/http/Parser.rl"
 	{ADD_DIGIT(content_length)}
 #line 6 "src/panda/protocol/http/Parser.rl"
 	{
@@ -983,14 +1156,14 @@ tr48:
     }
 	goto st37;
 tr49:
-#line 126 "src/panda/protocol/http/Parser.rl"
+#line 172 "src/panda/protocol/http/Parser.rl"
 	{ADD_DIGIT(content_length)}
 	goto st37;
 st37:
 	if ( ++p == pe )
 		goto _test_eof37;
 case 37:
-#line 994 "src/panda/protocol/http/Parser.cc"
+#line 1167 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
 		case 13: goto tr32;
 		case 127: goto st0;
@@ -1015,7 +1188,7 @@ st38:
 	if ( ++p == pe )
 		goto _test_eof38;
 case 38:
-#line 1019 "src/panda/protocol/http/Parser.cc"
+#line 1192 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr27;
@@ -1326,7 +1499,7 @@ st48:
 	if ( ++p == pe )
 		goto _test_eof48;
 case 48:
-#line 1330 "src/panda/protocol/http/Parser.cc"
+#line 1503 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
 		case 9: goto st20;
 		case 13: goto tr30;
@@ -1386,7 +1559,7 @@ st50:
 	if ( ++p == pe )
 		goto _test_eof50;
 case 50:
-#line 1390 "src/panda/protocol/http/Parser.cc"
+#line 1563 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
 		case 13: goto tr32;
 		case 33: goto st50;
@@ -1435,7 +1608,7 @@ st51:
 	if ( ++p == pe )
 		goto _test_eof51;
 case 51:
-#line 1439 "src/panda/protocol/http/Parser.cc"
+#line 1612 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
 		case 9: goto st21;
 		case 13: goto tr65;
@@ -1460,7 +1633,7 @@ st52:
 	if ( ++p == pe )
 		goto _test_eof52;
 case 52:
-#line 1464 "src/panda/protocol/http/Parser.cc"
+#line 1637 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
 		case 9: goto st21;
 		case 13: goto tr69;
@@ -1482,7 +1655,7 @@ tr67:
     }
 #line 68 "src/panda/protocol/http/Parser.rl"
 	{
-        string& v = response->cookies.fields.back().value._value;
+        auto& v = response->cookies.fields.back().value._value;
         SUBSAVE(v);
     }
 #line 20 "src/panda/protocol/http/Parser.rl"
@@ -1493,7 +1666,7 @@ tr67:
 tr70:
 #line 68 "src/panda/protocol/http/Parser.rl"
 	{
-        string& v = response->cookies.fields.back().value._value;
+        auto& v = response->cookies.fields.back().value._value;
         SUBSAVE(v);
     }
 #line 20 "src/panda/protocol/http/Parser.rl"
@@ -1501,21 +1674,90 @@ tr70:
         submarked = false;
     }
 	goto st53;
-tr79:
-#line 83 "src/panda/protocol/http/Parser.rl"
+tr89:
+#line 73 "src/panda/protocol/http/Parser.rl"
 	{
-        
+        auto& v = response->cookies.fields.back().value._domain;
+        SUBSAVE(v);
     }
 #line 20 "src/panda/protocol/http/Parser.rl"
 	{
         submarked = false;
     }
 	goto st53;
+tr99:
+#line 15 "src/panda/protocol/http/Parser.rl"
+	{
+        submark   = p - ps;
+        submarked = true;
+    }
+#line 93 "src/panda/protocol/http/Parser.rl"
+	{
+        auto& v = response->cookies.fields.back().value._expires;
+        SUBSAVE(v);
+    }
+#line 20 "src/panda/protocol/http/Parser.rl"
+	{
+        submarked = false;
+    }
+	goto st53;
+tr102:
+#line 93 "src/panda/protocol/http/Parser.rl"
+	{
+        auto& v = response->cookies.fields.back().value._expires;
+        SUBSAVE(v);
+    }
+#line 20 "src/panda/protocol/http/Parser.rl"
+	{
+        submarked = false;
+    }
+	goto st53;
+tr111:
+#line 102 "src/panda/protocol/http/Parser.rl"
+	{
+        response->cookies.fields.back().value._http_only = true;
+    }
+	goto st53;
+tr128:
+#line 78 "src/panda/protocol/http/Parser.rl"
+	{
+        auto& v = response->cookies.fields.back().value._path;
+        SUBSAVE(v);
+    }
+#line 20 "src/panda/protocol/http/Parser.rl"
+	{
+        submarked = false;
+    }
+	goto st53;
+tr138:
+#line 106 "src/panda/protocol/http/Parser.rl"
+	{
+        response->cookies.fields.back().value._same_site = Response::Cookie::SameSite::Strict;
+    }
+	goto st53;
+tr146:
+#line 110 "src/panda/protocol/http/Parser.rl"
+	{
+        response->cookies.fields.back().value._same_site = Response::Cookie::SameSite::Lax;
+    }
+	goto st53;
+tr151:
+#line 114 "src/panda/protocol/http/Parser.rl"
+	{
+        response->cookies.fields.back().value._same_site = Response::Cookie::SameSite::None;
+    }
+	goto st53;
+tr162:
+#line 98 "src/panda/protocol/http/Parser.rl"
+	{
+        response->cookies.fields.back().value._secure = true;
+    }
+	goto st53;
 st53:
 	if ( ++p == pe )
 		goto _test_eof53;
 case 53:
-#line 1519 "src/panda/protocol/http/Parser.cc"
+#line 1761 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
 		case 13: goto tr32;
 		case 32: goto st54;
@@ -1535,52 +1777,38 @@ case 54:
 		case 9: goto st21;
 		case 13: goto tr32;
 		case 59: goto st21;
-		case 68: goto tr73;
-		case 69: goto tr74;
-		case 77: goto tr75;
-		case 80: goto tr76;
+		case 68: goto st56;
+		case 69: goto st64;
+		case 72: goto st73;
+		case 77: goto st81;
+		case 80: goto st90;
+		case 83: goto st96;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto tr72;
-tr72:
-#line 15 "src/panda/protocol/http/Parser.rl"
-	{
-        submark   = p - ps;
-        submarked = true;
-    }
 	goto st55;
 st55:
 	if ( ++p == pe )
 		goto _test_eof55;
 case 55:
-#line 1559 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
+		case 13: goto tr32;
+		case 59: goto st53;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
 	goto st55;
-tr73:
-#line 15 "src/panda/protocol/http/Parser.rl"
-	{
-        submark   = p - ps;
-        submarked = true;
-    }
-	goto st56;
 st56:
 	if ( ++p == pe )
 		goto _test_eof56;
 case 56:
-#line 1580 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
+		case 13: goto tr32;
+		case 59: goto st53;
 		case 111: goto st57;
 		case 127: goto st0;
 	}
@@ -1593,8 +1821,8 @@ st57:
 case 57:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
+		case 13: goto tr32;
+		case 59: goto st53;
 		case 109: goto st58;
 		case 127: goto st0;
 	}
@@ -1607,8 +1835,8 @@ st58:
 case 58:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
+		case 13: goto tr32;
+		case 59: goto st53;
 		case 97: goto st59;
 		case 127: goto st0;
 	}
@@ -1621,8 +1849,8 @@ st59:
 case 59:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
+		case 13: goto tr32;
+		case 59: goto st53;
 		case 105: goto st60;
 		case 127: goto st0;
 	}
@@ -1635,8 +1863,8 @@ st60:
 case 60:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
+		case 13: goto tr32;
+		case 59: goto st53;
 		case 110: goto st61;
 		case 127: goto st0;
 	}
@@ -1649,8 +1877,8 @@ st61:
 case 61:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
+		case 13: goto tr32;
+		case 59: goto st53;
 		case 61: goto st62;
 		case 127: goto st0;
 	}
@@ -1663,26 +1891,26 @@ st62:
 case 62:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
+		case 13: goto tr32;
+		case 59: goto st53;
 		case 127: goto st0;
 	}
 	if ( (*p) < 48 ) {
 		if ( (*p) > 31 ) {
 			if ( 45 <= (*p) && (*p) <= 46 )
-				goto tr72;
+				goto tr86;
 		} else if ( (*p) >= 0 )
 			goto st0;
 	} else if ( (*p) > 57 ) {
 		if ( (*p) > 90 ) {
 			if ( 97 <= (*p) && (*p) <= 122 )
-				goto tr72;
+				goto tr86;
 		} else if ( (*p) >= 65 )
-			goto tr72;
+			goto tr86;
 	} else
-		goto tr72;
+		goto tr86;
 	goto st55;
-tr74:
+tr86:
 #line 15 "src/panda/protocol/http/Parser.rl"
 	{
         submark   = p - ps;
@@ -1693,16 +1921,27 @@ st63:
 	if ( ++p == pe )
 		goto _test_eof63;
 case 63:
-#line 1697 "src/panda/protocol/http/Parser.cc"
+#line 1925 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
-		case 120: goto st64;
+		case 13: goto tr87;
+		case 59: goto tr89;
 		case 127: goto st0;
 	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
+	if ( (*p) < 48 ) {
+		if ( (*p) > 31 ) {
+			if ( 45 <= (*p) && (*p) <= 46 )
+				goto st63;
+		} else if ( (*p) >= 0 )
+			goto st0;
+	} else if ( (*p) > 57 ) {
+		if ( (*p) > 90 ) {
+			if ( 97 <= (*p) && (*p) <= 122 )
+				goto st63;
+		} else if ( (*p) >= 65 )
+			goto st63;
+	} else
+		goto st63;
 	goto st55;
 st64:
 	if ( ++p == pe )
@@ -1710,9 +1949,9 @@ st64:
 case 64:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
-		case 112: goto st65;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 120: goto st65;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
@@ -1724,9 +1963,9 @@ st65:
 case 65:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
-		case 105: goto st66;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 112: goto st66;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
@@ -1738,9 +1977,9 @@ st66:
 case 66:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
-		case 114: goto st67;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 105: goto st67;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
@@ -1752,9 +1991,9 @@ st67:
 case 67:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
-		case 101: goto st68;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 114: goto st68;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
@@ -1766,9 +2005,9 @@ st68:
 case 68:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
-		case 115: goto st69;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 101: goto st69;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
@@ -1780,9 +2019,9 @@ st69:
 case 69:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
-		case 61: goto st70;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 115: goto st70;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
@@ -1794,10 +2033,24 @@ st70:
 case 70:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 32: goto tr72;
-		case 44: goto tr72;
-		case 59: goto tr79;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 61: goto st71;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st71:
+	if ( ++p == pe )
+		goto _test_eof71;
+case 71:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr97;
+		case 32: goto tr98;
+		case 44: goto tr98;
+		case 59: goto tr99;
 		case 127: goto st0;
 	}
 	if ( (*p) < 48 ) {
@@ -1806,47 +2059,43 @@ case 70:
 	} else if ( (*p) > 58 ) {
 		if ( (*p) > 90 ) {
 			if ( 97 <= (*p) && (*p) <= 122 )
-				goto tr72;
+				goto tr98;
 		} else if ( (*p) >= 65 )
-			goto tr72;
+			goto tr98;
 	} else
-		goto tr72;
+		goto tr98;
 	goto st55;
-tr75:
+tr98:
 #line 15 "src/panda/protocol/http/Parser.rl"
 	{
         submark   = p - ps;
         submarked = true;
     }
-	goto st71;
-st71:
-	if ( ++p == pe )
-		goto _test_eof71;
-case 71:
-#line 1827 "src/panda/protocol/http/Parser.cc"
-	switch( (*p) ) {
-		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
-		case 97: goto st72;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st55;
+	goto st72;
 st72:
 	if ( ++p == pe )
 		goto _test_eof72;
 case 72:
+#line 2080 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
-		case 120: goto st73;
+		case 13: goto tr100;
+		case 32: goto st72;
+		case 44: goto st72;
+		case 59: goto tr102;
 		case 127: goto st0;
 	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
+	if ( (*p) < 48 ) {
+		if ( 0 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) > 58 ) {
+		if ( (*p) > 90 ) {
+			if ( 97 <= (*p) && (*p) <= 122 )
+				goto st72;
+		} else if ( (*p) >= 65 )
+			goto st72;
+	} else
+		goto st72;
 	goto st55;
 st73:
 	if ( ++p == pe )
@@ -1854,9 +2103,9 @@ st73:
 case 73:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 45: goto st74;
-		case 59: goto tr79;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 116: goto st74;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
@@ -1868,9 +2117,9 @@ st74:
 case 74:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
-		case 65: goto st75;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 116: goto st75;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
@@ -1882,9 +2131,9 @@ st75:
 case 75:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
-		case 103: goto st76;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 112: goto st76;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
@@ -1896,9 +2145,9 @@ st76:
 case 76:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
-		case 101: goto st77;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 79: goto st77;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
@@ -1910,9 +2159,9 @@ st77:
 case 77:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
-		case 61: goto st78;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 110: goto st78;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
@@ -1924,33 +2173,23 @@ st78:
 case 78:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 108: goto st79;
 		case 127: goto st0;
 	}
-	if ( (*p) > 31 ) {
-		if ( 49 <= (*p) && (*p) <= 57 )
-			goto tr72;
-	} else if ( (*p) >= 0 )
+	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
 	goto st55;
-tr76:
-#line 15 "src/panda/protocol/http/Parser.rl"
-	{
-        submark   = p - ps;
-        submarked = true;
-    }
-	goto st79;
 st79:
 	if ( ++p == pe )
 		goto _test_eof79;
 case 79:
-#line 1949 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
-		case 97: goto st80;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 121: goto st80;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
@@ -1962,9 +2201,8 @@ st80:
 case 80:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
-		case 116: goto st81;
+		case 13: goto tr110;
+		case 59: goto tr111;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
@@ -1976,9 +2214,9 @@ st81:
 case 81:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
-		case 104: goto st82;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 97: goto st82;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
@@ -1990,9 +2228,9 @@ st82:
 case 82:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
-		case 61: goto st83;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 120: goto st83;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
@@ -2004,30 +2242,606 @@ st83:
 case 83:
 	switch( (*p) ) {
 		case 9: goto st21;
-		case 13: goto tr78;
-		case 59: goto tr79;
+		case 13: goto tr32;
+		case 45: goto st84;
+		case 59: goto st53;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto tr72;
+	goto st55;
+st84:
+	if ( ++p == pe )
+		goto _test_eof84;
+case 84:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 65: goto st85;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st85:
+	if ( ++p == pe )
+		goto _test_eof85;
+case 85:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 103: goto st86;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st86:
+	if ( ++p == pe )
+		goto _test_eof86;
+case 86:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 101: goto st87;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st87:
+	if ( ++p == pe )
+		goto _test_eof87;
+case 87:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 61: goto st88;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st88:
+	if ( ++p == pe )
+		goto _test_eof88;
+case 88:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 127: goto st0;
+	}
+	if ( (*p) > 31 ) {
+		if ( 49 <= (*p) && (*p) <= 57 )
+			goto tr119;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st55;
+tr119:
+#line 83 "src/panda/protocol/http/Parser.rl"
+	{
+        auto& v = response->cookies.fields.back().value._max_age;
+        v = 0;
+    }
+#line 88 "src/panda/protocol/http/Parser.rl"
+	{
+        auto& v = response->cookies.fields.back().value._max_age;
+        ADD_DIGIT(v);
+    }
+	goto st89;
+tr120:
+#line 88 "src/panda/protocol/http/Parser.rl"
+	{
+        auto& v = response->cookies.fields.back().value._max_age;
+        ADD_DIGIT(v);
+    }
+	goto st89;
+st89:
+	if ( ++p == pe )
+		goto _test_eof89;
+case 89:
+#line 2349 "src/panda/protocol/http/Parser.cc"
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 127: goto st0;
+	}
+	if ( (*p) > 31 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto tr120;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st55;
+st90:
+	if ( ++p == pe )
+		goto _test_eof90;
+case 90:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 97: goto st91;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st91:
+	if ( ++p == pe )
+		goto _test_eof91;
+case 91:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 116: goto st92;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st92:
+	if ( ++p == pe )
+		goto _test_eof92;
+case 92:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 104: goto st93;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st93:
+	if ( ++p == pe )
+		goto _test_eof93;
+case 93:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 61: goto st94;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st94:
+	if ( ++p == pe )
+		goto _test_eof94;
+case 94:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto tr125;
+tr125:
+#line 15 "src/panda/protocol/http/Parser.rl"
+	{
+        submark   = p - ps;
+        submarked = true;
+    }
+	goto st95;
+st95:
+	if ( ++p == pe )
+		goto _test_eof95;
+case 95:
+#line 2442 "src/panda/protocol/http/Parser.cc"
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr127;
+		case 59: goto tr128;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st95;
+st96:
+	if ( ++p == pe )
+		goto _test_eof96;
+case 96:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 97: goto st97;
+		case 101: goto st118;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st97:
+	if ( ++p == pe )
+		goto _test_eof97;
+case 97:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 109: goto st98;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st98:
+	if ( ++p == pe )
+		goto _test_eof98;
+case 98:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 101: goto st99;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st99:
+	if ( ++p == pe )
+		goto _test_eof99;
+case 99:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 83: goto st100;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st100:
+	if ( ++p == pe )
+		goto _test_eof100;
+case 100:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 105: goto st101;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st101:
+	if ( ++p == pe )
+		goto _test_eof101;
+case 101:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 116: goto st102;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st102:
+	if ( ++p == pe )
+		goto _test_eof102;
+case 102:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 101: goto st103;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st103:
+	if ( ++p == pe )
+		goto _test_eof103;
+case 103:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr137;
+		case 59: goto tr138;
+		case 61: goto st104;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st104:
+	if ( ++p == pe )
+		goto _test_eof104;
+case 104:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 76: goto st105;
+		case 78: goto st108;
+		case 83: goto st112;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st105:
+	if ( ++p == pe )
+		goto _test_eof105;
+case 105:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 97: goto st106;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st106:
+	if ( ++p == pe )
+		goto _test_eof106;
+case 106:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 120: goto st107;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st107:
+	if ( ++p == pe )
+		goto _test_eof107;
+case 107:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr145;
+		case 59: goto tr146;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st108:
+	if ( ++p == pe )
+		goto _test_eof108;
+case 108:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 111: goto st109;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st109:
+	if ( ++p == pe )
+		goto _test_eof109;
+case 109:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 110: goto st110;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st110:
+	if ( ++p == pe )
+		goto _test_eof110;
+case 110:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 101: goto st111;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st111:
+	if ( ++p == pe )
+		goto _test_eof111;
+case 111:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr150;
+		case 59: goto tr151;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st112:
+	if ( ++p == pe )
+		goto _test_eof112;
+case 112:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 116: goto st113;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st113:
+	if ( ++p == pe )
+		goto _test_eof113;
+case 113:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 114: goto st114;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st114:
+	if ( ++p == pe )
+		goto _test_eof114;
+case 114:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 105: goto st115;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st115:
+	if ( ++p == pe )
+		goto _test_eof115;
+case 115:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 99: goto st116;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st116:
+	if ( ++p == pe )
+		goto _test_eof116;
+case 116:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 116: goto st117;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st117:
+	if ( ++p == pe )
+		goto _test_eof117;
+case 117:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr137;
+		case 59: goto tr138;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st118:
+	if ( ++p == pe )
+		goto _test_eof118;
+case 118:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 99: goto st119;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st119:
+	if ( ++p == pe )
+		goto _test_eof119;
+case 119:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 117: goto st120;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st120:
+	if ( ++p == pe )
+		goto _test_eof120;
+case 120:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 114: goto st121;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st121:
+	if ( ++p == pe )
+		goto _test_eof121;
+case 121:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr32;
+		case 59: goto st53;
+		case 101: goto st122;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
+st122:
+	if ( ++p == pe )
+		goto _test_eof122;
+case 122:
+	switch( (*p) ) {
+		case 9: goto st21;
+		case 13: goto tr161;
+		case 59: goto tr162;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st55;
 tr66:
 #line 15 "src/panda/protocol/http/Parser.rl"
 	{
         submark   = p - ps;
         submarked = true;
     }
-	goto st84;
-st84:
+	goto st123;
+st123:
 	if ( ++p == pe )
-		goto _test_eof84;
-case 84:
-#line 2026 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof123;
+case 123:
+#line 2840 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
 		case 9: goto st21;
 		case 13: goto tr32;
 		case 32: goto st21;
-		case 34: goto st85;
+		case 34: goto st124;
 		case 44: goto st21;
 		case 59: goto st21;
 		case 92: goto st21;
@@ -2035,11 +2849,11 @@ case 84:
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto st84;
-st85:
+	goto st123;
+st124:
 	if ( ++p == pe )
-		goto _test_eof85;
-case 85:
+		goto _test_eof124;
+case 124:
 	switch( (*p) ) {
 		case 13: goto tr69;
 		case 59: goto tr70;
@@ -2057,17 +2871,17 @@ tr24:
         mark   = p - ps;
         marked = true;
     }
-	goto st86;
-st86:
+	goto st125;
+st125:
 	if ( ++p == pe )
-		goto _test_eof86;
-case 86:
-#line 2066 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof125;
+case 125:
+#line 2880 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr27;
-		case 82: goto st87;
-		case 114: goto st87;
+		case 82: goto st126;
+		case 114: goto st126;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -2089,15 +2903,15 @@ case 86:
 	} else
 		goto st19;
 	goto st0;
-st87:
+st126:
 	if ( ++p == pe )
-		goto _test_eof87;
-case 87:
+		goto _test_eof126;
+case 126:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr27;
-		case 65: goto st88;
-		case 97: goto st88;
+		case 65: goto st127;
+		case 97: goto st127;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -2119,15 +2933,15 @@ case 87:
 	} else
 		goto st19;
 	goto st0;
-st88:
+st127:
 	if ( ++p == pe )
-		goto _test_eof88;
-case 88:
+		goto _test_eof127;
+case 127:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr27;
-		case 78: goto st89;
-		case 110: goto st89;
+		case 78: goto st128;
+		case 110: goto st128;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -2149,15 +2963,15 @@ case 88:
 	} else
 		goto st19;
 	goto st0;
-st89:
+st128:
 	if ( ++p == pe )
-		goto _test_eof89;
-case 89:
+		goto _test_eof128;
+case 128:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr27;
-		case 83: goto st90;
-		case 115: goto st90;
+		case 83: goto st129;
+		case 115: goto st129;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -2179,15 +2993,15 @@ case 89:
 	} else
 		goto st19;
 	goto st0;
-st90:
+st129:
 	if ( ++p == pe )
-		goto _test_eof90;
-case 90:
+		goto _test_eof129;
+case 129:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr27;
-		case 70: goto st91;
-		case 102: goto st91;
+		case 70: goto st130;
+		case 102: goto st130;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -2209,15 +3023,15 @@ case 90:
 	} else
 		goto st19;
 	goto st0;
-st91:
+st130:
 	if ( ++p == pe )
-		goto _test_eof91;
-case 91:
+		goto _test_eof130;
+case 130:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr27;
-		case 69: goto st92;
-		case 101: goto st92;
+		case 69: goto st131;
+		case 101: goto st131;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -2239,15 +3053,15 @@ case 91:
 	} else
 		goto st19;
 	goto st0;
-st92:
+st131:
 	if ( ++p == pe )
-		goto _test_eof92;
-case 92:
+		goto _test_eof131;
+case 131:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr27;
-		case 82: goto st93;
-		case 114: goto st93;
+		case 82: goto st132;
+		case 114: goto st132;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -2269,13 +3083,13 @@ case 92:
 	} else
 		goto st19;
 	goto st0;
-st93:
+st132:
 	if ( ++p == pe )
-		goto _test_eof93;
-case 93:
+		goto _test_eof132;
+case 132:
 	switch( (*p) ) {
 		case 33: goto st19;
-		case 45: goto st94;
+		case 45: goto st133;
 		case 46: goto st19;
 		case 58: goto tr27;
 		case 124: goto st19;
@@ -2296,939 +3110,275 @@ case 93:
 	} else
 		goto st19;
 	goto st0;
-st94:
-	if ( ++p == pe )
-		goto _test_eof94;
-case 94:
-	switch( (*p) ) {
-		case 33: goto st19;
-		case 58: goto tr27;
-		case 69: goto st95;
-		case 101: goto st95;
-		case 124: goto st19;
-		case 126: goto st19;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st19;
-		} else if ( (*p) >= 35 )
-			goto st19;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st19;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st19;
-		} else
-			goto st19;
-	} else
-		goto st19;
-	goto st0;
-st95:
-	if ( ++p == pe )
-		goto _test_eof95;
-case 95:
-	switch( (*p) ) {
-		case 33: goto st19;
-		case 58: goto tr27;
-		case 78: goto st96;
-		case 110: goto st96;
-		case 124: goto st19;
-		case 126: goto st19;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st19;
-		} else if ( (*p) >= 35 )
-			goto st19;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st19;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st19;
-		} else
-			goto st19;
-	} else
-		goto st19;
-	goto st0;
-st96:
-	if ( ++p == pe )
-		goto _test_eof96;
-case 96:
-	switch( (*p) ) {
-		case 33: goto st19;
-		case 58: goto tr27;
-		case 67: goto st97;
-		case 99: goto st97;
-		case 124: goto st19;
-		case 126: goto st19;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st19;
-		} else if ( (*p) >= 35 )
-			goto st19;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st19;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st19;
-		} else
-			goto st19;
-	} else
-		goto st19;
-	goto st0;
-st97:
-	if ( ++p == pe )
-		goto _test_eof97;
-case 97:
-	switch( (*p) ) {
-		case 33: goto st19;
-		case 58: goto tr27;
-		case 79: goto st98;
-		case 111: goto st98;
-		case 124: goto st19;
-		case 126: goto st19;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st19;
-		} else if ( (*p) >= 35 )
-			goto st19;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st19;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st19;
-		} else
-			goto st19;
-	} else
-		goto st19;
-	goto st0;
-st98:
-	if ( ++p == pe )
-		goto _test_eof98;
-case 98:
-	switch( (*p) ) {
-		case 33: goto st19;
-		case 58: goto tr27;
-		case 68: goto st99;
-		case 100: goto st99;
-		case 124: goto st19;
-		case 126: goto st19;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st19;
-		} else if ( (*p) >= 35 )
-			goto st19;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st19;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st19;
-		} else
-			goto st19;
-	} else
-		goto st19;
-	goto st0;
-st99:
-	if ( ++p == pe )
-		goto _test_eof99;
-case 99:
-	switch( (*p) ) {
-		case 33: goto st19;
-		case 58: goto tr27;
-		case 73: goto st100;
-		case 105: goto st100;
-		case 124: goto st19;
-		case 126: goto st19;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st19;
-		} else if ( (*p) >= 35 )
-			goto st19;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st19;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st19;
-		} else
-			goto st19;
-	} else
-		goto st19;
-	goto st0;
-st100:
-	if ( ++p == pe )
-		goto _test_eof100;
-case 100:
-	switch( (*p) ) {
-		case 33: goto st19;
-		case 58: goto tr27;
-		case 78: goto st101;
-		case 110: goto st101;
-		case 124: goto st19;
-		case 126: goto st19;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st19;
-		} else if ( (*p) >= 35 )
-			goto st19;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st19;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st19;
-		} else
-			goto st19;
-	} else
-		goto st19;
-	goto st0;
-st101:
-	if ( ++p == pe )
-		goto _test_eof101;
-case 101:
-	switch( (*p) ) {
-		case 33: goto st19;
-		case 58: goto tr27;
-		case 71: goto st102;
-		case 103: goto st102;
-		case 124: goto st19;
-		case 126: goto st19;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st19;
-		} else if ( (*p) >= 35 )
-			goto st19;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st19;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st19;
-		} else
-			goto st19;
-	} else
-		goto st19;
-	goto st0;
-st102:
-	if ( ++p == pe )
-		goto _test_eof102;
-case 102:
-	switch( (*p) ) {
-		case 33: goto st19;
-		case 58: goto tr122;
-		case 124: goto st19;
-		case 126: goto st19;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st19;
-		} else if ( (*p) >= 35 )
-			goto st19;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st19;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st19;
-		} else
-			goto st19;
-	} else
-		goto st19;
-	goto st0;
-tr122:
-#line 24 "src/panda/protocol/http/Parser.rl"
-	{
-        if (!headers_finished) {
-            string value;
-            SAVE(value);
-            message->headers.add(value, {});
-        }
-        else {} // trailing header after chunks, currently we just ignore them
-    }
-#line 11 "src/panda/protocol/http/Parser.rl"
-	{
-        marked = false;
-    }
-	goto st103;
-st103:
-	if ( ++p == pe )
-		goto _test_eof103;
-case 103:
-#line 2587 "src/panda/protocol/http/Parser.cc"
-	switch( (*p) ) {
-		case 9: goto st103;
-		case 13: goto tr30;
-		case 32: goto st103;
-		case 67: goto tr124;
-		case 99: goto tr124;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto tr28;
-tr124:
-#line 6 "src/panda/protocol/http/Parser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st104;
-st104:
-	if ( ++p == pe )
-		goto _test_eof104;
-case 104:
-#line 2610 "src/panda/protocol/http/Parser.cc"
-	switch( (*p) ) {
-		case 13: goto tr32;
-		case 72: goto st105;
-		case 104: goto st105;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st21;
-st105:
-	if ( ++p == pe )
-		goto _test_eof105;
-case 105:
-	switch( (*p) ) {
-		case 13: goto tr32;
-		case 85: goto st106;
-		case 117: goto st106;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st21;
-st106:
-	if ( ++p == pe )
-		goto _test_eof106;
-case 106:
-	switch( (*p) ) {
-		case 13: goto tr32;
-		case 78: goto st107;
-		case 110: goto st107;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st21;
-st107:
-	if ( ++p == pe )
-		goto _test_eof107;
-case 107:
-	switch( (*p) ) {
-		case 13: goto tr32;
-		case 75: goto st108;
-		case 107: goto st108;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st21;
-st108:
-	if ( ++p == pe )
-		goto _test_eof108;
-case 108:
-	switch( (*p) ) {
-		case 13: goto tr32;
-		case 69: goto st109;
-		case 101: goto st109;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st21;
-st109:
-	if ( ++p == pe )
-		goto _test_eof109;
-case 109:
-	switch( (*p) ) {
-		case 13: goto tr32;
-		case 68: goto st110;
-		case 100: goto st110;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st21;
-st110:
-	if ( ++p == pe )
-		goto _test_eof110;
-case 110:
-	switch( (*p) ) {
-		case 9: goto tr131;
-		case 13: goto tr132;
-		case 32: goto tr131;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st21;
-st111:
-	if ( ++p == pe )
-		goto _test_eof111;
-case 111:
-	if ( (*p) == 32 )
-		goto tr133;
-	goto st0;
-case 112:
-	if ( (*p) < 65 ) {
-		if ( 48 <= (*p) && (*p) <= 57 )
-			goto tr134;
-	} else if ( (*p) > 70 ) {
-		if ( 97 <= (*p) && (*p) <= 102 )
-			goto tr134;
-	} else
-		goto tr134;
-	goto st0;
-tr134:
-#line 131 "src/panda/protocol/http/Parser.rl"
-	{chunk_length = 0;}
-#line 131 "src/panda/protocol/http/Parser.rl"
-	{ADD_XDIGIT(chunk_length)}
-	goto st113;
-tr136:
-#line 131 "src/panda/protocol/http/Parser.rl"
-	{ADD_XDIGIT(chunk_length)}
-	goto st113;
-st113:
-	if ( ++p == pe )
-		goto _test_eof113;
-case 113:
-#line 2747 "src/panda/protocol/http/Parser.cc"
-	switch( (*p) ) {
-		case 13: goto st114;
-		case 59: goto st115;
-	}
-	if ( (*p) < 65 ) {
-		if ( 48 <= (*p) && (*p) <= 57 )
-			goto tr136;
-	} else if ( (*p) > 70 ) {
-		if ( 97 <= (*p) && (*p) <= 102 )
-			goto tr136;
-	} else
-		goto tr136;
-	goto st0;
-st114:
-	if ( ++p == pe )
-		goto _test_eof114;
-case 114:
-	if ( (*p) == 10 )
-		goto tr138;
-	goto st0;
-tr138:
-#line 79 "src/panda/protocol/http/Parser.rl"
-	{
-        {p++; cs = 251; goto _out;}
-    }
-	goto st251;
-st251:
-	if ( ++p == pe )
-		goto _test_eof251;
-case 251:
-#line 2778 "src/panda/protocol/http/Parser.cc"
-	goto st0;
-st115:
-	if ( ++p == pe )
-		goto _test_eof115;
-case 115:
-	switch( (*p) ) {
-		case 33: goto st116;
-		case 124: goto st116;
-		case 126: goto st116;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st116;
-		} else if ( (*p) >= 35 )
-			goto st116;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st116;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st116;
-		} else
-			goto st116;
-	} else
-		goto st116;
-	goto st0;
-st116:
-	if ( ++p == pe )
-		goto _test_eof116;
-case 116:
-	switch( (*p) ) {
-		case 13: goto st114;
-		case 33: goto st116;
-		case 59: goto st115;
-		case 61: goto st117;
-		case 124: goto st116;
-		case 126: goto st116;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st116;
-		} else if ( (*p) >= 35 )
-			goto st116;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st116;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st116;
-		} else
-			goto st116;
-	} else
-		goto st116;
-	goto st0;
-st117:
-	if ( ++p == pe )
-		goto _test_eof117;
-case 117:
-	switch( (*p) ) {
-		case 34: goto st119;
-		case 124: goto st118;
-		case 126: goto st118;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st118;
-		} else if ( (*p) >= 33 )
-			goto st118;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st118;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st118;
-		} else
-			goto st118;
-	} else
-		goto st118;
-	goto st0;
-st118:
-	if ( ++p == pe )
-		goto _test_eof118;
-case 118:
-	switch( (*p) ) {
-		case 13: goto st114;
-		case 33: goto st118;
-		case 59: goto st115;
-		case 124: goto st118;
-		case 126: goto st118;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st118;
-		} else if ( (*p) >= 35 )
-			goto st118;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st118;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st118;
-		} else
-			goto st118;
-	} else
-		goto st118;
-	goto st0;
-st119:
-	if ( ++p == pe )
-		goto _test_eof119;
-case 119:
-	switch( (*p) ) {
-		case 34: goto st120;
-		case 92: goto st121;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st119;
-st120:
-	if ( ++p == pe )
-		goto _test_eof120;
-case 120:
-	switch( (*p) ) {
-		case 13: goto st114;
-		case 59: goto st115;
-	}
-	goto st0;
-st121:
-	if ( ++p == pe )
-		goto _test_eof121;
-case 121:
-	if ( (*p) == 127 )
-		goto st0;
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st119;
-case 122:
-	if ( (*p) == 13 )
-		goto st123;
-	goto st0;
-st123:
-	if ( ++p == pe )
-		goto _test_eof123;
-case 123:
-	if ( (*p) == 10 )
-		goto st124;
-	goto st0;
-st124:
-	if ( ++p == pe )
-		goto _test_eof124;
-case 124:
-	if ( (*p) < 65 ) {
-		if ( 48 <= (*p) && (*p) <= 57 )
-			goto tr147;
-	} else if ( (*p) > 70 ) {
-		if ( 97 <= (*p) && (*p) <= 102 )
-			goto tr147;
-	} else
-		goto tr147;
-	goto st0;
-tr147:
-#line 131 "src/panda/protocol/http/Parser.rl"
-	{chunk_length = 0;}
-#line 131 "src/panda/protocol/http/Parser.rl"
-	{ADD_XDIGIT(chunk_length)}
-	goto st125;
-tr149:
-#line 131 "src/panda/protocol/http/Parser.rl"
-	{ADD_XDIGIT(chunk_length)}
-	goto st125;
-st125:
-	if ( ++p == pe )
-		goto _test_eof125;
-case 125:
-#line 2967 "src/panda/protocol/http/Parser.cc"
-	switch( (*p) ) {
-		case 13: goto st126;
-		case 59: goto st127;
-	}
-	if ( (*p) < 65 ) {
-		if ( 48 <= (*p) && (*p) <= 57 )
-			goto tr149;
-	} else if ( (*p) > 70 ) {
-		if ( 97 <= (*p) && (*p) <= 102 )
-			goto tr149;
-	} else
-		goto tr149;
-	goto st0;
-st126:
-	if ( ++p == pe )
-		goto _test_eof126;
-case 126:
-	if ( (*p) == 10 )
-		goto tr151;
-	goto st0;
-tr151:
-#line 79 "src/panda/protocol/http/Parser.rl"
-	{
-        {p++; cs = 252; goto _out;}
-    }
-	goto st252;
-st252:
-	if ( ++p == pe )
-		goto _test_eof252;
-case 252:
-#line 2998 "src/panda/protocol/http/Parser.cc"
-	goto st0;
-st127:
-	if ( ++p == pe )
-		goto _test_eof127;
-case 127:
-	switch( (*p) ) {
-		case 33: goto st128;
-		case 124: goto st128;
-		case 126: goto st128;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st128;
-		} else if ( (*p) >= 35 )
-			goto st128;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st128;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st128;
-		} else
-			goto st128;
-	} else
-		goto st128;
-	goto st0;
-st128:
-	if ( ++p == pe )
-		goto _test_eof128;
-case 128:
-	switch( (*p) ) {
-		case 13: goto st126;
-		case 33: goto st128;
-		case 59: goto st127;
-		case 61: goto st129;
-		case 124: goto st128;
-		case 126: goto st128;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st128;
-		} else if ( (*p) >= 35 )
-			goto st128;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st128;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st128;
-		} else
-			goto st128;
-	} else
-		goto st128;
-	goto st0;
-st129:
-	if ( ++p == pe )
-		goto _test_eof129;
-case 129:
-	switch( (*p) ) {
-		case 34: goto st131;
-		case 124: goto st130;
-		case 126: goto st130;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st130;
-		} else if ( (*p) >= 33 )
-			goto st130;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st130;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st130;
-		} else
-			goto st130;
-	} else
-		goto st130;
-	goto st0;
-st130:
-	if ( ++p == pe )
-		goto _test_eof130;
-case 130:
-	switch( (*p) ) {
-		case 13: goto st126;
-		case 33: goto st130;
-		case 59: goto st127;
-		case 124: goto st130;
-		case 126: goto st130;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st130;
-		} else if ( (*p) >= 35 )
-			goto st130;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st130;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st130;
-		} else
-			goto st130;
-	} else
-		goto st130;
-	goto st0;
-st131:
-	if ( ++p == pe )
-		goto _test_eof131;
-case 131:
-	switch( (*p) ) {
-		case 34: goto st132;
-		case 92: goto st133;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st131;
-st132:
-	if ( ++p == pe )
-		goto _test_eof132;
-case 132:
-	switch( (*p) ) {
-		case 13: goto st126;
-		case 59: goto st127;
-	}
-	goto st0;
 st133:
 	if ( ++p == pe )
 		goto _test_eof133;
 case 133:
-	if ( (*p) == 127 )
-		goto st0;
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st131;
+	switch( (*p) ) {
+		case 33: goto st19;
+		case 58: goto tr27;
+		case 69: goto st134;
+		case 101: goto st134;
+		case 124: goto st19;
+		case 126: goto st19;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st19;
+		} else if ( (*p) >= 35 )
+			goto st19;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st19;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st19;
+		} else
+			goto st19;
+	} else
+		goto st19;
+	goto st0;
 st134:
 	if ( ++p == pe )
 		goto _test_eof134;
 case 134:
 	switch( (*p) ) {
-		case 13: goto st135;
-		case 33: goto tr159;
-		case 124: goto tr159;
-		case 126: goto tr159;
+		case 33: goto st19;
+		case 58: goto tr27;
+		case 78: goto st135;
+		case 110: goto st135;
+		case 124: goto st19;
+		case 126: goto st19;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto tr159;
+				goto st19;
 		} else if ( (*p) >= 35 )
-			goto tr159;
+			goto st19;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto tr159;
+				goto st19;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto tr159;
+				goto st19;
 		} else
-			goto tr159;
+			goto st19;
 	} else
-		goto tr159;
+		goto st19;
 	goto st0;
 st135:
 	if ( ++p == pe )
 		goto _test_eof135;
 case 135:
-	if ( (*p) == 10 )
-		goto tr160;
-	goto st0;
-tr160:
-#line 79 "src/panda/protocol/http/Parser.rl"
-	{
-        {p++; cs = 253; goto _out;}
-    }
-	goto st253;
-st253:
-	if ( ++p == pe )
-		goto _test_eof253;
-case 253:
-#line 3194 "src/panda/protocol/http/Parser.cc"
-	goto st0;
-tr159:
-#line 6 "src/panda/protocol/http/Parser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st136;
-st136:
-	if ( ++p == pe )
-		goto _test_eof136;
-case 136:
-#line 3207 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
-		case 33: goto st136;
-		case 58: goto tr162;
-		case 124: goto st136;
-		case 126: goto st136;
+		case 33: goto st19;
+		case 58: goto tr27;
+		case 67: goto st136;
+		case 99: goto st136;
+		case 124: goto st19;
+		case 126: goto st19;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st136;
+				goto st19;
 		} else if ( (*p) >= 35 )
-			goto st136;
+			goto st19;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st136;
+				goto st19;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st136;
+				goto st19;
 		} else
-			goto st136;
+			goto st19;
 	} else
-		goto st136;
+		goto st19;
 	goto st0;
-tr162:
+st136:
+	if ( ++p == pe )
+		goto _test_eof136;
+case 136:
+	switch( (*p) ) {
+		case 33: goto st19;
+		case 58: goto tr27;
+		case 79: goto st137;
+		case 111: goto st137;
+		case 124: goto st19;
+		case 126: goto st19;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st19;
+		} else if ( (*p) >= 35 )
+			goto st19;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st19;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st19;
+		} else
+			goto st19;
+	} else
+		goto st19;
+	goto st0;
+st137:
+	if ( ++p == pe )
+		goto _test_eof137;
+case 137:
+	switch( (*p) ) {
+		case 33: goto st19;
+		case 58: goto tr27;
+		case 68: goto st138;
+		case 100: goto st138;
+		case 124: goto st19;
+		case 126: goto st19;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st19;
+		} else if ( (*p) >= 35 )
+			goto st19;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st19;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st19;
+		} else
+			goto st19;
+	} else
+		goto st19;
+	goto st0;
+st138:
+	if ( ++p == pe )
+		goto _test_eof138;
+case 138:
+	switch( (*p) ) {
+		case 33: goto st19;
+		case 58: goto tr27;
+		case 73: goto st139;
+		case 105: goto st139;
+		case 124: goto st19;
+		case 126: goto st19;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st19;
+		} else if ( (*p) >= 35 )
+			goto st19;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st19;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st19;
+		} else
+			goto st19;
+	} else
+		goto st19;
+	goto st0;
+st139:
+	if ( ++p == pe )
+		goto _test_eof139;
+case 139:
+	switch( (*p) ) {
+		case 33: goto st19;
+		case 58: goto tr27;
+		case 78: goto st140;
+		case 110: goto st140;
+		case 124: goto st19;
+		case 126: goto st19;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st19;
+		} else if ( (*p) >= 35 )
+			goto st19;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st19;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st19;
+		} else
+			goto st19;
+	} else
+		goto st19;
+	goto st0;
+st140:
+	if ( ++p == pe )
+		goto _test_eof140;
+case 140:
+	switch( (*p) ) {
+		case 33: goto st19;
+		case 58: goto tr27;
+		case 71: goto st141;
+		case 103: goto st141;
+		case 124: goto st19;
+		case 126: goto st19;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st19;
+		} else if ( (*p) >= 35 )
+			goto st19;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st19;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st19;
+		} else
+			goto st19;
+	} else
+		goto st19;
+	goto st0;
+st141:
+	if ( ++p == pe )
+		goto _test_eof141;
+case 141:
+	switch( (*p) ) {
+		case 33: goto st19;
+		case 58: goto tr181;
+		case 124: goto st19;
+		case 126: goto st19;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st19;
+		} else if ( (*p) >= 35 )
+			goto st19;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st19;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st19;
+		} else
+			goto st19;
+	} else
+		goto st19;
+	goto st0;
+tr181:
 #line 24 "src/panda/protocol/http/Parser.rl"
 	{
         if (!headers_finished) {
@@ -3242,205 +3392,869 @@ tr162:
 	{
         marked = false;
     }
-	goto st137;
-st137:
-	if ( ++p == pe )
-		goto _test_eof137;
-case 137:
-#line 3251 "src/panda/protocol/http/Parser.cc"
-	switch( (*p) ) {
-		case 9: goto st137;
-		case 13: goto tr165;
-		case 32: goto st137;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto tr163;
-tr163:
-#line 6 "src/panda/protocol/http/Parser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st138;
-st138:
-	if ( ++p == pe )
-		goto _test_eof138;
-case 138:
-#line 3272 "src/panda/protocol/http/Parser.cc"
-	switch( (*p) ) {
-		case 13: goto tr167;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st138;
-tr165:
-#line 6 "src/panda/protocol/http/Parser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-#line 33 "src/panda/protocol/http/Parser.rl"
-	{
-        if (!headers_finished) {
-            string& value = message->headers.fields.back().value;
-            SAVE(value);
-            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
-        }
-        else {} // trailing header after chunks, currently we just ignore them
-    }
-#line 11 "src/panda/protocol/http/Parser.rl"
-	{
-        marked = false;
-    }
-	goto st139;
-tr167:
-#line 33 "src/panda/protocol/http/Parser.rl"
-	{
-        if (!headers_finished) {
-            string& value = message->headers.fields.back().value;
-            SAVE(value);
-            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
-        }
-        else {} // trailing header after chunks, currently we just ignore them
-    }
-#line 11 "src/panda/protocol/http/Parser.rl"
-	{
-        marked = false;
-    }
-	goto st139;
-st139:
-	if ( ++p == pe )
-		goto _test_eof139;
-case 139:
-#line 3322 "src/panda/protocol/http/Parser.cc"
-	if ( (*p) == 10 )
-		goto st134;
-	goto st0;
-case 140:
-	switch( (*p) ) {
-		case 67: goto st141;
-		case 68: goto st219;
-		case 71: goto st225;
-		case 72: goto st228;
-		case 79: goto st232;
-		case 80: goto st239;
-		case 84: goto st245;
-	}
-	goto st0;
-st141:
-	if ( ++p == pe )
-		goto _test_eof141;
-case 141:
-	if ( (*p) == 79 )
-		goto st142;
-	goto st0;
+	goto st142;
 st142:
 	if ( ++p == pe )
 		goto _test_eof142;
 case 142:
-	if ( (*p) == 78 )
-		goto st143;
-	goto st0;
-st143:
-	if ( ++p == pe )
-		goto _test_eof143;
-case 143:
-	if ( (*p) == 78 )
-		goto st144;
-	goto st0;
-st144:
-	if ( ++p == pe )
-		goto _test_eof144;
-case 144:
-	if ( (*p) == 69 )
-		goto st145;
-	goto st0;
-st145:
-	if ( ++p == pe )
-		goto _test_eof145;
-case 145:
-	if ( (*p) == 67 )
-		goto st146;
-	goto st0;
-st146:
-	if ( ++p == pe )
-		goto _test_eof146;
-case 146:
-	if ( (*p) == 84 )
-		goto st147;
-	goto st0;
-st147:
-	if ( ++p == pe )
-		goto _test_eof147;
-case 147:
-	if ( (*p) == 32 )
-		goto tr182;
-	goto st0;
-tr182:
-#line 148 "src/panda/protocol/http/Parser.rl"
-	{request->method = Request::Method::CONNECT; }
-	goto st148;
-tr281:
-#line 146 "src/panda/protocol/http/Parser.rl"
-	{request->method = Request::Method::DELETE; }
-	goto st148;
-tr284:
-#line 142 "src/panda/protocol/http/Parser.rl"
-	{request->method = Request::Method::GET; }
-	goto st148;
-tr288:
-#line 143 "src/panda/protocol/http/Parser.rl"
-	{request->method = Request::Method::HEAD; }
-	goto st148;
-tr295:
-#line 141 "src/panda/protocol/http/Parser.rl"
-	{request->method = Request::Method::OPTIONS; }
-	goto st148;
-tr300:
-#line 144 "src/panda/protocol/http/Parser.rl"
-	{request->method = Request::Method::POST; }
-	goto st148;
-tr302:
-#line 145 "src/panda/protocol/http/Parser.rl"
-	{request->method = Request::Method::PUT; }
-	goto st148;
-tr307:
-#line 147 "src/panda/protocol/http/Parser.rl"
-	{request->method = Request::Method::TRACE; }
-	goto st148;
-st148:
-	if ( ++p == pe )
-		goto _test_eof148;
-case 148:
-#line 3422 "src/panda/protocol/http/Parser.cc"
-	if ( 33 <= (*p) && (*p) <= 126 )
-		goto tr183;
-	goto st0;
+#line 3401 "src/panda/protocol/http/Parser.cc"
+	switch( (*p) ) {
+		case 9: goto st142;
+		case 13: goto tr30;
+		case 32: goto st142;
+		case 67: goto tr183;
+		case 99: goto tr183;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto tr28;
 tr183:
 #line 6 "src/panda/protocol/http/Parser.rl"
 	{
         mark   = p - ps;
         marked = true;
     }
-	goto st149;
+	goto st143;
+st143:
+	if ( ++p == pe )
+		goto _test_eof143;
+case 143:
+#line 3424 "src/panda/protocol/http/Parser.cc"
+	switch( (*p) ) {
+		case 13: goto tr32;
+		case 72: goto st144;
+		case 104: goto st144;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st21;
+st144:
+	if ( ++p == pe )
+		goto _test_eof144;
+case 144:
+	switch( (*p) ) {
+		case 13: goto tr32;
+		case 85: goto st145;
+		case 117: goto st145;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st21;
+st145:
+	if ( ++p == pe )
+		goto _test_eof145;
+case 145:
+	switch( (*p) ) {
+		case 13: goto tr32;
+		case 78: goto st146;
+		case 110: goto st146;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st21;
+st146:
+	if ( ++p == pe )
+		goto _test_eof146;
+case 146:
+	switch( (*p) ) {
+		case 13: goto tr32;
+		case 75: goto st147;
+		case 107: goto st147;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st21;
+st147:
+	if ( ++p == pe )
+		goto _test_eof147;
+case 147:
+	switch( (*p) ) {
+		case 13: goto tr32;
+		case 69: goto st148;
+		case 101: goto st148;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st21;
+st148:
+	if ( ++p == pe )
+		goto _test_eof148;
+case 148:
+	switch( (*p) ) {
+		case 13: goto tr32;
+		case 68: goto st149;
+		case 100: goto st149;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st21;
 st149:
 	if ( ++p == pe )
 		goto _test_eof149;
 case 149:
-#line 3437 "src/panda/protocol/http/Parser.cc"
+	switch( (*p) ) {
+		case 9: goto tr190;
+		case 13: goto tr191;
+		case 32: goto tr190;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st21;
+st150:
+	if ( ++p == pe )
+		goto _test_eof150;
+case 150:
 	if ( (*p) == 32 )
-		goto tr184;
-	if ( 33 <= (*p) && (*p) <= 126 )
-		goto st149;
+		goto tr192;
 	goto st0;
-tr184:
-#line 73 "src/panda/protocol/http/Parser.rl"
+case 151:
+	if ( (*p) < 65 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto tr193;
+	} else if ( (*p) > 70 ) {
+		if ( 97 <= (*p) && (*p) <= 102 )
+			goto tr193;
+	} else
+		goto tr193;
+	goto st0;
+tr193:
+#line 177 "src/panda/protocol/http/Parser.rl"
+	{chunk_length = 0;}
+#line 177 "src/panda/protocol/http/Parser.rl"
+	{ADD_XDIGIT(chunk_length)}
+	goto st152;
+tr195:
+#line 177 "src/panda/protocol/http/Parser.rl"
+	{ADD_XDIGIT(chunk_length)}
+	goto st152;
+st152:
+	if ( ++p == pe )
+		goto _test_eof152;
+case 152:
+#line 3561 "src/panda/protocol/http/Parser.cc"
+	switch( (*p) ) {
+		case 13: goto st153;
+		case 59: goto st154;
+	}
+	if ( (*p) < 65 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto tr195;
+	} else if ( (*p) > 70 ) {
+		if ( 97 <= (*p) && (*p) <= 102 )
+			goto tr195;
+	} else
+		goto tr195;
+	goto st0;
+st153:
+	if ( ++p == pe )
+		goto _test_eof153;
+case 153:
+	if ( (*p) == 10 )
+		goto tr197;
+	goto st0;
+tr197:
+#line 124 "src/panda/protocol/http/Parser.rl"
+	{
+        {p++; cs = 290; goto _out;}
+    }
+	goto st290;
+st290:
+	if ( ++p == pe )
+		goto _test_eof290;
+case 290:
+#line 3592 "src/panda/protocol/http/Parser.cc"
+	goto st0;
+st154:
+	if ( ++p == pe )
+		goto _test_eof154;
+case 154:
+	switch( (*p) ) {
+		case 33: goto st155;
+		case 124: goto st155;
+		case 126: goto st155;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st155;
+		} else if ( (*p) >= 35 )
+			goto st155;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st155;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st155;
+		} else
+			goto st155;
+	} else
+		goto st155;
+	goto st0;
+st155:
+	if ( ++p == pe )
+		goto _test_eof155;
+case 155:
+	switch( (*p) ) {
+		case 13: goto st153;
+		case 33: goto st155;
+		case 59: goto st154;
+		case 61: goto st156;
+		case 124: goto st155;
+		case 126: goto st155;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st155;
+		} else if ( (*p) >= 35 )
+			goto st155;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st155;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st155;
+		} else
+			goto st155;
+	} else
+		goto st155;
+	goto st0;
+st156:
+	if ( ++p == pe )
+		goto _test_eof156;
+case 156:
+	switch( (*p) ) {
+		case 34: goto st158;
+		case 124: goto st157;
+		case 126: goto st157;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st157;
+		} else if ( (*p) >= 33 )
+			goto st157;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st157;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st157;
+		} else
+			goto st157;
+	} else
+		goto st157;
+	goto st0;
+st157:
+	if ( ++p == pe )
+		goto _test_eof157;
+case 157:
+	switch( (*p) ) {
+		case 13: goto st153;
+		case 33: goto st157;
+		case 59: goto st154;
+		case 124: goto st157;
+		case 126: goto st157;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st157;
+		} else if ( (*p) >= 35 )
+			goto st157;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st157;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st157;
+		} else
+			goto st157;
+	} else
+		goto st157;
+	goto st0;
+st158:
+	if ( ++p == pe )
+		goto _test_eof158;
+case 158:
+	switch( (*p) ) {
+		case 34: goto st159;
+		case 92: goto st160;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st158;
+st159:
+	if ( ++p == pe )
+		goto _test_eof159;
+case 159:
+	switch( (*p) ) {
+		case 13: goto st153;
+		case 59: goto st154;
+	}
+	goto st0;
+st160:
+	if ( ++p == pe )
+		goto _test_eof160;
+case 160:
+	if ( (*p) == 127 )
+		goto st0;
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st158;
+case 161:
+	if ( (*p) == 13 )
+		goto st162;
+	goto st0;
+st162:
+	if ( ++p == pe )
+		goto _test_eof162;
+case 162:
+	if ( (*p) == 10 )
+		goto st163;
+	goto st0;
+st163:
+	if ( ++p == pe )
+		goto _test_eof163;
+case 163:
+	if ( (*p) < 65 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto tr206;
+	} else if ( (*p) > 70 ) {
+		if ( 97 <= (*p) && (*p) <= 102 )
+			goto tr206;
+	} else
+		goto tr206;
+	goto st0;
+tr206:
+#line 177 "src/panda/protocol/http/Parser.rl"
+	{chunk_length = 0;}
+#line 177 "src/panda/protocol/http/Parser.rl"
+	{ADD_XDIGIT(chunk_length)}
+	goto st164;
+tr208:
+#line 177 "src/panda/protocol/http/Parser.rl"
+	{ADD_XDIGIT(chunk_length)}
+	goto st164;
+st164:
+	if ( ++p == pe )
+		goto _test_eof164;
+case 164:
+#line 3781 "src/panda/protocol/http/Parser.cc"
+	switch( (*p) ) {
+		case 13: goto st165;
+		case 59: goto st166;
+	}
+	if ( (*p) < 65 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto tr208;
+	} else if ( (*p) > 70 ) {
+		if ( 97 <= (*p) && (*p) <= 102 )
+			goto tr208;
+	} else
+		goto tr208;
+	goto st0;
+st165:
+	if ( ++p == pe )
+		goto _test_eof165;
+case 165:
+	if ( (*p) == 10 )
+		goto tr210;
+	goto st0;
+tr210:
+#line 124 "src/panda/protocol/http/Parser.rl"
+	{
+        {p++; cs = 291; goto _out;}
+    }
+	goto st291;
+st291:
+	if ( ++p == pe )
+		goto _test_eof291;
+case 291:
+#line 3812 "src/panda/protocol/http/Parser.cc"
+	goto st0;
+st166:
+	if ( ++p == pe )
+		goto _test_eof166;
+case 166:
+	switch( (*p) ) {
+		case 33: goto st167;
+		case 124: goto st167;
+		case 126: goto st167;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st167;
+		} else if ( (*p) >= 35 )
+			goto st167;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st167;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st167;
+		} else
+			goto st167;
+	} else
+		goto st167;
+	goto st0;
+st167:
+	if ( ++p == pe )
+		goto _test_eof167;
+case 167:
+	switch( (*p) ) {
+		case 13: goto st165;
+		case 33: goto st167;
+		case 59: goto st166;
+		case 61: goto st168;
+		case 124: goto st167;
+		case 126: goto st167;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st167;
+		} else if ( (*p) >= 35 )
+			goto st167;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st167;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st167;
+		} else
+			goto st167;
+	} else
+		goto st167;
+	goto st0;
+st168:
+	if ( ++p == pe )
+		goto _test_eof168;
+case 168:
+	switch( (*p) ) {
+		case 34: goto st170;
+		case 124: goto st169;
+		case 126: goto st169;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st169;
+		} else if ( (*p) >= 33 )
+			goto st169;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st169;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st169;
+		} else
+			goto st169;
+	} else
+		goto st169;
+	goto st0;
+st169:
+	if ( ++p == pe )
+		goto _test_eof169;
+case 169:
+	switch( (*p) ) {
+		case 13: goto st165;
+		case 33: goto st169;
+		case 59: goto st166;
+		case 124: goto st169;
+		case 126: goto st169;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st169;
+		} else if ( (*p) >= 35 )
+			goto st169;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st169;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st169;
+		} else
+			goto st169;
+	} else
+		goto st169;
+	goto st0;
+st170:
+	if ( ++p == pe )
+		goto _test_eof170;
+case 170:
+	switch( (*p) ) {
+		case 34: goto st171;
+		case 92: goto st172;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st170;
+st171:
+	if ( ++p == pe )
+		goto _test_eof171;
+case 171:
+	switch( (*p) ) {
+		case 13: goto st165;
+		case 59: goto st166;
+	}
+	goto st0;
+st172:
+	if ( ++p == pe )
+		goto _test_eof172;
+case 172:
+	if ( (*p) == 127 )
+		goto st0;
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st170;
+st173:
+	if ( ++p == pe )
+		goto _test_eof173;
+case 173:
+	switch( (*p) ) {
+		case 13: goto st174;
+		case 33: goto tr218;
+		case 124: goto tr218;
+		case 126: goto tr218;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto tr218;
+		} else if ( (*p) >= 35 )
+			goto tr218;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto tr218;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto tr218;
+		} else
+			goto tr218;
+	} else
+		goto tr218;
+	goto st0;
+st174:
+	if ( ++p == pe )
+		goto _test_eof174;
+case 174:
+	if ( (*p) == 10 )
+		goto tr219;
+	goto st0;
+tr219:
+#line 124 "src/panda/protocol/http/Parser.rl"
+	{
+        {p++; cs = 292; goto _out;}
+    }
+	goto st292;
+st292:
+	if ( ++p == pe )
+		goto _test_eof292;
+case 292:
+#line 4008 "src/panda/protocol/http/Parser.cc"
+	goto st0;
+tr218:
+#line 6 "src/panda/protocol/http/Parser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st175;
+st175:
+	if ( ++p == pe )
+		goto _test_eof175;
+case 175:
+#line 4021 "src/panda/protocol/http/Parser.cc"
+	switch( (*p) ) {
+		case 33: goto st175;
+		case 58: goto tr221;
+		case 124: goto st175;
+		case 126: goto st175;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st175;
+		} else if ( (*p) >= 35 )
+			goto st175;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st175;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st175;
+		} else
+			goto st175;
+	} else
+		goto st175;
+	goto st0;
+tr221:
+#line 24 "src/panda/protocol/http/Parser.rl"
+	{
+        if (!headers_finished) {
+            string value;
+            SAVE(value);
+            message->headers.add(value, {});
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 11 "src/panda/protocol/http/Parser.rl"
+	{
+        marked = false;
+    }
+	goto st176;
+st176:
+	if ( ++p == pe )
+		goto _test_eof176;
+case 176:
+#line 4065 "src/panda/protocol/http/Parser.cc"
+	switch( (*p) ) {
+		case 9: goto st176;
+		case 13: goto tr224;
+		case 32: goto st176;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto tr222;
+tr222:
+#line 6 "src/panda/protocol/http/Parser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st177;
+st177:
+	if ( ++p == pe )
+		goto _test_eof177;
+case 177:
+#line 4086 "src/panda/protocol/http/Parser.cc"
+	switch( (*p) ) {
+		case 13: goto tr226;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st177;
+tr224:
+#line 6 "src/panda/protocol/http/Parser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+#line 33 "src/panda/protocol/http/Parser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 11 "src/panda/protocol/http/Parser.rl"
+	{
+        marked = false;
+    }
+	goto st178;
+tr226:
+#line 33 "src/panda/protocol/http/Parser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 11 "src/panda/protocol/http/Parser.rl"
+	{
+        marked = false;
+    }
+	goto st178;
+st178:
+	if ( ++p == pe )
+		goto _test_eof178;
+case 178:
+#line 4136 "src/panda/protocol/http/Parser.cc"
+	if ( (*p) == 10 )
+		goto st173;
+	goto st0;
+case 179:
+	switch( (*p) ) {
+		case 67: goto st180;
+		case 68: goto st258;
+		case 71: goto st264;
+		case 72: goto st267;
+		case 79: goto st271;
+		case 80: goto st278;
+		case 84: goto st284;
+	}
+	goto st0;
+st180:
+	if ( ++p == pe )
+		goto _test_eof180;
+case 180:
+	if ( (*p) == 79 )
+		goto st181;
+	goto st0;
+st181:
+	if ( ++p == pe )
+		goto _test_eof181;
+case 181:
+	if ( (*p) == 78 )
+		goto st182;
+	goto st0;
+st182:
+	if ( ++p == pe )
+		goto _test_eof182;
+case 182:
+	if ( (*p) == 78 )
+		goto st183;
+	goto st0;
+st183:
+	if ( ++p == pe )
+		goto _test_eof183;
+case 183:
+	if ( (*p) == 69 )
+		goto st184;
+	goto st0;
+st184:
+	if ( ++p == pe )
+		goto _test_eof184;
+case 184:
+	if ( (*p) == 67 )
+		goto st185;
+	goto st0;
+st185:
+	if ( ++p == pe )
+		goto _test_eof185;
+case 185:
+	if ( (*p) == 84 )
+		goto st186;
+	goto st0;
+st186:
+	if ( ++p == pe )
+		goto _test_eof186;
+case 186:
+	if ( (*p) == 32 )
+		goto tr241;
+	goto st0;
+tr241:
+#line 194 "src/panda/protocol/http/Parser.rl"
+	{request->method = Request::Method::CONNECT; }
+	goto st187;
+tr340:
+#line 192 "src/panda/protocol/http/Parser.rl"
+	{request->method = Request::Method::DELETE; }
+	goto st187;
+tr343:
+#line 188 "src/panda/protocol/http/Parser.rl"
+	{request->method = Request::Method::GET; }
+	goto st187;
+tr347:
+#line 189 "src/panda/protocol/http/Parser.rl"
+	{request->method = Request::Method::HEAD; }
+	goto st187;
+tr354:
+#line 187 "src/panda/protocol/http/Parser.rl"
+	{request->method = Request::Method::OPTIONS; }
+	goto st187;
+tr359:
+#line 190 "src/panda/protocol/http/Parser.rl"
+	{request->method = Request::Method::POST; }
+	goto st187;
+tr361:
+#line 191 "src/panda/protocol/http/Parser.rl"
+	{request->method = Request::Method::PUT; }
+	goto st187;
+tr366:
+#line 193 "src/panda/protocol/http/Parser.rl"
+	{request->method = Request::Method::TRACE; }
+	goto st187;
+st187:
+	if ( ++p == pe )
+		goto _test_eof187;
+case 187:
+#line 4236 "src/panda/protocol/http/Parser.cc"
+	if ( 33 <= (*p) && (*p) <= 126 )
+		goto tr242;
+	goto st0;
+tr242:
+#line 6 "src/panda/protocol/http/Parser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st188;
+st188:
+	if ( ++p == pe )
+		goto _test_eof188;
+case 188:
+#line 4251 "src/panda/protocol/http/Parser.cc"
+	if ( (*p) == 32 )
+		goto tr243;
+	if ( 33 <= (*p) && (*p) <= 126 )
+		goto st188;
+	goto st0;
+tr243:
+#line 118 "src/panda/protocol/http/Parser.rl"
 	{
         string target;
         SAVE(target);
@@ -3450,78 +4264,78 @@ tr184:
 	{
         marked = false;
     }
-	goto st150;
-st150:
+	goto st189;
+st189:
 	if ( ++p == pe )
-		goto _test_eof150;
-case 150:
-#line 3459 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof189;
+case 189:
+#line 4273 "src/panda/protocol/http/Parser.cc"
 	if ( (*p) == 72 )
-		goto st151;
+		goto st190;
 	goto st0;
-st151:
+st190:
 	if ( ++p == pe )
-		goto _test_eof151;
-case 151:
+		goto _test_eof190;
+case 190:
 	if ( (*p) == 84 )
-		goto st152;
+		goto st191;
 	goto st0;
-st152:
+st191:
 	if ( ++p == pe )
-		goto _test_eof152;
-case 152:
+		goto _test_eof191;
+case 191:
 	if ( (*p) == 84 )
-		goto st153;
+		goto st192;
 	goto st0;
-st153:
+st192:
 	if ( ++p == pe )
-		goto _test_eof153;
-case 153:
+		goto _test_eof192;
+case 192:
 	if ( (*p) == 80 )
-		goto st154;
+		goto st193;
 	goto st0;
-st154:
+st193:
 	if ( ++p == pe )
-		goto _test_eof154;
-case 154:
+		goto _test_eof193;
+case 193:
 	if ( (*p) == 47 )
-		goto st155;
+		goto st194;
 	goto st0;
-st155:
+st194:
 	if ( ++p == pe )
-		goto _test_eof155;
-case 155:
+		goto _test_eof194;
+case 194:
 	if ( (*p) == 49 )
-		goto st156;
+		goto st195;
 	goto st0;
-st156:
+st195:
 	if ( ++p == pe )
-		goto _test_eof156;
-case 156:
+		goto _test_eof195;
+case 195:
 	if ( (*p) == 46 )
-		goto st157;
+		goto st196;
 	goto st0;
-st157:
+st196:
 	if ( ++p == pe )
-		goto _test_eof157;
-case 157:
+		goto _test_eof196;
+case 196:
 	switch( (*p) ) {
-		case 48: goto st158;
-		case 49: goto st218;
+		case 48: goto st197;
+		case 49: goto st257;
 	}
 	goto st0;
-st158:
+st197:
 	if ( ++p == pe )
-		goto _test_eof158;
-case 158:
+		goto _test_eof197;
+case 197:
 	if ( (*p) == 13 )
-		goto tr195;
+		goto tr254;
 	goto st0;
-tr195:
-#line 103 "src/panda/protocol/http/Parser.rl"
+tr254:
+#line 148 "src/panda/protocol/http/Parser.rl"
 	{message->http_version = 10;}
-	goto st159;
-tr206:
+	goto st198;
+tr265:
 #line 6 "src/panda/protocol/http/Parser.rl"
 	{
         mark   = p - ps;
@@ -3540,8 +4354,8 @@ tr206:
 	{
         marked = false;
     }
-	goto st159;
-tr208:
+	goto st198;
+tr267:
 #line 33 "src/panda/protocol/http/Parser.rl"
 	{
         if (!headers_finished) {
@@ -3555,9 +4369,9 @@ tr208:
 	{
         marked = false;
     }
-	goto st159;
-tr274:
-#line 127 "src/panda/protocol/http/Parser.rl"
+	goto st198;
+tr333:
+#line 173 "src/panda/protocol/http/Parser.rl"
 	{message->chunked = true;}
 #line 33 "src/panda/protocol/http/Parser.rl"
 	{
@@ -3572,12 +4386,12 @@ tr274:
 	{
         marked = false;
     }
-	goto st159;
-tr275:
-#line 103 "src/panda/protocol/http/Parser.rl"
+	goto st198;
+tr334:
+#line 148 "src/panda/protocol/http/Parser.rl"
 	{message->http_version = 11;}
-	goto st159;
-tr237:
+	goto st198;
+tr296:
 #line 15 "src/panda/protocol/http/Parser.rl"
 	{
         submark   = p - ps;
@@ -3585,7 +4399,7 @@ tr237:
     }
 #line 57 "src/panda/protocol/http/Parser.rl"
 	{
-        string& v = request->cookies.fields.back().value;
+        auto& v = request->cookies.fields.back().value;
         SUBSAVE(v);
     }
 #line 20 "src/panda/protocol/http/Parser.rl"
@@ -3605,11 +4419,11 @@ tr237:
 	{
         marked = false;
     }
-	goto st159;
-tr242:
+	goto st198;
+tr301:
 #line 57 "src/panda/protocol/http/Parser.rl"
 	{
-        string& v = request->cookies.fields.back().value;
+        auto& v = request->cookies.fields.back().value;
         SUBSAVE(v);
     }
 #line 20 "src/panda/protocol/http/Parser.rl"
@@ -3629,103 +4443,103 @@ tr242:
 	{
         marked = false;
     }
-	goto st159;
-st159:
+	goto st198;
+st198:
 	if ( ++p == pe )
-		goto _test_eof159;
-case 159:
-#line 3638 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof198;
+case 198:
+#line 4452 "src/panda/protocol/http/Parser.cc"
 	if ( (*p) == 10 )
-		goto st160;
+		goto st199;
 	goto st0;
-st160:
+st199:
 	if ( ++p == pe )
-		goto _test_eof160;
-case 160:
+		goto _test_eof199;
+case 199:
 	switch( (*p) ) {
-		case 13: goto st161;
-		case 33: goto tr198;
-		case 67: goto tr199;
-		case 84: goto tr200;
-		case 99: goto tr199;
-		case 116: goto tr200;
-		case 124: goto tr198;
-		case 126: goto tr198;
+		case 13: goto st200;
+		case 33: goto tr257;
+		case 67: goto tr258;
+		case 84: goto tr259;
+		case 99: goto tr258;
+		case 116: goto tr259;
+		case 124: goto tr257;
+		case 126: goto tr257;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto tr198;
+				goto tr257;
 		} else if ( (*p) >= 35 )
-			goto tr198;
+			goto tr257;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto tr198;
+				goto tr257;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto tr198;
+				goto tr257;
 		} else
-			goto tr198;
+			goto tr257;
 	} else
-		goto tr198;
+		goto tr257;
 	goto st0;
-st161:
+st200:
 	if ( ++p == pe )
-		goto _test_eof161;
-case 161:
+		goto _test_eof200;
+case 200:
 	if ( (*p) == 10 )
-		goto tr201;
+		goto tr260;
 	goto st0;
-tr201:
-#line 79 "src/panda/protocol/http/Parser.rl"
+tr260:
+#line 124 "src/panda/protocol/http/Parser.rl"
 	{
-        {p++; cs = 254; goto _out;}
+        {p++; cs = 293; goto _out;}
     }
-	goto st254;
-st254:
+	goto st293;
+st293:
 	if ( ++p == pe )
-		goto _test_eof254;
-case 254:
-#line 3691 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof293;
+case 293:
+#line 4505 "src/panda/protocol/http/Parser.cc"
 	goto st0;
-tr198:
+tr257:
 #line 6 "src/panda/protocol/http/Parser.rl"
 	{
         mark   = p - ps;
         marked = true;
     }
-	goto st162;
-st162:
+	goto st201;
+st201:
 	if ( ++p == pe )
-		goto _test_eof162;
-case 162:
-#line 3704 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof201;
+case 201:
+#line 4518 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-tr203:
+tr262:
 #line 24 "src/panda/protocol/http/Parser.rl"
 	{
         if (!headers_finished) {
@@ -3739,33 +4553,33 @@ tr203:
 	{
         marked = false;
     }
-	goto st163;
-st163:
+	goto st202;
+st202:
 	if ( ++p == pe )
-		goto _test_eof163;
-case 163:
-#line 3748 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof202;
+case 202:
+#line 4562 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
-		case 9: goto st163;
-		case 13: goto tr206;
-		case 32: goto st163;
+		case 9: goto st202;
+		case 13: goto tr265;
+		case 32: goto st202;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto tr204;
-tr204:
+	goto tr263;
+tr263:
 #line 6 "src/panda/protocol/http/Parser.rl"
 	{
         mark   = p - ps;
         marked = true;
     }
-	goto st164;
-tr273:
-#line 127 "src/panda/protocol/http/Parser.rl"
+	goto st203;
+tr332:
+#line 173 "src/panda/protocol/http/Parser.rl"
 	{message->chunked = true;}
-	goto st164;
-tr236:
+	goto st203;
+tr295:
 #line 15 "src/panda/protocol/http/Parser.rl"
 	{
         submark   = p - ps;
@@ -3773,32 +4587,32 @@ tr236:
     }
 #line 57 "src/panda/protocol/http/Parser.rl"
 	{
-        string& v = request->cookies.fields.back().value;
+        auto& v = request->cookies.fields.back().value;
         SUBSAVE(v);
     }
 #line 20 "src/panda/protocol/http/Parser.rl"
 	{
         submarked = false;
     }
-	goto st164;
-tr241:
+	goto st203;
+tr300:
 #line 57 "src/panda/protocol/http/Parser.rl"
 	{
-        string& v = request->cookies.fields.back().value;
+        auto& v = request->cookies.fields.back().value;
         SUBSAVE(v);
     }
 #line 20 "src/panda/protocol/http/Parser.rl"
 	{
         submarked = false;
     }
-	goto st164;
-st164:
+	goto st203;
+st203:
 	if ( ++p == pe )
-		goto _test_eof164;
-case 164:
-#line 3800 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof203;
+case 203:
+#line 4614 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
-		case 13: goto tr208;
+		case 13: goto tr267;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -3806,433 +4620,433 @@ case 164:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st164;
-tr199:
+	goto st203;
+tr258:
 #line 6 "src/panda/protocol/http/Parser.rl"
 	{
         mark   = p - ps;
         marked = true;
     }
-	goto st165;
-st165:
+	goto st204;
+st204:
 	if ( ++p == pe )
-		goto _test_eof165;
-case 165:
-#line 3822 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof204;
+case 204:
+#line 4636 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 79: goto st166;
-		case 111: goto st166;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 79: goto st205;
+		case 111: goto st205;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st166:
+st205:
 	if ( ++p == pe )
-		goto _test_eof166;
-case 166:
+		goto _test_eof205;
+case 205:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 78: goto st167;
-		case 79: goto st181;
-		case 110: goto st167;
-		case 111: goto st181;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 78: goto st206;
+		case 79: goto st220;
+		case 110: goto st206;
+		case 111: goto st220;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st167:
+st206:
 	if ( ++p == pe )
-		goto _test_eof167;
-case 167:
+		goto _test_eof206;
+case 206:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 84: goto st168;
-		case 116: goto st168;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 84: goto st207;
+		case 116: goto st207;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st168:
+st207:
 	if ( ++p == pe )
-		goto _test_eof168;
-case 168:
+		goto _test_eof207;
+case 207:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 69: goto st169;
-		case 101: goto st169;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 69: goto st208;
+		case 101: goto st208;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st169:
+st208:
 	if ( ++p == pe )
-		goto _test_eof169;
-case 169:
+		goto _test_eof208;
+case 208:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 78: goto st170;
-		case 110: goto st170;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 78: goto st209;
+		case 110: goto st209;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st170:
+st209:
 	if ( ++p == pe )
-		goto _test_eof170;
-case 170:
+		goto _test_eof209;
+case 209:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 84: goto st171;
-		case 116: goto st171;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 84: goto st210;
+		case 116: goto st210;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st171:
+st210:
 	if ( ++p == pe )
-		goto _test_eof171;
-case 171:
+		goto _test_eof210;
+case 210:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 45: goto st172;
-		case 46: goto st162;
-		case 58: goto tr203;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 45: goto st211;
+		case 46: goto st201;
+		case 58: goto tr262;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 48 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 57 ) {
 		if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 65 )
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st172:
+st211:
 	if ( ++p == pe )
-		goto _test_eof172;
-case 172:
+		goto _test_eof211;
+case 211:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 76: goto st173;
-		case 108: goto st173;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 76: goto st212;
+		case 108: goto st212;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st173:
+st212:
 	if ( ++p == pe )
-		goto _test_eof173;
-case 173:
+		goto _test_eof212;
+case 212:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 69: goto st174;
-		case 101: goto st174;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 69: goto st213;
+		case 101: goto st213;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st174:
+st213:
 	if ( ++p == pe )
-		goto _test_eof174;
-case 174:
+		goto _test_eof213;
+case 213:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 78: goto st175;
-		case 110: goto st175;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 78: goto st214;
+		case 110: goto st214;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st175:
+st214:
 	if ( ++p == pe )
-		goto _test_eof175;
-case 175:
+		goto _test_eof214;
+case 214:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 71: goto st176;
-		case 103: goto st176;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 71: goto st215;
+		case 103: goto st215;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st176:
+st215:
 	if ( ++p == pe )
-		goto _test_eof176;
-case 176:
+		goto _test_eof215;
+case 215:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 84: goto st177;
-		case 116: goto st177;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 84: goto st216;
+		case 116: goto st216;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st177:
+st216:
 	if ( ++p == pe )
-		goto _test_eof177;
-case 177:
+		goto _test_eof216;
+case 216:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 72: goto st178;
-		case 104: goto st178;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 72: goto st217;
+		case 104: goto st217;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st178:
+st217:
 	if ( ++p == pe )
-		goto _test_eof178;
-case 178:
+		goto _test_eof217;
+case 217:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr223;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr282;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-tr223:
+tr282:
 #line 24 "src/panda/protocol/http/Parser.rl"
 	{
         if (!headers_finished) {
@@ -4246,53 +5060,53 @@ tr223:
 	{
         marked = false;
     }
-	goto st179;
-st179:
+	goto st218;
+st218:
 	if ( ++p == pe )
-		goto _test_eof179;
-case 179:
-#line 4255 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof218;
+case 218:
+#line 5069 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
-		case 9: goto st179;
-		case 13: goto tr206;
-		case 32: goto st179;
+		case 9: goto st218;
+		case 13: goto tr265;
+		case 32: goto st218;
 		case 127: goto st0;
 	}
 	if ( (*p) > 31 ) {
 		if ( 48 <= (*p) && (*p) <= 57 )
-			goto tr225;
+			goto tr284;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto tr204;
-tr225:
+	goto tr263;
+tr284:
 #line 42 "src/panda/protocol/http/Parser.rl"
 	{
         if (has_content_length) {
             cs = http_parser_error;
             set_error(errc::multiple_content_length);
-            {p++; cs = 180; goto _out;}
+            {p++; cs = 219; goto _out;}
         }
         has_content_length = true;
     }
-#line 126 "src/panda/protocol/http/Parser.rl"
+#line 172 "src/panda/protocol/http/Parser.rl"
 	{ADD_DIGIT(content_length)}
 #line 6 "src/panda/protocol/http/Parser.rl"
 	{
         mark   = p - ps;
         marked = true;
     }
-	goto st180;
-tr226:
-#line 126 "src/panda/protocol/http/Parser.rl"
+	goto st219;
+tr285:
+#line 172 "src/panda/protocol/http/Parser.rl"
 	{ADD_DIGIT(content_length)}
-	goto st180;
-st180:
+	goto st219;
+st219:
 	if ( ++p == pe )
-		goto _test_eof180;
-case 180:
-#line 4294 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof219;
+case 219:
+#line 5108 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
-		case 13: goto tr208;
+		case 13: goto tr267;
 		case 127: goto st0;
 	}
 	if ( (*p) < 10 ) {
@@ -4300,129 +5114,129 @@ case 180:
 			goto st0;
 	} else if ( (*p) > 31 ) {
 		if ( 48 <= (*p) && (*p) <= 57 )
-			goto tr226;
+			goto tr285;
 	} else
 		goto st0;
-	goto st164;
-st181:
+	goto st203;
+st220:
 	if ( ++p == pe )
-		goto _test_eof181;
-case 181:
+		goto _test_eof220;
+case 220:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 75: goto st182;
-		case 107: goto st182;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 75: goto st221;
+		case 107: goto st221;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st182:
+st221:
 	if ( ++p == pe )
-		goto _test_eof182;
-case 182:
+		goto _test_eof221;
+case 221:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 73: goto st183;
-		case 105: goto st183;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 73: goto st222;
+		case 105: goto st222;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st183:
+st222:
 	if ( ++p == pe )
-		goto _test_eof183;
-case 183:
+		goto _test_eof222;
+case 222:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 69: goto st184;
-		case 101: goto st184;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 69: goto st223;
+		case 101: goto st223;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st184:
+st223:
 	if ( ++p == pe )
-		goto _test_eof184;
-case 184:
+		goto _test_eof223;
+case 223:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr230;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr289;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-tr230:
+tr289:
 #line 24 "src/panda/protocol/http/Parser.rl"
 	{
         if (!headers_finished) {
@@ -4436,19 +5250,19 @@ tr230:
 	{
         marked = false;
     }
-	goto st185;
-st185:
+	goto st224;
+st224:
 	if ( ++p == pe )
-		goto _test_eof185;
-case 185:
-#line 4445 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof224;
+case 224:
+#line 5259 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
-		case 9: goto st185;
-		case 13: goto tr206;
-		case 32: goto st185;
-		case 33: goto tr232;
-		case 124: goto tr232;
-		case 126: goto tr232;
+		case 9: goto st224;
+		case 13: goto tr265;
+		case 32: goto st224;
+		case 33: goto tr291;
+		case 124: goto tr291;
+		case 126: goto tr291;
 		case 127: goto st0;
 	}
 	if ( (*p) < 45 ) {
@@ -4457,22 +5271,22 @@ case 185:
 				goto st0;
 		} else if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto tr232;
+				goto tr291;
 		} else
-			goto tr232;
+			goto tr291;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto tr232;
+				goto tr291;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto tr232;
+				goto tr291;
 		} else
-			goto tr232;
+			goto tr291;
 	} else
-		goto tr232;
-	goto tr204;
-tr232:
+		goto tr291;
+	goto tr263;
+tr291:
 #line 15 "src/panda/protocol/http/Parser.rl"
 	{
         submark   = p - ps;
@@ -4483,25 +5297,25 @@ tr232:
         mark   = p - ps;
         marked = true;
     }
-	goto st186;
-tr245:
+	goto st225;
+tr304:
 #line 15 "src/panda/protocol/http/Parser.rl"
 	{
         submark   = p - ps;
         submarked = true;
     }
-	goto st186;
-st186:
+	goto st225;
+st225:
 	if ( ++p == pe )
-		goto _test_eof186;
-case 186:
-#line 4499 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof225;
+case 225:
+#line 5313 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
-		case 13: goto tr208;
-		case 33: goto st186;
-		case 61: goto tr234;
-		case 124: goto st186;
-		case 126: goto st186;
+		case 13: goto tr267;
+		case 33: goto st225;
+		case 61: goto tr293;
+		case 124: goto st225;
+		case 126: goto st225;
 		case 127: goto st0;
 	}
 	if ( (*p) < 42 ) {
@@ -4510,25 +5324,25 @@ case 186:
 				goto st0;
 		} else if ( (*p) > 31 ) {
 			if ( 35 <= (*p) && (*p) <= 39 )
-				goto st186;
+				goto st225;
 		} else
 			goto st0;
 	} else if ( (*p) > 43 ) {
 		if ( (*p) < 48 ) {
 			if ( 45 <= (*p) && (*p) <= 46 )
-				goto st186;
+				goto st225;
 		} else if ( (*p) > 57 ) {
 			if ( (*p) > 90 ) {
 				if ( 94 <= (*p) && (*p) <= 122 )
-					goto st186;
+					goto st225;
 			} else if ( (*p) >= 65 )
-				goto st186;
+				goto st225;
 		} else
-			goto st186;
+			goto st225;
 	} else
-		goto st186;
-	goto st164;
-tr234:
+		goto st225;
+	goto st203;
+tr293:
 #line 51 "src/panda/protocol/http/Parser.rl"
 	{
         string v;
@@ -4539,51 +5353,51 @@ tr234:
 	{
         submarked = false;
     }
-	goto st187;
-st187:
+	goto st226;
+st226:
 	if ( ++p == pe )
-		goto _test_eof187;
-case 187:
-#line 4548 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof226;
+case 226:
+#line 5362 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
-		case 9: goto tr236;
-		case 13: goto tr237;
-		case 32: goto tr236;
-		case 34: goto tr238;
-		case 44: goto st164;
-		case 59: goto tr239;
-		case 92: goto st164;
+		case 9: goto tr295;
+		case 13: goto tr296;
+		case 32: goto tr295;
+		case 34: goto tr297;
+		case 44: goto st203;
+		case 59: goto tr298;
+		case 92: goto st203;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto tr235;
-tr235:
+	goto tr294;
+tr294:
 #line 15 "src/panda/protocol/http/Parser.rl"
 	{
         submark   = p - ps;
         submarked = true;
     }
-	goto st188;
-st188:
+	goto st227;
+st227:
 	if ( ++p == pe )
-		goto _test_eof188;
-case 188:
-#line 4573 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof227;
+case 227:
+#line 5387 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
-		case 9: goto tr241;
-		case 13: goto tr242;
-		case 32: goto tr241;
-		case 34: goto st164;
-		case 44: goto st164;
-		case 59: goto tr243;
-		case 92: goto st164;
+		case 9: goto tr300;
+		case 13: goto tr301;
+		case 32: goto tr300;
+		case 34: goto st203;
+		case 44: goto st203;
+		case 59: goto tr302;
+		case 92: goto st203;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto st188;
-tr239:
+	goto st227;
+tr298:
 #line 15 "src/panda/protocol/http/Parser.rl"
 	{
         submark   = p - ps;
@@ -4591,33 +5405,33 @@ tr239:
     }
 #line 57 "src/panda/protocol/http/Parser.rl"
 	{
-        string& v = request->cookies.fields.back().value;
+        auto& v = request->cookies.fields.back().value;
         SUBSAVE(v);
     }
 #line 20 "src/panda/protocol/http/Parser.rl"
 	{
         submarked = false;
     }
-	goto st189;
-tr243:
+	goto st228;
+tr302:
 #line 57 "src/panda/protocol/http/Parser.rl"
 	{
-        string& v = request->cookies.fields.back().value;
+        auto& v = request->cookies.fields.back().value;
         SUBSAVE(v);
     }
 #line 20 "src/panda/protocol/http/Parser.rl"
 	{
         submarked = false;
     }
-	goto st189;
-st189:
+	goto st228;
+st228:
 	if ( ++p == pe )
-		goto _test_eof189;
-case 189:
-#line 4618 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof228;
+case 228:
+#line 5432 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
-		case 13: goto tr208;
-		case 32: goto st190;
+		case 13: goto tr267;
+		case 32: goto st229;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -4625,16 +5439,16 @@ case 189:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st164;
-st190:
+	goto st203;
+st229:
 	if ( ++p == pe )
-		goto _test_eof190;
-case 190:
+		goto _test_eof229;
+case 229:
 	switch( (*p) ) {
-		case 13: goto tr208;
-		case 33: goto tr245;
-		case 124: goto tr245;
-		case 126: goto tr245;
+		case 13: goto tr267;
+		case 33: goto tr304;
+		case 124: goto tr304;
+		case 126: goto tr304;
 		case 127: goto st0;
 	}
 	if ( (*p) < 42 ) {
@@ -4643,577 +5457,577 @@ case 190:
 				goto st0;
 		} else if ( (*p) > 31 ) {
 			if ( 35 <= (*p) && (*p) <= 39 )
-				goto tr245;
+				goto tr304;
 		} else
 			goto st0;
 	} else if ( (*p) > 43 ) {
 		if ( (*p) < 48 ) {
 			if ( 45 <= (*p) && (*p) <= 46 )
-				goto tr245;
+				goto tr304;
 		} else if ( (*p) > 57 ) {
 			if ( (*p) > 90 ) {
 				if ( 94 <= (*p) && (*p) <= 122 )
-					goto tr245;
+					goto tr304;
 			} else if ( (*p) >= 65 )
-				goto tr245;
+				goto tr304;
 		} else
-			goto tr245;
+			goto tr304;
 	} else
-		goto tr245;
-	goto st164;
-tr238:
+		goto tr304;
+	goto st203;
+tr297:
 #line 15 "src/panda/protocol/http/Parser.rl"
 	{
         submark   = p - ps;
         submarked = true;
     }
-	goto st191;
-st191:
+	goto st230;
+st230:
 	if ( ++p == pe )
-		goto _test_eof191;
-case 191:
-#line 4676 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof230;
+case 230:
+#line 5490 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
-		case 9: goto st164;
-		case 13: goto tr208;
-		case 32: goto st164;
-		case 34: goto st192;
-		case 44: goto st164;
-		case 59: goto st164;
-		case 92: goto st164;
+		case 9: goto st203;
+		case 13: goto tr267;
+		case 32: goto st203;
+		case 34: goto st231;
+		case 44: goto st203;
+		case 59: goto st203;
+		case 92: goto st203;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto st191;
-st192:
+	goto st230;
+st231:
 	if ( ++p == pe )
-		goto _test_eof192;
-case 192:
+		goto _test_eof231;
+case 231:
 	switch( (*p) ) {
-		case 9: goto tr241;
-		case 13: goto tr242;
-		case 32: goto tr241;
-		case 59: goto tr243;
+		case 9: goto tr300;
+		case 13: goto tr301;
+		case 32: goto tr300;
+		case 59: goto tr302;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto st164;
-tr200:
+	goto st203;
+tr259:
 #line 6 "src/panda/protocol/http/Parser.rl"
 	{
         mark   = p - ps;
         marked = true;
     }
-	goto st193;
-st193:
+	goto st232;
+st232:
 	if ( ++p == pe )
-		goto _test_eof193;
-case 193:
-#line 4715 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof232;
+case 232:
+#line 5529 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 82: goto st194;
-		case 114: goto st194;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 82: goto st233;
+		case 114: goto st233;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st194:
+st233:
 	if ( ++p == pe )
-		goto _test_eof194;
-case 194:
+		goto _test_eof233;
+case 233:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 65: goto st195;
-		case 97: goto st195;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 65: goto st234;
+		case 97: goto st234;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 66 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st195:
+st234:
 	if ( ++p == pe )
-		goto _test_eof195;
-case 195:
+		goto _test_eof234;
+case 234:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 78: goto st196;
-		case 110: goto st196;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 78: goto st235;
+		case 110: goto st235;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st196:
+st235:
 	if ( ++p == pe )
-		goto _test_eof196;
-case 196:
+		goto _test_eof235;
+case 235:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 83: goto st197;
-		case 115: goto st197;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 83: goto st236;
+		case 115: goto st236;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st197:
+st236:
 	if ( ++p == pe )
-		goto _test_eof197;
-case 197:
+		goto _test_eof236;
+case 236:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 70: goto st198;
-		case 102: goto st198;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 70: goto st237;
+		case 102: goto st237;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st198:
+st237:
 	if ( ++p == pe )
-		goto _test_eof198;
-case 198:
+		goto _test_eof237;
+case 237:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 69: goto st199;
-		case 101: goto st199;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 69: goto st238;
+		case 101: goto st238;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st199:
+st238:
 	if ( ++p == pe )
-		goto _test_eof199;
-case 199:
+		goto _test_eof238;
+case 238:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 82: goto st200;
-		case 114: goto st200;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 82: goto st239;
+		case 114: goto st239;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st200:
+st239:
 	if ( ++p == pe )
-		goto _test_eof200;
-case 200:
+		goto _test_eof239;
+case 239:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 45: goto st201;
-		case 46: goto st162;
-		case 58: goto tr203;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 45: goto st240;
+		case 46: goto st201;
+		case 58: goto tr262;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 48 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 57 ) {
 		if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 65 )
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st201:
+st240:
 	if ( ++p == pe )
-		goto _test_eof201;
-case 201:
+		goto _test_eof240;
+case 240:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 69: goto st202;
-		case 101: goto st202;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 69: goto st241;
+		case 101: goto st241;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st202:
+st241:
 	if ( ++p == pe )
-		goto _test_eof202;
-case 202:
+		goto _test_eof241;
+case 241:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 78: goto st203;
-		case 110: goto st203;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 78: goto st242;
+		case 110: goto st242;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st203:
+st242:
 	if ( ++p == pe )
-		goto _test_eof203;
-case 203:
+		goto _test_eof242;
+case 242:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 67: goto st204;
-		case 99: goto st204;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 67: goto st243;
+		case 99: goto st243;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st204:
+st243:
 	if ( ++p == pe )
-		goto _test_eof204;
-case 204:
+		goto _test_eof243;
+case 243:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 79: goto st205;
-		case 111: goto st205;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 79: goto st244;
+		case 111: goto st244;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st205:
+st244:
 	if ( ++p == pe )
-		goto _test_eof205;
-case 205:
+		goto _test_eof244;
+case 244:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 68: goto st206;
-		case 100: goto st206;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 68: goto st245;
+		case 100: goto st245;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st206:
+st245:
 	if ( ++p == pe )
-		goto _test_eof206;
-case 206:
+		goto _test_eof245;
+case 245:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 73: goto st207;
-		case 105: goto st207;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 73: goto st246;
+		case 105: goto st246;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st207:
+st246:
 	if ( ++p == pe )
-		goto _test_eof207;
-case 207:
+		goto _test_eof246;
+case 246:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 78: goto st208;
-		case 110: goto st208;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 78: goto st247;
+		case 110: goto st247;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st208:
+st247:
 	if ( ++p == pe )
-		goto _test_eof208;
-case 208:
+		goto _test_eof247;
+case 247:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr203;
-		case 71: goto st209;
-		case 103: goto st209;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr262;
+		case 71: goto st248;
+		case 103: goto st248;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-st209:
+st248:
 	if ( ++p == pe )
-		goto _test_eof209;
-case 209:
+		goto _test_eof248;
+case 248:
 	switch( (*p) ) {
-		case 33: goto st162;
-		case 58: goto tr264;
-		case 124: goto st162;
-		case 126: goto st162;
+		case 33: goto st201;
+		case 58: goto tr323;
+		case 124: goto st201;
+		case 126: goto st201;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) >= 35 )
-			goto st162;
+			goto st201;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st162;
+				goto st201;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st162;
+				goto st201;
 		} else
-			goto st162;
+			goto st201;
 	} else
-		goto st162;
+		goto st201;
 	goto st0;
-tr264:
+tr323:
 #line 24 "src/panda/protocol/http/Parser.rl"
 	{
         if (!headers_finished) {
@@ -5227,39 +6041,39 @@ tr264:
 	{
         marked = false;
     }
-	goto st210;
-st210:
+	goto st249;
+st249:
 	if ( ++p == pe )
-		goto _test_eof210;
-case 210:
-#line 5236 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof249;
+case 249:
+#line 6050 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
-		case 9: goto st210;
-		case 13: goto tr206;
-		case 32: goto st210;
-		case 67: goto tr266;
-		case 99: goto tr266;
+		case 9: goto st249;
+		case 13: goto tr265;
+		case 32: goto st249;
+		case 67: goto tr325;
+		case 99: goto tr325;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto tr204;
-tr266:
+	goto tr263;
+tr325:
 #line 6 "src/panda/protocol/http/Parser.rl"
 	{
         mark   = p - ps;
         marked = true;
     }
-	goto st211;
-st211:
+	goto st250;
+st250:
 	if ( ++p == pe )
-		goto _test_eof211;
-case 211:
-#line 5259 "src/panda/protocol/http/Parser.cc"
+		goto _test_eof250;
+case 250:
+#line 6073 "src/panda/protocol/http/Parser.cc"
 	switch( (*p) ) {
-		case 13: goto tr208;
-		case 72: goto st212;
-		case 104: goto st212;
+		case 13: goto tr267;
+		case 72: goto st251;
+		case 104: goto st251;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -5267,15 +6081,15 @@ case 211:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st164;
-st212:
+	goto st203;
+st251:
 	if ( ++p == pe )
-		goto _test_eof212;
-case 212:
+		goto _test_eof251;
+case 251:
 	switch( (*p) ) {
-		case 13: goto tr208;
-		case 85: goto st213;
-		case 117: goto st213;
+		case 13: goto tr267;
+		case 85: goto st252;
+		case 117: goto st252;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -5283,15 +6097,15 @@ case 212:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st164;
-st213:
+	goto st203;
+st252:
 	if ( ++p == pe )
-		goto _test_eof213;
-case 213:
+		goto _test_eof252;
+case 252:
 	switch( (*p) ) {
-		case 13: goto tr208;
-		case 78: goto st214;
-		case 110: goto st214;
+		case 13: goto tr267;
+		case 78: goto st253;
+		case 110: goto st253;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -5299,15 +6113,15 @@ case 213:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st164;
-st214:
+	goto st203;
+st253:
 	if ( ++p == pe )
-		goto _test_eof214;
-case 214:
+		goto _test_eof253;
+case 253:
 	switch( (*p) ) {
-		case 13: goto tr208;
-		case 75: goto st215;
-		case 107: goto st215;
+		case 13: goto tr267;
+		case 75: goto st254;
+		case 107: goto st254;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -5315,15 +6129,15 @@ case 214:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st164;
-st215:
+	goto st203;
+st254:
 	if ( ++p == pe )
-		goto _test_eof215;
-case 215:
+		goto _test_eof254;
+case 254:
 	switch( (*p) ) {
-		case 13: goto tr208;
-		case 69: goto st216;
-		case 101: goto st216;
+		case 13: goto tr267;
+		case 69: goto st255;
+		case 101: goto st255;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -5331,15 +6145,15 @@ case 215:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st164;
-st216:
+	goto st203;
+st255:
 	if ( ++p == pe )
-		goto _test_eof216;
-case 216:
+		goto _test_eof255;
+case 255:
 	switch( (*p) ) {
-		case 13: goto tr208;
-		case 68: goto st217;
-		case 100: goto st217;
+		case 13: goto tr267;
+		case 68: goto st256;
+		case 100: goto st256;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -5347,245 +6161,245 @@ case 216:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st164;
-st217:
+	goto st203;
+st256:
 	if ( ++p == pe )
-		goto _test_eof217;
-case 217:
+		goto _test_eof256;
+case 256:
 	switch( (*p) ) {
-		case 9: goto tr273;
-		case 13: goto tr274;
-		case 32: goto tr273;
+		case 9: goto tr332;
+		case 13: goto tr333;
+		case 32: goto tr332;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto st164;
-st218:
+	goto st203;
+st257:
 	if ( ++p == pe )
-		goto _test_eof218;
-case 218:
+		goto _test_eof257;
+case 257:
 	if ( (*p) == 13 )
-		goto tr275;
+		goto tr334;
 	goto st0;
-st219:
+st258:
 	if ( ++p == pe )
-		goto _test_eof219;
-case 219:
+		goto _test_eof258;
+case 258:
 	if ( (*p) == 69 )
-		goto st220;
+		goto st259;
 	goto st0;
-st220:
+st259:
 	if ( ++p == pe )
-		goto _test_eof220;
-case 220:
+		goto _test_eof259;
+case 259:
 	if ( (*p) == 76 )
-		goto st221;
+		goto st260;
 	goto st0;
-st221:
+st260:
 	if ( ++p == pe )
-		goto _test_eof221;
-case 221:
+		goto _test_eof260;
+case 260:
 	if ( (*p) == 69 )
-		goto st222;
+		goto st261;
 	goto st0;
-st222:
+st261:
 	if ( ++p == pe )
-		goto _test_eof222;
-case 222:
+		goto _test_eof261;
+case 261:
 	if ( (*p) == 84 )
-		goto st223;
+		goto st262;
 	goto st0;
-st223:
+st262:
 	if ( ++p == pe )
-		goto _test_eof223;
-case 223:
+		goto _test_eof262;
+case 262:
 	if ( (*p) == 69 )
-		goto st224;
+		goto st263;
 	goto st0;
-st224:
+st263:
 	if ( ++p == pe )
-		goto _test_eof224;
-case 224:
+		goto _test_eof263;
+case 263:
 	if ( (*p) == 32 )
-		goto tr281;
+		goto tr340;
 	goto st0;
-st225:
+st264:
 	if ( ++p == pe )
-		goto _test_eof225;
-case 225:
+		goto _test_eof264;
+case 264:
 	if ( (*p) == 69 )
-		goto st226;
+		goto st265;
 	goto st0;
-st226:
+st265:
 	if ( ++p == pe )
-		goto _test_eof226;
-case 226:
+		goto _test_eof265;
+case 265:
 	if ( (*p) == 84 )
-		goto st227;
+		goto st266;
 	goto st0;
-st227:
+st266:
 	if ( ++p == pe )
-		goto _test_eof227;
-case 227:
+		goto _test_eof266;
+case 266:
 	if ( (*p) == 32 )
-		goto tr284;
+		goto tr343;
 	goto st0;
-st228:
+st267:
 	if ( ++p == pe )
-		goto _test_eof228;
-case 228:
+		goto _test_eof267;
+case 267:
 	if ( (*p) == 69 )
-		goto st229;
+		goto st268;
 	goto st0;
-st229:
+st268:
 	if ( ++p == pe )
-		goto _test_eof229;
-case 229:
+		goto _test_eof268;
+case 268:
 	if ( (*p) == 65 )
-		goto st230;
+		goto st269;
 	goto st0;
-st230:
+st269:
 	if ( ++p == pe )
-		goto _test_eof230;
-case 230:
+		goto _test_eof269;
+case 269:
 	if ( (*p) == 68 )
-		goto st231;
+		goto st270;
 	goto st0;
-st231:
+st270:
 	if ( ++p == pe )
-		goto _test_eof231;
-case 231:
+		goto _test_eof270;
+case 270:
 	if ( (*p) == 32 )
-		goto tr288;
+		goto tr347;
 	goto st0;
-st232:
+st271:
 	if ( ++p == pe )
-		goto _test_eof232;
-case 232:
+		goto _test_eof271;
+case 271:
 	if ( (*p) == 80 )
-		goto st233;
+		goto st272;
 	goto st0;
-st233:
+st272:
 	if ( ++p == pe )
-		goto _test_eof233;
-case 233:
+		goto _test_eof272;
+case 272:
 	if ( (*p) == 84 )
-		goto st234;
+		goto st273;
 	goto st0;
-st234:
+st273:
 	if ( ++p == pe )
-		goto _test_eof234;
-case 234:
+		goto _test_eof273;
+case 273:
 	if ( (*p) == 73 )
-		goto st235;
+		goto st274;
 	goto st0;
-st235:
+st274:
 	if ( ++p == pe )
-		goto _test_eof235;
-case 235:
+		goto _test_eof274;
+case 274:
 	if ( (*p) == 79 )
-		goto st236;
+		goto st275;
 	goto st0;
-st236:
+st275:
 	if ( ++p == pe )
-		goto _test_eof236;
-case 236:
+		goto _test_eof275;
+case 275:
 	if ( (*p) == 78 )
-		goto st237;
+		goto st276;
 	goto st0;
-st237:
+st276:
 	if ( ++p == pe )
-		goto _test_eof237;
-case 237:
+		goto _test_eof276;
+case 276:
 	if ( (*p) == 83 )
-		goto st238;
+		goto st277;
 	goto st0;
-st238:
+st277:
 	if ( ++p == pe )
-		goto _test_eof238;
-case 238:
+		goto _test_eof277;
+case 277:
 	if ( (*p) == 32 )
-		goto tr295;
+		goto tr354;
 	goto st0;
-st239:
+st278:
 	if ( ++p == pe )
-		goto _test_eof239;
-case 239:
+		goto _test_eof278;
+case 278:
 	switch( (*p) ) {
-		case 79: goto st240;
-		case 85: goto st243;
+		case 79: goto st279;
+		case 85: goto st282;
 	}
 	goto st0;
-st240:
+st279:
 	if ( ++p == pe )
-		goto _test_eof240;
-case 240:
+		goto _test_eof279;
+case 279:
 	if ( (*p) == 83 )
-		goto st241;
+		goto st280;
 	goto st0;
-st241:
+st280:
 	if ( ++p == pe )
-		goto _test_eof241;
-case 241:
+		goto _test_eof280;
+case 280:
 	if ( (*p) == 84 )
-		goto st242;
+		goto st281;
 	goto st0;
-st242:
+st281:
 	if ( ++p == pe )
-		goto _test_eof242;
-case 242:
+		goto _test_eof281;
+case 281:
 	if ( (*p) == 32 )
-		goto tr300;
+		goto tr359;
 	goto st0;
-st243:
+st282:
 	if ( ++p == pe )
-		goto _test_eof243;
-case 243:
+		goto _test_eof282;
+case 282:
 	if ( (*p) == 84 )
-		goto st244;
+		goto st283;
 	goto st0;
-st244:
+st283:
 	if ( ++p == pe )
-		goto _test_eof244;
-case 244:
+		goto _test_eof283;
+case 283:
 	if ( (*p) == 32 )
-		goto tr302;
+		goto tr361;
 	goto st0;
-st245:
+st284:
 	if ( ++p == pe )
-		goto _test_eof245;
-case 245:
+		goto _test_eof284;
+case 284:
 	if ( (*p) == 82 )
-		goto st246;
+		goto st285;
 	goto st0;
-st246:
+st285:
 	if ( ++p == pe )
-		goto _test_eof246;
-case 246:
+		goto _test_eof285;
+case 285:
 	if ( (*p) == 65 )
-		goto st247;
+		goto st286;
 	goto st0;
-st247:
+st286:
 	if ( ++p == pe )
-		goto _test_eof247;
-case 247:
+		goto _test_eof286;
+case 286:
 	if ( (*p) == 67 )
-		goto st248;
+		goto st287;
 	goto st0;
-st248:
+st287:
 	if ( ++p == pe )
-		goto _test_eof248;
-case 248:
+		goto _test_eof287;
+case 287:
 	if ( (*p) == 69 )
-		goto st249;
+		goto st288;
 	goto st0;
-st249:
+st288:
 	if ( ++p == pe )
-		goto _test_eof249;
-case 249:
+		goto _test_eof288;
+case 288:
 	if ( (*p) == 32 )
-		goto tr307;
+		goto tr366;
 	goto st0;
 	}
 	_test_eof2: cs = 2; goto _test_eof; 
@@ -5605,7 +6419,7 @@ case 249:
 	_test_eof16: cs = 16; goto _test_eof; 
 	_test_eof17: cs = 17; goto _test_eof; 
 	_test_eof18: cs = 18; goto _test_eof; 
-	_test_eof250: cs = 250; goto _test_eof; 
+	_test_eof289: cs = 289; goto _test_eof; 
 	_test_eof19: cs = 19; goto _test_eof; 
 	_test_eof20: cs = 20; goto _test_eof; 
 	_test_eof21: cs = 21; goto _test_eof; 
@@ -5699,9 +6513,9 @@ case 249:
 	_test_eof109: cs = 109; goto _test_eof; 
 	_test_eof110: cs = 110; goto _test_eof; 
 	_test_eof111: cs = 111; goto _test_eof; 
+	_test_eof112: cs = 112; goto _test_eof; 
 	_test_eof113: cs = 113; goto _test_eof; 
 	_test_eof114: cs = 114; goto _test_eof; 
-	_test_eof251: cs = 251; goto _test_eof; 
 	_test_eof115: cs = 115; goto _test_eof; 
 	_test_eof116: cs = 116; goto _test_eof; 
 	_test_eof117: cs = 117; goto _test_eof; 
@@ -5709,11 +6523,11 @@ case 249:
 	_test_eof119: cs = 119; goto _test_eof; 
 	_test_eof120: cs = 120; goto _test_eof; 
 	_test_eof121: cs = 121; goto _test_eof; 
+	_test_eof122: cs = 122; goto _test_eof; 
 	_test_eof123: cs = 123; goto _test_eof; 
 	_test_eof124: cs = 124; goto _test_eof; 
 	_test_eof125: cs = 125; goto _test_eof; 
 	_test_eof126: cs = 126; goto _test_eof; 
-	_test_eof252: cs = 252; goto _test_eof; 
 	_test_eof127: cs = 127; goto _test_eof; 
 	_test_eof128: cs = 128; goto _test_eof; 
 	_test_eof129: cs = 129; goto _test_eof; 
@@ -5723,11 +6537,11 @@ case 249:
 	_test_eof133: cs = 133; goto _test_eof; 
 	_test_eof134: cs = 134; goto _test_eof; 
 	_test_eof135: cs = 135; goto _test_eof; 
-	_test_eof253: cs = 253; goto _test_eof; 
 	_test_eof136: cs = 136; goto _test_eof; 
 	_test_eof137: cs = 137; goto _test_eof; 
 	_test_eof138: cs = 138; goto _test_eof; 
 	_test_eof139: cs = 139; goto _test_eof; 
+	_test_eof140: cs = 140; goto _test_eof; 
 	_test_eof141: cs = 141; goto _test_eof; 
 	_test_eof142: cs = 142; goto _test_eof; 
 	_test_eof143: cs = 143; goto _test_eof; 
@@ -5738,9 +6552,9 @@ case 249:
 	_test_eof148: cs = 148; goto _test_eof; 
 	_test_eof149: cs = 149; goto _test_eof; 
 	_test_eof150: cs = 150; goto _test_eof; 
-	_test_eof151: cs = 151; goto _test_eof; 
 	_test_eof152: cs = 152; goto _test_eof; 
 	_test_eof153: cs = 153; goto _test_eof; 
+	_test_eof290: cs = 290; goto _test_eof; 
 	_test_eof154: cs = 154; goto _test_eof; 
 	_test_eof155: cs = 155; goto _test_eof; 
 	_test_eof156: cs = 156; goto _test_eof; 
@@ -5748,12 +6562,11 @@ case 249:
 	_test_eof158: cs = 158; goto _test_eof; 
 	_test_eof159: cs = 159; goto _test_eof; 
 	_test_eof160: cs = 160; goto _test_eof; 
-	_test_eof161: cs = 161; goto _test_eof; 
-	_test_eof254: cs = 254; goto _test_eof; 
 	_test_eof162: cs = 162; goto _test_eof; 
 	_test_eof163: cs = 163; goto _test_eof; 
 	_test_eof164: cs = 164; goto _test_eof; 
 	_test_eof165: cs = 165; goto _test_eof; 
+	_test_eof291: cs = 291; goto _test_eof; 
 	_test_eof166: cs = 166; goto _test_eof; 
 	_test_eof167: cs = 167; goto _test_eof; 
 	_test_eof168: cs = 168; goto _test_eof; 
@@ -5763,11 +6576,11 @@ case 249:
 	_test_eof172: cs = 172; goto _test_eof; 
 	_test_eof173: cs = 173; goto _test_eof; 
 	_test_eof174: cs = 174; goto _test_eof; 
+	_test_eof292: cs = 292; goto _test_eof; 
 	_test_eof175: cs = 175; goto _test_eof; 
 	_test_eof176: cs = 176; goto _test_eof; 
 	_test_eof177: cs = 177; goto _test_eof; 
 	_test_eof178: cs = 178; goto _test_eof; 
-	_test_eof179: cs = 179; goto _test_eof; 
 	_test_eof180: cs = 180; goto _test_eof; 
 	_test_eof181: cs = 181; goto _test_eof; 
 	_test_eof182: cs = 182; goto _test_eof; 
@@ -5789,6 +6602,7 @@ case 249:
 	_test_eof198: cs = 198; goto _test_eof; 
 	_test_eof199: cs = 199; goto _test_eof; 
 	_test_eof200: cs = 200; goto _test_eof; 
+	_test_eof293: cs = 293; goto _test_eof; 
 	_test_eof201: cs = 201; goto _test_eof; 
 	_test_eof202: cs = 202; goto _test_eof; 
 	_test_eof203: cs = 203; goto _test_eof; 
@@ -5838,12 +6652,51 @@ case 249:
 	_test_eof247: cs = 247; goto _test_eof; 
 	_test_eof248: cs = 248; goto _test_eof; 
 	_test_eof249: cs = 249; goto _test_eof; 
+	_test_eof250: cs = 250; goto _test_eof; 
+	_test_eof251: cs = 251; goto _test_eof; 
+	_test_eof252: cs = 252; goto _test_eof; 
+	_test_eof253: cs = 253; goto _test_eof; 
+	_test_eof254: cs = 254; goto _test_eof; 
+	_test_eof255: cs = 255; goto _test_eof; 
+	_test_eof256: cs = 256; goto _test_eof; 
+	_test_eof257: cs = 257; goto _test_eof; 
+	_test_eof258: cs = 258; goto _test_eof; 
+	_test_eof259: cs = 259; goto _test_eof; 
+	_test_eof260: cs = 260; goto _test_eof; 
+	_test_eof261: cs = 261; goto _test_eof; 
+	_test_eof262: cs = 262; goto _test_eof; 
+	_test_eof263: cs = 263; goto _test_eof; 
+	_test_eof264: cs = 264; goto _test_eof; 
+	_test_eof265: cs = 265; goto _test_eof; 
+	_test_eof266: cs = 266; goto _test_eof; 
+	_test_eof267: cs = 267; goto _test_eof; 
+	_test_eof268: cs = 268; goto _test_eof; 
+	_test_eof269: cs = 269; goto _test_eof; 
+	_test_eof270: cs = 270; goto _test_eof; 
+	_test_eof271: cs = 271; goto _test_eof; 
+	_test_eof272: cs = 272; goto _test_eof; 
+	_test_eof273: cs = 273; goto _test_eof; 
+	_test_eof274: cs = 274; goto _test_eof; 
+	_test_eof275: cs = 275; goto _test_eof; 
+	_test_eof276: cs = 276; goto _test_eof; 
+	_test_eof277: cs = 277; goto _test_eof; 
+	_test_eof278: cs = 278; goto _test_eof; 
+	_test_eof279: cs = 279; goto _test_eof; 
+	_test_eof280: cs = 280; goto _test_eof; 
+	_test_eof281: cs = 281; goto _test_eof; 
+	_test_eof282: cs = 282; goto _test_eof; 
+	_test_eof283: cs = 283; goto _test_eof; 
+	_test_eof284: cs = 284; goto _test_eof; 
+	_test_eof285: cs = 285; goto _test_eof; 
+	_test_eof286: cs = 286; goto _test_eof; 
+	_test_eof287: cs = 287; goto _test_eof; 
+	_test_eof288: cs = 288; goto _test_eof; 
 
 	_test_eof: {}
 	_out: {}
 	}
 
-#line 197 "src/panda/protocol/http/Parser.rl"
+#line 243 "src/panda/protocol/http/Parser.rl"
     return p - ps;
 }
 

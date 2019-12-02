@@ -55,7 +55,7 @@
     }
     
     action req_cookie_value {
-        string& v = request->cookies.fields.back().value;
+        auto& v = request->cookies.fields.back().value;
         SUBSAVE(v);
     }
 
@@ -66,10 +66,55 @@
     }
 
     action res_cookie_value {
-        string& v = response->cookies.fields.back().value._value;
+        auto& v = response->cookies.fields.back().value._value;
+        SUBSAVE(v);
+    }
+
+    action res_cookie_domain {
+        auto& v = response->cookies.fields.back().value._domain;
+        SUBSAVE(v);
+    }
+
+    action res_cookie_path {
+        auto& v = response->cookies.fields.back().value._path;
         SUBSAVE(v);
     }
     
+    action res_cookie_max_age_start {
+        auto& v = response->cookies.fields.back().value._max_age;
+        v = 0;
+    }
+    
+    action res_cookie_max_age_digit {
+        auto& v = response->cookies.fields.back().value._max_age;
+        ADD_DIGIT(v);
+    }
+    
+    action res_cookie_expires {
+        auto& v = response->cookies.fields.back().value._expires;
+        SUBSAVE(v);
+    }
+    
+    action res_cookie_secure {
+        response->cookies.fields.back().value._secure = true;
+    }
+    
+    action res_cookie_http_only {
+        response->cookies.fields.back().value._http_only = true;
+    }
+    
+    action res_cookie_same_site_strict {
+        response->cookies.fields.back().value._same_site = Response::Cookie::SameSite::Strict;
+    }
+
+    action res_cookie_same_site_lax {
+        response->cookies.fields.back().value._same_site = Response::Cookie::SameSite::Lax;
+    }
+
+    action res_cookie_same_site_none {
+        response->cookies.fields.back().value._same_site = Response::Cookie::SameSite::None;
+    }
+
     action request_target {
         string target;
         SAVE(target);
@@ -108,14 +153,15 @@
     cookie_pair       = token >submark %req_cookie_name %subunmark  "=" cookie_value >submark %req_cookie_value %subunmark;
     set_cookie_pair   = token >submark %res_cookie_name %subunmark  "=" cookie_value >submark %res_cookie_value %subunmark;
     cookie_header     = /Cookie/i ":" OWS cookie_pair ("; " cookie_pair)* OWS;
-    expires_av        = "Expires=" (alnum | SP | ":" | ",") >submark %save2 %subunmark; # RFC 1123, will be lazy-parsed later by panda::date framework
-    max_age_av        = "Max-Age=" ([1-9] digit*)  >submark %save2 %subunmark;
-    domain_av         = "Domain=" (alnum | "." | "-")+  >submark %save2 %subunmark;
-    path_av           = "Path=" ((any - CTL) - ";")+  >submark %save2 %subunmark;
-    secure_av         = "Secure"  >submark %save2 %subunmark;
-    httponly_av       = "HttpOnly"  >submark %save2 %subunmark;
-    extension_av      = ((any - CTL) - ";")+  >submark %save2 %subunmark;
-    cookie_av         = expires_av | max_age_av | domain_av | path_av | secure_av | httponly_av | extension_av;
+    expires_av        = "Expires=" (alnum | SP | ":" | ",")* >submark %res_cookie_expires %subunmark; # RFC 1123, will be lazy-parsed later by panda::date framework
+    max_age_av        = "Max-Age=" ([1-9] digit*) >res_cookie_max_age_start $res_cookie_max_age_digit;
+    domain_av         = "Domain=" (alnum | "." | "-")+  >submark %res_cookie_domain %subunmark;
+    path_av           = "Path=" ((any - CTL) - ";")+  >submark %res_cookie_path %subunmark;
+    secure_av         = "Secure"  %res_cookie_secure;
+    httponly_av       = "HttpOnly"  %res_cookie_http_only;
+    samesite_av       = ("SameSite" %res_cookie_same_site_strict) | "SameSite=" (("Strict" %res_cookie_same_site_strict) | ("Lax" %res_cookie_same_site_lax) | ("None" %res_cookie_same_site_none));
+    extension_av      = ((any - CTL) - ";")+;
+    cookie_av         = expires_av | max_age_av | domain_av | path_av | secure_av | httponly_av | samesite_av | extension_av;
     set_cookie_header = /Set-Cookie/i ": " set_cookie_pair ("; " cookie_av)*;
 
     ################################## HEADERS ########################################
