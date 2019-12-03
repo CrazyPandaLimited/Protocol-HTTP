@@ -1,7 +1,8 @@
-#include "Parser.h"
+#include "MessageParser.h"
 
 %%{
-    machine http_parser;
+    machine message_parser;
+    include rules "Rules.rl";
     
     action mark {
         mark   = fpc - ps;
@@ -12,6 +13,10 @@
         marked = false;
     }
 
+    action done {
+        fbreak;
+    }
+    
     action header_name {
         if (!headers_finished) {
             string value;
@@ -32,7 +37,7 @@
     
     action content_length_start {
         if (has_content_length) {
-            cs = http_parser_error;
+            cs = message_parser_error;
             set_error(errc::multiple_content_length);
             fbreak;
         }
@@ -45,26 +50,6 @@
         request->uri = new URI(target);
     }
     
-    action done {
-        fbreak;
-    }
-    
-    ################################## ALPHABETS ########################################
-    CRLF          = "\r\n";
-    CTL           = cntrl | 127;
-    SP            = ' ';
-    HTAB          = '\t';
-    WSP           = SP | HTAB;
-    OWS           = WSP*; # optional whitespace
-    VCHAR         = 0x21..0x7e; # visible characters (no whitespace)
-    obs_text      = 0x80..0xFF;
-    obs_fold      = CRLF WSP+; # obsolete line folding
-    tchar         = alnum | "!" | "#" | "$" | "%" | "&" | "'" | "*" | "+" | "-" | "." | "^" | "_" | "`" | "|" | "~"; #any VCHAR, except delimiters
-    token         = tchar+;
-    qdtext        = WSP | 0x21 | 0x23..0x5B | 0x5D..0x7E | obs_text;
-    quoted_pair   = "\\" (WSP | VCHAR | obs_text);
-    quoted_string = '"' (qdtext | quoted_pair)* '"';
-     
     http_version  = "HTTP/1." (("0" %{message->http_version = 10;}) | ("1" %{message->http_version = 11;}));
     
     ################################## HEADERS ########################################
@@ -87,15 +72,15 @@
     chunk_trailer  := (header_field CRLF)* CRLF @done;
     
     ################################## REQUEST ########################################
-    method = (  "OPTIONS" %{request->method = Request::Method::OPTIONS; }
-              | "GET"     %{request->method = Request::Method::GET; }
-              | "HEAD"    %{request->method = Request::Method::HEAD; }
-              | "POST"    %{request->method = Request::Method::POST; }
-              | "PUT"     %{request->method = Request::Method::PUT; }
-              | "DELETE"  %{request->method = Request::Method::DELETE; }
-              | "TRACE"   %{request->method = Request::Method::TRACE; }
-              | "CONNECT" %{request->method = Request::Method::CONNECT; }
-             );
+    method = "OPTIONS" %{request->method = Request::Method::OPTIONS; }
+           | "GET"     %{request->method = Request::Method::GET; }
+           | "HEAD"    %{request->method = Request::Method::HEAD; }
+           | "POST"    %{request->method = Request::Method::POST; }
+           | "PUT"     %{request->method = Request::Method::PUT; }
+           | "DELETE"  %{request->method = Request::Method::DELETE; }
+           | "TRACE"   %{request->method = Request::Method::TRACE; }
+           | "CONNECT" %{request->method = Request::Method::CONNECT; }
+           ;
     request_target  = VCHAR+ >mark %request_target %unmark;
     request_line    = method SP request_target SP http_version :> CRLF;
     request_header  = header;
@@ -115,7 +100,9 @@ namespace panda { namespace protocol { namespace http {
 
 %% write data;
 
-#ifndef PARSER_CONSTANTS
+#ifdef PARSER_DEFINITIONS_ONLY
+#undef PARSER_DEFINITIONS_ONLY
+#else
 
 #define ADD_DIGIT(dest) \
     dest *= 10;         \
@@ -133,7 +120,7 @@ namespace panda { namespace protocol { namespace http {
         dest.append(ps, p - ps);                                \
     }
 
-size_t Parser::machine_exec (const string& buffer, size_t off) {
+size_t MessageParser::machine_exec (const string& buffer, size_t off) {
     const char* ps = buffer.data();
     const char* p  = ps + off;
     const char* pe = ps + buffer.size();

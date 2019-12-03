@@ -43,7 +43,7 @@ struct Response : Message, AllocatedObject<Response> {
         string to_string (const string& cookie_name, const Request* context = nullptr) const;
 
     private:
-        friend struct Parser; friend Response; friend Request;
+        friend struct ResponseParser; friend struct RequestParser;
 
         string   _value;
         string   _domain;

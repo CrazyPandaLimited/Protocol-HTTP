@@ -1,10 +1,10 @@
 #pragma once
 #include "Error.h"
-#include "Parser.h"
+#include "MessageParser.h"
 
 namespace panda { namespace protocol { namespace http {
 
-struct ResponseParser : Parser {
+struct ResponseParser : MessageParser {
     struct Result {
         ResponseSP      response;
         size_t          position;
@@ -47,6 +47,8 @@ private:
     }
 
     void _reset (bool keep_context);
+
+    void parse_cookie (const string&);
 };
 
 }}}

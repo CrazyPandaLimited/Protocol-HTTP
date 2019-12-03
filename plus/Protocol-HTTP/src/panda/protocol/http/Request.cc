@@ -17,7 +17,7 @@ static inline string _method_str (Request::Method rm) {
     }
 }
 
-string Request::_http_header (size_t reserve) {
+string Request::http_header (size_t reserve) {
     auto meth = _method_str(method);
     auto reluri  = uri ? uri->relative() : string("/");
     if (!http_version) http_version = 11;
@@ -65,8 +65,8 @@ string Request::_http_header (size_t reserve) {
     return s;
 }
 
-std::vector<string> Request::to_vector () { return _to_vector([this]{ return _http_header(0); }); }
-string              Request::to_string () { return _to_string([this](size_t r){ return _http_header(r); }); }
+std::vector<string> Request::to_vector () { return _to_vector([this]{ return http_header(0); }); }
+string              Request::to_string () { return _to_string([this](size_t r){ return http_header(r); }); }
 
 bool Request::expects_continue () const {
     for (auto& val : headers.get_multi("Expect")) if (val == "100-continue") return true;

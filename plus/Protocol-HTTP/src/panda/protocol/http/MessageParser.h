@@ -6,7 +6,7 @@ namespace panda { namespace protocol { namespace http {
 
 constexpr const size_t SIZE_UNLIMITED = size_t(-1);
 
-struct Parser {
+struct MessageParser {
     size_t max_headers_size = SIZE_UNLIMITED;
     size_t max_body_size    = SIZE_UNLIMITED;
 
@@ -20,10 +20,10 @@ protected:
     uint64_t        content_length;
     std::error_code error;
 
-    Parser () {}
+    MessageParser () {}
 
-    Parser (const Parser&) = delete;
-    Parser (Parser&&)      = default;
+    MessageParser (const MessageParser&) = delete;
+    MessageParser (MessageParser&&)      = default;
 
     inline void reset () {
         message            = nullptr;
@@ -32,8 +32,6 @@ protected:
         state              = State::headers;
         mark               = -1;
         marked             = false;
-        submark            = -1;
-        submarked          = false;
         headers_so_far     = 0;
         headers_finished   = false;
         has_content_length = false;
@@ -50,17 +48,14 @@ protected:
     }
 
 private:
-    ptrdiff_t  mark;
-    bool       marked;
-    string     acc;
-    ptrdiff_t  submark;
-    bool       submarked;
-    string     subacc;
-    size_t     headers_so_far;
-    bool       headers_finished;
-    size_t     body_so_far;
-    size_t     chunk_length;
-    size_t     chunk_so_far;
+    ptrdiff_t mark;
+    bool      marked;
+    string    acc;
+    size_t    headers_so_far;
+    bool      headers_finished;
+    size_t    body_so_far;
+    size_t    chunk_length;
+    size_t    chunk_so_far;
 
     size_t machine_exec (const string& buffer, size_t off);
 };

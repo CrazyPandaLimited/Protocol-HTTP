@@ -1,5 +1,5 @@
 #include "RequestParser.h"
-#include "Parser.tcc"
+#include "MessageParser.tcc"
 
 namespace panda { namespace protocol { namespace http {
 
@@ -8,8 +8,8 @@ RequestParser::RequestParser (IFactory* fac) : factory(fac) {
 }
 
 void RequestParser::reset () {
-    Parser::reset();
-    cs = http_parser_en_request;
+    MessageParser::reset();
+    cs = message_parser_en_request;
 }
 
 RequestParser::Result RequestParser::parse (const string& buffer) {
@@ -18,8 +18,11 @@ RequestParser::Result RequestParser::parse (const string& buffer) {
         message = request;
     }
 
-    auto pos = Parser::parse(buffer,
-        []{ return true; },
+    auto pos = MessageParser::parse(buffer,
+        [this] {
+            for (const auto& s : request->headers.get_multi("Cookie")) parse_cookie(s);
+            return true;
+        },
         [this] {
             state = State::done;
             return false;

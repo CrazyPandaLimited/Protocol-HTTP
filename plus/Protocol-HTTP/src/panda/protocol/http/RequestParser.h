@@ -1,6 +1,6 @@
 #pragma once
 #include "Error.h"
-#include "Parser.h"
+#include "MessageParser.h"
 
 namespace panda { namespace protocol { namespace http {
 
@@ -8,7 +8,7 @@ struct IRequestFactory {
     virtual RequestSP new_request () = 0;
 };
 
-struct RequestParser : Parser {
+struct RequestParser : MessageParser {
     struct Result {
         RequestSP       request;
         size_t          position;
@@ -39,7 +39,7 @@ private:
 
     RequestSP new_request () const { return factory ? factory->new_request() : make_iptr<Request>(); }
 
-    //size_t machine_exec (const string& buffer, size_t off);
+    void parse_cookie (const string&);
 };
 
 }}}

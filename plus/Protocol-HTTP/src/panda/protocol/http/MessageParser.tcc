@@ -1,29 +1,25 @@
 #pragma once
-#include "Parser.h"
+#include "MessageParser.h"
 
-#define PARSER_CONSTANTS
-#include "Parser.cc"
+#define PARSER_DEFINITIONS_ONLY
+#include "MessageParser.cc"
 
 namespace panda { namespace protocol { namespace http {
 
-#define RETURN_IF_PARSE_ERROR do if (cs == http_parser_error) { \
-    if (!error) set_error(errc::lexical_error);                 \
-    return pos;                                                 \
+#define RETURN_IF_PARSE_ERROR do if (cs == message_parser_error) {  \
+    if (!error) set_error(errc::lexical_error);                     \
+    return pos;                                                     \
 } while (0)
 
-#define SAVE_MARK(mark, marked, acc)                \
-    if (marked) {                                   \
-        if (mark != -1) {                           \
-            acc = buffer.substr(mark, len - mark);  \
-            mark = -1;                              \
-        }                                           \
-        else acc += buffer;                         \
-    }
-
-#define RETURN_IF_INCOMPLETE do if (cs < http_parser_first_final) { \
-    SAVE_MARK(mark, marked, acc);                                   \
-    SAVE_MARK(submark, submarked, subacc);                          \
-    return pos;                                                     \
+#define RETURN_IF_INCOMPLETE do if (cs < message_parser_first_final) {  \
+    if (marked) {                                                       \
+        if (mark != -1) {                                               \
+            acc = buffer.substr(mark, len - mark);                      \
+            mark = -1;                                                  \
+        }                                                               \
+        else acc += buffer;                                             \
+    }                                                                   \
+    return pos;                                                         \
 } while (0)
 
 #define RETURN_IF_MAX_BODY_SIZE(current_size) do if (current_size > max_body_size) {    \
@@ -32,7 +28,7 @@ namespace panda { namespace protocol { namespace http {
 } while (0)
 
 template <class F1, class F2>
-size_t Parser::parse (const string& buffer, F1&& after_headers_cb, F2&& no_body_cb) {
+size_t MessageParser::parse (const string& buffer, F1&& after_headers_cb, F2&& no_body_cb) {
     auto   len = buffer.length();
     size_t pos = 0;
     //printf("parse: %s\n", buffer.c_str());
@@ -56,7 +52,7 @@ size_t Parser::parse (const string& buffer, F1&& after_headers_cb, F2&& no_body_
 
             if (message->chunked) {
                 state = State::chunk;
-                cs = http_parser_en_first_chunk;
+                cs = message_parser_en_first_chunk;
             }
             else if (has_content_length) {
                 if (content_length > 0) {
@@ -102,7 +98,7 @@ size_t Parser::parse (const string& buffer, F1&& after_headers_cb, F2&& no_body_
 
             if (!chunk_length) { // final chunk
                 state = State::chunk_trailer;
-                cs = http_parser_en_chunk_trailer;
+                cs = message_parser_en_chunk_trailer;
                 continue;
             }
             //printf("chunk len = %llu\n", chunk_length);
@@ -122,7 +118,7 @@ size_t Parser::parse (const string& buffer, F1&& after_headers_cb, F2&& no_body_
             if (have >= left) {
                 message->body.parts.push_back(buffer.substr(pos, left));
                 state = State::chunk;
-                cs = http_parser_en_chunk;
+                cs = message_parser_en_chunk;
                 pos += left;
                 continue;
             } else {

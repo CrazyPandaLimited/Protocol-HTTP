@@ -1,29 +1,31 @@
 
-#line 1 "src/panda/protocol/http/Parser.rl"
-#include "Parser.h"
+#line 1 "src/panda/protocol/http/MessageParser.rl"
+#include "MessageParser.h"
 
 
-#line 112 "src/panda/protocol/http/Parser.rl"
+#line 97 "src/panda/protocol/http/MessageParser.rl"
 
 
 namespace panda { namespace protocol { namespace http {
 
 
-#line 13 "src/panda/protocol/http/Parser.cc"
-static const int http_parser_start = 1;
-static const int http_parser_first_final = 190;
-static const int http_parser_error = 0;
+#line 13 "src/panda/protocol/http/MessageParser.cc"
+static const int message_parser_start = 1;
+static const int message_parser_first_final = 190;
+static const int message_parser_error = 0;
 
-static const int http_parser_en_first_chunk = 64;
-static const int http_parser_en_chunk = 74;
-static const int http_parser_en_chunk_trailer = 86;
-static const int http_parser_en_request = 92;
-static const int http_parser_en_response = 1;
+static const int message_parser_en_first_chunk = 64;
+static const int message_parser_en_chunk = 74;
+static const int message_parser_en_chunk_trailer = 86;
+static const int message_parser_en_request = 92;
+static const int message_parser_en_response = 1;
 
 
-#line 117 "src/panda/protocol/http/Parser.rl"
+#line 102 "src/panda/protocol/http/MessageParser.rl"
 
-#ifndef PARSER_CONSTANTS
+#ifdef PARSER_DEFINITIONS_ONLY
+#undef PARSER_DEFINITIONS_ONLY
+#else
 
 #define ADD_DIGIT(dest) \
     dest *= 10;         \
@@ -41,12 +43,12 @@ static const int http_parser_en_response = 1;
         dest.append(ps, p - ps);                                \
     }
 
-size_t Parser::machine_exec (const string& buffer, size_t off) {
+size_t MessageParser::machine_exec (const string& buffer, size_t off) {
     const char* ps = buffer.data();
     const char* p  = ps + off;
     const char* pe = ps + buffer.size();
     
-#line 50 "src/panda/protocol/http/Parser.cc"
+#line 52 "src/panda/protocol/http/MessageParser.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -118,54 +120,54 @@ case 9:
 		goto tr10;
 	goto st0;
 tr10:
-#line 68 "src/panda/protocol/http/Parser.rl"
+#line 53 "src/panda/protocol/http/MessageParser.rl"
 	{message->http_version = 10;}
 	goto st10;
 tr76:
-#line 68 "src/panda/protocol/http/Parser.rl"
+#line 53 "src/panda/protocol/http/MessageParser.rl"
 	{message->http_version = 11;}
 	goto st10;
 st10:
 	if ( ++p == pe )
 		goto _test_eof10;
 case 10:
-#line 133 "src/panda/protocol/http/Parser.cc"
+#line 135 "src/panda/protocol/http/MessageParser.cc"
 	if ( 49 <= (*p) && (*p) <= 57 )
 		goto tr11;
 	goto st0;
 tr11:
-#line 106 "src/panda/protocol/http/Parser.rl"
+#line 91 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(response->code)}
 	goto st11;
 st11:
 	if ( ++p == pe )
 		goto _test_eof11;
 case 11:
-#line 145 "src/panda/protocol/http/Parser.cc"
+#line 147 "src/panda/protocol/http/MessageParser.cc"
 	if ( 48 <= (*p) && (*p) <= 57 )
 		goto tr12;
 	goto st0;
 tr12:
-#line 106 "src/panda/protocol/http/Parser.rl"
+#line 91 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(response->code)}
 	goto st12;
 st12:
 	if ( ++p == pe )
 		goto _test_eof12;
 case 12:
-#line 157 "src/panda/protocol/http/Parser.cc"
+#line 159 "src/panda/protocol/http/MessageParser.cc"
 	if ( 48 <= (*p) && (*p) <= 57 )
 		goto tr13;
 	goto st0;
 tr13:
-#line 106 "src/panda/protocol/http/Parser.rl"
+#line 91 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(response->code)}
 	goto st13;
 st13:
 	if ( ++p == pe )
 		goto _test_eof13;
 case 13:
-#line 169 "src/panda/protocol/http/Parser.cc"
+#line 171 "src/panda/protocol/http/MessageParser.cc"
 	if ( (*p) == 32 )
 		goto st14;
 	goto st0;
@@ -184,7 +186,7 @@ case 14:
 		goto st0;
 	goto tr15;
 tr15:
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
@@ -194,7 +196,7 @@ st15:
 	if ( ++p == pe )
 		goto _test_eof15;
 case 15:
-#line 198 "src/panda/protocol/http/Parser.cc"
+#line 200 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr18;
 		case 127: goto st0;
@@ -206,33 +208,33 @@ case 15:
 		goto st0;
 	goto st15;
 tr16:
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
     }
-#line 107 "src/panda/protocol/http/Parser.rl"
+#line 92 "src/panda/protocol/http/MessageParser.rl"
 	{SAVE(response->message)}
-#line 11 "src/panda/protocol/http/Parser.rl"
+#line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
         marked = false;
     }
 	goto st16;
 tr18:
-#line 107 "src/panda/protocol/http/Parser.rl"
+#line 92 "src/panda/protocol/http/MessageParser.rl"
 	{SAVE(response->message)}
-#line 11 "src/panda/protocol/http/Parser.rl"
+#line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
         marked = false;
     }
 	goto st16;
 tr29:
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
     }
-#line 24 "src/panda/protocol/http/Parser.rl"
+#line 29 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
             string& value = message->headers.fields.back().value;
@@ -241,13 +243,13 @@ tr29:
         }
         else {} // trailing header after chunks, currently we just ignore them
     }
-#line 11 "src/panda/protocol/http/Parser.rl"
+#line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
         marked = false;
     }
 	goto st16;
 tr31:
-#line 24 "src/panda/protocol/http/Parser.rl"
+#line 29 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
             string& value = message->headers.fields.back().value;
@@ -256,15 +258,15 @@ tr31:
         }
         else {} // trailing header after chunks, currently we just ignore them
     }
-#line 11 "src/panda/protocol/http/Parser.rl"
+#line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
         marked = false;
     }
 	goto st16;
 tr75:
-#line 76 "src/panda/protocol/http/Parser.rl"
+#line 61 "src/panda/protocol/http/MessageParser.rl"
 	{message->chunked = true;}
-#line 24 "src/panda/protocol/http/Parser.rl"
+#line 29 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
             string& value = message->headers.fields.back().value;
@@ -273,7 +275,7 @@ tr75:
         }
         else {} // trailing header after chunks, currently we just ignore them
     }
-#line 11 "src/panda/protocol/http/Parser.rl"
+#line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
         marked = false;
     }
@@ -282,7 +284,7 @@ st16:
 	if ( ++p == pe )
 		goto _test_eof16;
 case 16:
-#line 286 "src/panda/protocol/http/Parser.cc"
+#line 288 "src/panda/protocol/http/MessageParser.cc"
 	if ( (*p) == 10 )
 		goto st17;
 	goto st0;
@@ -326,7 +328,7 @@ case 18:
 		goto tr24;
 	goto st0;
 tr24:
-#line 48 "src/panda/protocol/http/Parser.rl"
+#line 16 "src/panda/protocol/http/MessageParser.rl"
 	{
         {p++; cs = 190; goto _out;}
     }
@@ -335,10 +337,10 @@ st190:
 	if ( ++p == pe )
 		goto _test_eof190;
 case 190:
-#line 339 "src/panda/protocol/http/Parser.cc"
+#line 341 "src/panda/protocol/http/MessageParser.cc"
 	goto st0;
 tr21:
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
@@ -348,7 +350,7 @@ st19:
 	if ( ++p == pe )
 		goto _test_eof19;
 case 19:
-#line 352 "src/panda/protocol/http/Parser.cc"
+#line 354 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
@@ -374,7 +376,7 @@ case 19:
 		goto st19;
 	goto st0;
 tr26:
-#line 15 "src/panda/protocol/http/Parser.rl"
+#line 20 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
             string value;
@@ -383,7 +385,7 @@ tr26:
         }
         else {} // trailing header after chunks, currently we just ignore them
     }
-#line 11 "src/panda/protocol/http/Parser.rl"
+#line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
         marked = false;
     }
@@ -392,7 +394,7 @@ st20:
 	if ( ++p == pe )
 		goto _test_eof20;
 case 20:
-#line 396 "src/panda/protocol/http/Parser.cc"
+#line 398 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st20;
 		case 13: goto tr29;
@@ -403,21 +405,21 @@ case 20:
 		goto st0;
 	goto tr27;
 tr27:
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
     }
 	goto st21;
 tr74:
-#line 76 "src/panda/protocol/http/Parser.rl"
+#line 61 "src/panda/protocol/http/MessageParser.rl"
 	{message->chunked = true;}
 	goto st21;
 st21:
 	if ( ++p == pe )
 		goto _test_eof21;
 case 21:
-#line 421 "src/panda/protocol/http/Parser.cc"
+#line 423 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr31;
 		case 127: goto st0;
@@ -429,7 +431,7 @@ case 21:
 		goto st0;
 	goto st21;
 tr22:
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
@@ -439,7 +441,7 @@ st22:
 	if ( ++p == pe )
 		goto _test_eof22;
 case 22:
-#line 443 "src/panda/protocol/http/Parser.cc"
+#line 445 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
@@ -852,7 +854,7 @@ case 35:
 		goto st19;
 	goto st0;
 tr45:
-#line 15 "src/panda/protocol/http/Parser.rl"
+#line 20 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
             string value;
@@ -861,7 +863,7 @@ tr45:
         }
         else {} // trailing header after chunks, currently we just ignore them
     }
-#line 11 "src/panda/protocol/http/Parser.rl"
+#line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
         marked = false;
     }
@@ -870,7 +872,7 @@ st36:
 	if ( ++p == pe )
 		goto _test_eof36;
 case 36:
-#line 874 "src/panda/protocol/http/Parser.cc"
+#line 876 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st36;
 		case 13: goto tr29;
@@ -884,32 +886,32 @@ case 36:
 		goto st0;
 	goto tr27;
 tr47:
-#line 33 "src/panda/protocol/http/Parser.rl"
+#line 38 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (has_content_length) {
-            cs = http_parser_error;
+            cs = message_parser_error;
             set_error(errc::multiple_content_length);
             {p++; cs = 37; goto _out;}
         }
         has_content_length = true;
     }
-#line 75 "src/panda/protocol/http/Parser.rl"
+#line 60 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(content_length)}
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
     }
 	goto st37;
 tr48:
-#line 75 "src/panda/protocol/http/Parser.rl"
+#line 60 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(content_length)}
 	goto st37;
 st37:
 	if ( ++p == pe )
 		goto _test_eof37;
 case 37:
-#line 913 "src/panda/protocol/http/Parser.cc"
+#line 915 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr31;
 		case 127: goto st0;
@@ -924,7 +926,7 @@ case 37:
 		goto st0;
 	goto st21;
 tr23:
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
@@ -934,7 +936,7 @@ st38:
 	if ( ++p == pe )
 		goto _test_eof38;
 case 38:
-#line 938 "src/panda/protocol/http/Parser.cc"
+#line 940 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
@@ -1437,7 +1439,7 @@ case 54:
 		goto st19;
 	goto st0;
 tr65:
-#line 15 "src/panda/protocol/http/Parser.rl"
+#line 20 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
             string value;
@@ -1446,7 +1448,7 @@ tr65:
         }
         else {} // trailing header after chunks, currently we just ignore them
     }
-#line 11 "src/panda/protocol/http/Parser.rl"
+#line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
         marked = false;
     }
@@ -1455,7 +1457,7 @@ st55:
 	if ( ++p == pe )
 		goto _test_eof55;
 case 55:
-#line 1459 "src/panda/protocol/http/Parser.cc"
+#line 1461 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st55;
 		case 13: goto tr29;
@@ -1468,7 +1470,7 @@ case 55:
 		goto st0;
 	goto tr27;
 tr67:
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
@@ -1478,7 +1480,7 @@ st56:
 	if ( ++p == pe )
 		goto _test_eof56;
 case 56:
-#line 1482 "src/panda/protocol/http/Parser.cc"
+#line 1484 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr31;
 		case 72: goto st57;
@@ -1602,20 +1604,20 @@ case 64:
 		goto tr77;
 	goto st0;
 tr77:
-#line 80 "src/panda/protocol/http/Parser.rl"
+#line 65 "src/panda/protocol/http/MessageParser.rl"
 	{chunk_length = 0;}
-#line 80 "src/panda/protocol/http/Parser.rl"
+#line 65 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_XDIGIT(chunk_length)}
 	goto st65;
 tr79:
-#line 80 "src/panda/protocol/http/Parser.rl"
+#line 65 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_XDIGIT(chunk_length)}
 	goto st65;
 st65:
 	if ( ++p == pe )
 		goto _test_eof65;
 case 65:
-#line 1619 "src/panda/protocol/http/Parser.cc"
+#line 1621 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto st66;
 		case 59: goto st67;
@@ -1637,7 +1639,7 @@ case 66:
 		goto tr81;
 	goto st0;
 tr81:
-#line 48 "src/panda/protocol/http/Parser.rl"
+#line 16 "src/panda/protocol/http/MessageParser.rl"
 	{
         {p++; cs = 191; goto _out;}
     }
@@ -1646,7 +1648,7 @@ st191:
 	if ( ++p == pe )
 		goto _test_eof191;
 case 191:
-#line 1650 "src/panda/protocol/http/Parser.cc"
+#line 1652 "src/panda/protocol/http/MessageParser.cc"
 	goto st0;
 st67:
 	if ( ++p == pe )
@@ -1822,20 +1824,20 @@ case 76:
 		goto tr90;
 	goto st0;
 tr90:
-#line 80 "src/panda/protocol/http/Parser.rl"
+#line 65 "src/panda/protocol/http/MessageParser.rl"
 	{chunk_length = 0;}
-#line 80 "src/panda/protocol/http/Parser.rl"
+#line 65 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_XDIGIT(chunk_length)}
 	goto st77;
 tr92:
-#line 80 "src/panda/protocol/http/Parser.rl"
+#line 65 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_XDIGIT(chunk_length)}
 	goto st77;
 st77:
 	if ( ++p == pe )
 		goto _test_eof77;
 case 77:
-#line 1839 "src/panda/protocol/http/Parser.cc"
+#line 1841 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto st78;
 		case 59: goto st79;
@@ -1857,7 +1859,7 @@ case 78:
 		goto tr94;
 	goto st0;
 tr94:
-#line 48 "src/panda/protocol/http/Parser.rl"
+#line 16 "src/panda/protocol/http/MessageParser.rl"
 	{
         {p++; cs = 192; goto _out;}
     }
@@ -1866,7 +1868,7 @@ st192:
 	if ( ++p == pe )
 		goto _test_eof192;
 case 192:
-#line 1870 "src/panda/protocol/http/Parser.cc"
+#line 1872 "src/panda/protocol/http/MessageParser.cc"
 	goto st0;
 st79:
 	if ( ++p == pe )
@@ -2053,7 +2055,7 @@ case 87:
 		goto tr103;
 	goto st0;
 tr103:
-#line 48 "src/panda/protocol/http/Parser.rl"
+#line 16 "src/panda/protocol/http/MessageParser.rl"
 	{
         {p++; cs = 193; goto _out;}
     }
@@ -2062,10 +2064,10 @@ st193:
 	if ( ++p == pe )
 		goto _test_eof193;
 case 193:
-#line 2066 "src/panda/protocol/http/Parser.cc"
+#line 2068 "src/panda/protocol/http/MessageParser.cc"
 	goto st0;
 tr102:
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
@@ -2075,7 +2077,7 @@ st88:
 	if ( ++p == pe )
 		goto _test_eof88;
 case 88:
-#line 2079 "src/panda/protocol/http/Parser.cc"
+#line 2081 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 33: goto st88;
 		case 58: goto tr105;
@@ -2101,7 +2103,7 @@ case 88:
 		goto st88;
 	goto st0;
 tr105:
-#line 15 "src/panda/protocol/http/Parser.rl"
+#line 20 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
             string value;
@@ -2110,7 +2112,7 @@ tr105:
         }
         else {} // trailing header after chunks, currently we just ignore them
     }
-#line 11 "src/panda/protocol/http/Parser.rl"
+#line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
         marked = false;
     }
@@ -2119,7 +2121,7 @@ st89:
 	if ( ++p == pe )
 		goto _test_eof89;
 case 89:
-#line 2123 "src/panda/protocol/http/Parser.cc"
+#line 2125 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st89;
 		case 13: goto tr108;
@@ -2130,7 +2132,7 @@ case 89:
 		goto st0;
 	goto tr106;
 tr106:
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
@@ -2140,7 +2142,7 @@ st90:
 	if ( ++p == pe )
 		goto _test_eof90;
 case 90:
-#line 2144 "src/panda/protocol/http/Parser.cc"
+#line 2146 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr110;
 		case 127: goto st0;
@@ -2152,12 +2154,12 @@ case 90:
 		goto st0;
 	goto st90;
 tr108:
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
     }
-#line 24 "src/panda/protocol/http/Parser.rl"
+#line 29 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
             string& value = message->headers.fields.back().value;
@@ -2166,13 +2168,13 @@ tr108:
         }
         else {} // trailing header after chunks, currently we just ignore them
     }
-#line 11 "src/panda/protocol/http/Parser.rl"
+#line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
         marked = false;
     }
 	goto st91;
 tr110:
-#line 24 "src/panda/protocol/http/Parser.rl"
+#line 29 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
             string& value = message->headers.fields.back().value;
@@ -2181,7 +2183,7 @@ tr110:
         }
         else {} // trailing header after chunks, currently we just ignore them
     }
-#line 11 "src/panda/protocol/http/Parser.rl"
+#line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
         marked = false;
     }
@@ -2190,7 +2192,7 @@ st91:
 	if ( ++p == pe )
 		goto _test_eof91;
 case 91:
-#line 2194 "src/panda/protocol/http/Parser.cc"
+#line 2196 "src/panda/protocol/http/MessageParser.cc"
 	if ( (*p) == 10 )
 		goto st86;
 	goto st0;
@@ -2255,47 +2257,47 @@ case 99:
 		goto tr125;
 	goto st0;
 tr125:
-#line 97 "src/panda/protocol/http/Parser.rl"
+#line 82 "src/panda/protocol/http/MessageParser.rl"
 	{request->method = Request::Method::CONNECT; }
 	goto st100;
 tr202:
-#line 95 "src/panda/protocol/http/Parser.rl"
+#line 80 "src/panda/protocol/http/MessageParser.rl"
 	{request->method = Request::Method::DELETE; }
 	goto st100;
 tr205:
-#line 91 "src/panda/protocol/http/Parser.rl"
+#line 76 "src/panda/protocol/http/MessageParser.rl"
 	{request->method = Request::Method::GET; }
 	goto st100;
 tr209:
-#line 92 "src/panda/protocol/http/Parser.rl"
+#line 77 "src/panda/protocol/http/MessageParser.rl"
 	{request->method = Request::Method::HEAD; }
 	goto st100;
 tr216:
-#line 90 "src/panda/protocol/http/Parser.rl"
+#line 75 "src/panda/protocol/http/MessageParser.rl"
 	{request->method = Request::Method::OPTIONS; }
 	goto st100;
 tr221:
-#line 93 "src/panda/protocol/http/Parser.rl"
+#line 78 "src/panda/protocol/http/MessageParser.rl"
 	{request->method = Request::Method::POST; }
 	goto st100;
 tr223:
-#line 94 "src/panda/protocol/http/Parser.rl"
+#line 79 "src/panda/protocol/http/MessageParser.rl"
 	{request->method = Request::Method::PUT; }
 	goto st100;
 tr228:
-#line 96 "src/panda/protocol/http/Parser.rl"
+#line 81 "src/panda/protocol/http/MessageParser.rl"
 	{request->method = Request::Method::TRACE; }
 	goto st100;
 st100:
 	if ( ++p == pe )
 		goto _test_eof100;
 case 100:
-#line 2294 "src/panda/protocol/http/Parser.cc"
+#line 2296 "src/panda/protocol/http/MessageParser.cc"
 	if ( 33 <= (*p) && (*p) <= 126 )
 		goto tr126;
 	goto st0;
 tr126:
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
@@ -2305,20 +2307,20 @@ st101:
 	if ( ++p == pe )
 		goto _test_eof101;
 case 101:
-#line 2309 "src/panda/protocol/http/Parser.cc"
+#line 2311 "src/panda/protocol/http/MessageParser.cc"
 	if ( (*p) == 32 )
 		goto tr127;
 	if ( 33 <= (*p) && (*p) <= 126 )
 		goto st101;
 	goto st0;
 tr127:
-#line 42 "src/panda/protocol/http/Parser.rl"
+#line 47 "src/panda/protocol/http/MessageParser.rl"
 	{
         string target;
         SAVE(target);
         request->uri = new URI(target);
     }
-#line 11 "src/panda/protocol/http/Parser.rl"
+#line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
         marked = false;
     }
@@ -2327,7 +2329,7 @@ st102:
 	if ( ++p == pe )
 		goto _test_eof102;
 case 102:
-#line 2331 "src/panda/protocol/http/Parser.cc"
+#line 2333 "src/panda/protocol/http/MessageParser.cc"
 	if ( (*p) == 72 )
 		goto st103;
 	goto st0;
@@ -2390,16 +2392,16 @@ case 110:
 		goto tr138;
 	goto st0;
 tr138:
-#line 68 "src/panda/protocol/http/Parser.rl"
+#line 53 "src/panda/protocol/http/MessageParser.rl"
 	{message->http_version = 10;}
 	goto st111;
 tr149:
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
     }
-#line 24 "src/panda/protocol/http/Parser.rl"
+#line 29 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
             string& value = message->headers.fields.back().value;
@@ -2408,13 +2410,13 @@ tr149:
         }
         else {} // trailing header after chunks, currently we just ignore them
     }
-#line 11 "src/panda/protocol/http/Parser.rl"
+#line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
         marked = false;
     }
 	goto st111;
 tr151:
-#line 24 "src/panda/protocol/http/Parser.rl"
+#line 29 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
             string& value = message->headers.fields.back().value;
@@ -2423,15 +2425,15 @@ tr151:
         }
         else {} // trailing header after chunks, currently we just ignore them
     }
-#line 11 "src/panda/protocol/http/Parser.rl"
+#line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
         marked = false;
     }
 	goto st111;
 tr195:
-#line 76 "src/panda/protocol/http/Parser.rl"
+#line 61 "src/panda/protocol/http/MessageParser.rl"
 	{message->chunked = true;}
-#line 24 "src/panda/protocol/http/Parser.rl"
+#line 29 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
             string& value = message->headers.fields.back().value;
@@ -2440,20 +2442,20 @@ tr195:
         }
         else {} // trailing header after chunks, currently we just ignore them
     }
-#line 11 "src/panda/protocol/http/Parser.rl"
+#line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
         marked = false;
     }
 	goto st111;
 tr196:
-#line 68 "src/panda/protocol/http/Parser.rl"
+#line 53 "src/panda/protocol/http/MessageParser.rl"
 	{message->http_version = 11;}
 	goto st111;
 st111:
 	if ( ++p == pe )
 		goto _test_eof111;
 case 111:
-#line 2457 "src/panda/protocol/http/Parser.cc"
+#line 2459 "src/panda/protocol/http/MessageParser.cc"
 	if ( (*p) == 10 )
 		goto st112;
 	goto st0;
@@ -2497,7 +2499,7 @@ case 113:
 		goto tr144;
 	goto st0;
 tr144:
-#line 48 "src/panda/protocol/http/Parser.rl"
+#line 16 "src/panda/protocol/http/MessageParser.rl"
 	{
         {p++; cs = 194; goto _out;}
     }
@@ -2506,10 +2508,10 @@ st194:
 	if ( ++p == pe )
 		goto _test_eof194;
 case 194:
-#line 2510 "src/panda/protocol/http/Parser.cc"
+#line 2512 "src/panda/protocol/http/MessageParser.cc"
 	goto st0;
 tr141:
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
@@ -2519,7 +2521,7 @@ st114:
 	if ( ++p == pe )
 		goto _test_eof114;
 case 114:
-#line 2523 "src/panda/protocol/http/Parser.cc"
+#line 2525 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 33: goto st114;
 		case 58: goto tr146;
@@ -2545,7 +2547,7 @@ case 114:
 		goto st114;
 	goto st0;
 tr146:
-#line 15 "src/panda/protocol/http/Parser.rl"
+#line 20 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
             string value;
@@ -2554,7 +2556,7 @@ tr146:
         }
         else {} // trailing header after chunks, currently we just ignore them
     }
-#line 11 "src/panda/protocol/http/Parser.rl"
+#line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
         marked = false;
     }
@@ -2563,7 +2565,7 @@ st115:
 	if ( ++p == pe )
 		goto _test_eof115;
 case 115:
-#line 2567 "src/panda/protocol/http/Parser.cc"
+#line 2569 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st115;
 		case 13: goto tr149;
@@ -2574,21 +2576,21 @@ case 115:
 		goto st0;
 	goto tr147;
 tr147:
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
     }
 	goto st116;
 tr194:
-#line 76 "src/panda/protocol/http/Parser.rl"
+#line 61 "src/panda/protocol/http/MessageParser.rl"
 	{message->chunked = true;}
 	goto st116;
 st116:
 	if ( ++p == pe )
 		goto _test_eof116;
 case 116:
-#line 2592 "src/panda/protocol/http/Parser.cc"
+#line 2594 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr151;
 		case 127: goto st0;
@@ -2600,7 +2602,7 @@ case 116:
 		goto st0;
 	goto st116;
 tr142:
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
@@ -2610,7 +2612,7 @@ st117:
 	if ( ++p == pe )
 		goto _test_eof117;
 case 117:
-#line 2614 "src/panda/protocol/http/Parser.cc"
+#line 2616 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 33: goto st114;
 		case 58: goto tr146;
@@ -3023,7 +3025,7 @@ case 130:
 		goto st114;
 	goto st0;
 tr165:
-#line 15 "src/panda/protocol/http/Parser.rl"
+#line 20 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
             string value;
@@ -3032,7 +3034,7 @@ tr165:
         }
         else {} // trailing header after chunks, currently we just ignore them
     }
-#line 11 "src/panda/protocol/http/Parser.rl"
+#line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
         marked = false;
     }
@@ -3041,7 +3043,7 @@ st131:
 	if ( ++p == pe )
 		goto _test_eof131;
 case 131:
-#line 3045 "src/panda/protocol/http/Parser.cc"
+#line 3047 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st131;
 		case 13: goto tr149;
@@ -3055,32 +3057,32 @@ case 131:
 		goto st0;
 	goto tr147;
 tr167:
-#line 33 "src/panda/protocol/http/Parser.rl"
+#line 38 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (has_content_length) {
-            cs = http_parser_error;
+            cs = message_parser_error;
             set_error(errc::multiple_content_length);
             {p++; cs = 132; goto _out;}
         }
         has_content_length = true;
     }
-#line 75 "src/panda/protocol/http/Parser.rl"
+#line 60 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(content_length)}
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
     }
 	goto st132;
 tr168:
-#line 75 "src/panda/protocol/http/Parser.rl"
+#line 60 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(content_length)}
 	goto st132;
 st132:
 	if ( ++p == pe )
 		goto _test_eof132;
 case 132:
-#line 3084 "src/panda/protocol/http/Parser.cc"
+#line 3086 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr151;
 		case 127: goto st0;
@@ -3095,7 +3097,7 @@ case 132:
 		goto st0;
 	goto st116;
 tr143:
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
@@ -3105,7 +3107,7 @@ st133:
 	if ( ++p == pe )
 		goto _test_eof133;
 case 133:
-#line 3109 "src/panda/protocol/http/Parser.cc"
+#line 3111 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 33: goto st114;
 		case 58: goto tr146;
@@ -3608,7 +3610,7 @@ case 149:
 		goto st114;
 	goto st0;
 tr185:
-#line 15 "src/panda/protocol/http/Parser.rl"
+#line 20 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
             string value;
@@ -3617,7 +3619,7 @@ tr185:
         }
         else {} // trailing header after chunks, currently we just ignore them
     }
-#line 11 "src/panda/protocol/http/Parser.rl"
+#line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
         marked = false;
     }
@@ -3626,7 +3628,7 @@ st150:
 	if ( ++p == pe )
 		goto _test_eof150;
 case 150:
-#line 3630 "src/panda/protocol/http/Parser.cc"
+#line 3632 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st150;
 		case 13: goto tr149;
@@ -3639,7 +3641,7 @@ case 150:
 		goto st0;
 	goto tr147;
 tr187:
-#line 6 "src/panda/protocol/http/Parser.rl"
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
@@ -3649,7 +3651,7 @@ st151:
 	if ( ++p == pe )
 		goto _test_eof151;
 case 151:
-#line 3653 "src/panda/protocol/http/Parser.cc"
+#line 3655 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr151;
 		case 72: goto st152;
@@ -4177,7 +4179,7 @@ case 189:
 	_out: {}
 	}
 
-#line 141 "src/panda/protocol/http/Parser.rl"
+#line 128 "src/panda/protocol/http/MessageParser.rl"
     return p - ps;
 }
 

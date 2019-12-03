@@ -1,5 +1,5 @@
 #include "ResponseParser.h"
-#include "Parser.tcc"
+#include "MessageParser.tcc"
 
 namespace panda { namespace protocol { namespace http {
 
@@ -8,16 +8,18 @@ ResponseParser::ResponseParser () {
 }
 
 void ResponseParser::_reset (bool keep_context) {
-    Parser::reset();
+    MessageParser::reset();
     if (!keep_context) _context_request.reset();
-    cs = http_parser_en_response;
+    cs = message_parser_en_response;
 }
 
 ResponseParser::Result ResponseParser::parse (const string& buffer) {
     ensure_response_created();
 
-    auto pos = Parser::parse(buffer,
+    auto pos = MessageParser::parse(buffer,
         [this] {
+            for (const auto& s : response->headers.get_multi("Set-Cookie")) parse_cookie(s);
+
             if (_context_request->method == Request::Method::HEAD || response->code  < 200 || response->code == 204 || response->code == 304) {
                 if (response->chunked || (content_length > 0 && _context_request->method != Request::Method::HEAD)) {
                     set_error(errc::unexpected_body);
