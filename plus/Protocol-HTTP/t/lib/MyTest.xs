@@ -242,3 +242,32 @@ uint64_t bench_sm_move2 (RequestSP req) {
         sz = f2.size();
     }
 }
+
+uint64_t bench_cookie (string s) {
+    RETVAL = 0;
+    RequestSP req = new Request();
+    req->headers.add("Cookie", "session=1234567890abcdef1234567890abcdef; dasfdasfdas=dsfdasfdas; adsfdasfdasf=adsfdasf");
+    req->headers.add("Content-Length", "123");
+    req->headers.add("Accept-Encoding", "gzip, deflate");
+    req->headers.add("Connection", "keep-alive");
+    req->headers.add("Host", "crazypanda.ru");
+    
+    for (size_t i = 0; i < 1000; ++i) {
+        //RETVAL += req->headers.get("Cookie").length();
+        req->parse_cookie(req->headers.get("Cookie"));
+        RETVAL += req->cookies.size();
+        if (!RETVAL) throw "error";
+        req->cookies.fields.clear();
+    }
+}
+
+uint64_t bench_set_cookie (string s) {
+    RETVAL = 0;
+    ResponseSP res = new Response();
+    for (size_t i = 0; i < 1000; ++i) {
+        res->parse_set_cookie(s);
+        RETVAL += res->cookies.size();
+        if (!RETVAL) throw "error";
+        res->cookies.fields.clear();
+    }
+}

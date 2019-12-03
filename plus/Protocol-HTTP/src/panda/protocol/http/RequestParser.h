@@ -38,6 +38,8 @@ private:
     IFactory* factory;
 
     RequestSP new_request () const { return factory ? factory->new_request() : make_iptr<Request>(); }
+
+    //size_t machine_exec (const string& buffer, size_t off);
 };
 
 }}}

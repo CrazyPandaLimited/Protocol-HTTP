@@ -47,7 +47,6 @@ private:
     }
 
     void _reset (bool keep_context);
-
 };
 
 }}}

@@ -31,6 +31,8 @@ struct Request : Message, AllocatedObject<Request> {
 
     virtual ResponseSP new_response () const { return make_iptr<Response>(); }
 
+    void parse_cookie (const string& buffer);
+
 protected:
     ~Request () {} // restrict stack allocation
 
@@ -38,6 +40,8 @@ private:
     friend struct RequestParser;
 
     string _http_header (size_t);
+
+
 };
 using RequestSP = iptr<Request>;
 
