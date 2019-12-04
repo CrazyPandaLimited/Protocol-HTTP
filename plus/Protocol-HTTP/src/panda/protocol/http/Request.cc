@@ -36,6 +36,38 @@ string Request::http_header (size_t reserve) {
         headers.add("Host", host);
     }
 
+    if (compression_prefs && compression_prefs != static_cast<compression::storage_t>(compression::IDENTITY)) {
+        string comp_pos, comp_neg;
+        int index_pos = 0, index_neg = 0;
+        compression::for_each(compression_prefs, [&](auto value, bool negation){
+            const char* val = nullptr;
+            switch (value) {
+            using namespace compression;
+            case IDENTITY: val = "identity"; break;
+            case COMPRESS: val = "compress"; break;
+            case GZIP:     val = "gzip"; break;
+            case DEFLATE:  val = "deflate"; break;
+            case BROTLI:   val = "br"; break;
+            case ANY:      val = "*";  break;
+            }
+            if (negation) {
+                if (index_neg) { comp_neg += ", "; }
+                comp_neg += val;
+                comp_neg += ";q=0";
+                ++index_neg;
+            }  else {
+                if (index_pos) { comp_pos += ", "; }
+                comp_pos += val;
+                ++index_pos;
+            }
+        });
+        if (index_neg) {
+            if (index_pos) { comp_pos += ", "; }
+             comp_pos += comp_neg;
+        }
+        headers.add("Accept-Encoding", comp_pos);
+    }
+
     if (cookies.size()) {
         size_t len = 0;
         for (const auto& f : cookies.fields) len += f.name.length() + f.value.length() + 3; // 3 for ' ', '=' and ';' for each pair
@@ -72,5 +104,16 @@ bool Request::expects_continue () const {
     for (auto& val : headers.get_multi("Expect")) if (val == "100-continue") return true;
     return false;
 }
+
+std::uint8_t Request::compression_mask(bool inverse) noexcept {
+    std::uint8_t result = 0;
+    compression::for_each(compression_prefs, [&](auto value, bool negation){
+        if (inverse == negation) {
+            result |= value;
+        }
+    });
+    return result;
+}
+
 
 }}}

@@ -9,6 +9,47 @@ namespace panda { namespace protocol { namespace http {
 
 enum class State {headers, body, chunk, chunk_body, chunk_trailer, done, error};
 
+namespace compression {
+
+enum Compression: std::uint8_t {
+    IDENTITY = 1 << 0,
+    COMPRESS = 1 << 1,
+    GZIP     = 1 << 2,
+    DEFLATE  = 1 << 3,
+    BROTLI   = 1 << 4,
+    ALL      = 1 << 5,
+    OTHER = ALL, ANY = ALL, LAST = ALL };
+using storage_t = std::uint64_t;
+constexpr std::uint64_t ITEM_MASK = 0b11111111ull;
+constexpr std::uint64_t ITEM_VALUE_MASK = 0b00111111ull;
+constexpr std::uint64_t FILLED_MASK = 0b11111111ull << (7 * 8);
+
+template<typename F>
+void for_each(storage_t ordered_prefs, F&& fn) noexcept {
+    for(int i = sizeof (storage_t) - 1; i >= 0; --i) {
+        auto mask = ITEM_MASK << (i * 8);
+        auto item_shifted = (ordered_prefs & mask);
+        if (!item_shifted) { continue; }
+        auto item = item_shifted >> (i * 8);
+        bool negation = false;
+        if (item > LAST) {
+            item = ~item & ITEM_VALUE_MASK;
+            negation = true;
+        }
+        fn(item, negation);
+    }
+}
+
+bool inline pack(storage_t& ordered_prefs, std::uint32_t value) {
+    if (!(ordered_prefs & FILLED_MASK)) {
+        ordered_prefs = (ordered_prefs << 8) | (value & ITEM_MASK);
+        return true;
+    }
+    return false;
+}
+
+} // namespace compression
+
 struct Message : virtual Refcnt {
     template <class, class> struct Builder;
 
