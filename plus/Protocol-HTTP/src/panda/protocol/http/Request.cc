@@ -43,12 +43,9 @@ string Request::http_header (size_t reserve) {
             const char* val = nullptr;
             switch (value) {
             using namespace compression;
-            case IDENTITY: val = "identity"; break;
-            case COMPRESS: val = "compress"; break;
+            case IDENTITY: /* skip */ return ; break;
             case GZIP:     val = "gzip"; break;
             case DEFLATE:  val = "deflate"; break;
-            case BROTLI:   val = "br"; break;
-            case ANY:      val = "*";  break;
             }
             if (negation) {
                 if (index_neg) { comp_neg += ", "; }
@@ -65,7 +62,7 @@ string Request::http_header (size_t reserve) {
             if (index_pos) { comp_pos += ", "; }
              comp_pos += comp_neg;
         }
-        headers.add("Accept-Encoding", comp_pos);
+        if (comp_pos) { headers.add("Accept-Encoding", comp_pos); }
     }
 
     if (cookies.size()) {

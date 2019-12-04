@@ -18,7 +18,7 @@ struct Request : Message, AllocatedObject<Request> {
     URISP   uri;
     Cookies cookies;
 
-    compression::storage_t compression_prefs = 0;
+    compression::storage_t compression_prefs = compression::IDENTITY;
 
     Request () {}
 
@@ -34,6 +34,25 @@ struct Request : Message, AllocatedObject<Request> {
     std::uint8_t        compression_mask(bool inverse = false) noexcept;
 
     virtual ResponseSP new_response () const { return make_iptr<Response>(); }
+
+
+    template<typename... PrefN>
+    void allow_compression(PrefN... prefn) {
+        return _allow_compression(prefn...);
+    }
+
+protected:
+    template<typename... PrefN>
+    void _allow_compression(std::uint32_t p, PrefN... prefn) {
+        bool ok = compression::pack(this->compression_prefs, p);
+        if (ok) {
+            return _allow_compression(prefn...);
+        } else {
+            // NOOP: just ignore
+        }
+    }
+    void _allow_compression() {  }
+
 
 protected:
     ~Request () {} // restrict stack allocation
@@ -71,21 +90,9 @@ struct Request::BuilderImpl : Message::Builder<T, R> {
 
     template<typename... PrefN>
     T& allow_compression(PrefN... prefn) {
-        return _allow_compression(prefn...);
+        this->_message->allow_compression(prefn...);
+        return this->self();
     }
-
-protected:
-    template<typename... PrefN>
-    T& _allow_compression(std::uint32_t p, PrefN... prefn) {
-        bool ok = compression::pack(this->_message->compression_prefs, p);
-        if (ok) {
-            return _allow_compression(prefn...);
-        } else {
-            // just ignore
-            return this->self();
-        }
-    }
-    T& _allow_compression() { return this->self(); }
 };
 
 struct Request::Builder : Request::BuilderImpl<Builder, RequestSP> {

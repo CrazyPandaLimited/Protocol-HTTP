@@ -3,7 +3,7 @@
 #include "MessageParser.h"
 
 
-#line 97 "src/panda/protocol/http/MessageParser.rl"
+#line 118 "src/panda/protocol/http/MessageParser.rl"
 
 
 namespace panda { namespace protocol { namespace http {
@@ -21,7 +21,7 @@ static const int message_parser_en_request = 92;
 static const int message_parser_en_response = 1;
 
 
-#line 102 "src/panda/protocol/http/MessageParser.rl"
+#line 123 "src/panda/protocol/http/MessageParser.rl"
 
 #ifdef PARSER_DEFINITIONS_ONLY
 #undef PARSER_DEFINITIONS_ONLY
@@ -120,11 +120,11 @@ case 9:
 		goto tr10;
 	goto st0;
 tr10:
-#line 53 "src/panda/protocol/http/MessageParser.rl"
+#line 60 "src/panda/protocol/http/MessageParser.rl"
 	{message->http_version = 10;}
 	goto st10;
 tr76:
-#line 53 "src/panda/protocol/http/MessageParser.rl"
+#line 60 "src/panda/protocol/http/MessageParser.rl"
 	{message->http_version = 11;}
 	goto st10;
 st10:
@@ -136,7 +136,7 @@ case 10:
 		goto tr11;
 	goto st0;
 tr11:
-#line 91 "src/panda/protocol/http/MessageParser.rl"
+#line 112 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(response->code)}
 	goto st11;
 st11:
@@ -148,7 +148,7 @@ case 11:
 		goto tr12;
 	goto st0;
 tr12:
-#line 91 "src/panda/protocol/http/MessageParser.rl"
+#line 112 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(response->code)}
 	goto st12;
 st12:
@@ -160,7 +160,7 @@ case 12:
 		goto tr13;
 	goto st0;
 tr13:
-#line 91 "src/panda/protocol/http/MessageParser.rl"
+#line 112 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(response->code)}
 	goto st13;
 st13:
@@ -213,7 +213,7 @@ tr16:
         mark   = p - ps;
         marked = true;
     }
-#line 92 "src/panda/protocol/http/MessageParser.rl"
+#line 113 "src/panda/protocol/http/MessageParser.rl"
 	{SAVE(response->message)}
 #line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
@@ -221,7 +221,7 @@ tr16:
     }
 	goto st16;
 tr18:
-#line 92 "src/panda/protocol/http/MessageParser.rl"
+#line 113 "src/panda/protocol/http/MessageParser.rl"
 	{SAVE(response->message)}
 #line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
@@ -264,7 +264,7 @@ tr31:
     }
 	goto st16;
 tr75:
-#line 61 "src/panda/protocol/http/MessageParser.rl"
+#line 82 "src/panda/protocol/http/MessageParser.rl"
 	{message->chunked = true;}
 #line 29 "src/panda/protocol/http/MessageParser.rl"
 	{
@@ -412,7 +412,7 @@ tr27:
     }
 	goto st21;
 tr74:
-#line 61 "src/panda/protocol/http/MessageParser.rl"
+#line 82 "src/panda/protocol/http/MessageParser.rl"
 	{message->chunked = true;}
 	goto st21;
 st21:
@@ -895,7 +895,7 @@ tr47:
         }
         has_content_length = true;
     }
-#line 60 "src/panda/protocol/http/MessageParser.rl"
+#line 81 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(content_length)}
 #line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
@@ -904,7 +904,7 @@ tr47:
     }
 	goto st37;
 tr48:
-#line 60 "src/panda/protocol/http/MessageParser.rl"
+#line 81 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(content_length)}
 	goto st37;
 st37:
@@ -1604,13 +1604,13 @@ case 64:
 		goto tr77;
 	goto st0;
 tr77:
-#line 65 "src/panda/protocol/http/MessageParser.rl"
+#line 86 "src/panda/protocol/http/MessageParser.rl"
 	{chunk_length = 0;}
-#line 65 "src/panda/protocol/http/MessageParser.rl"
+#line 86 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_XDIGIT(chunk_length)}
 	goto st65;
 tr79:
-#line 65 "src/panda/protocol/http/MessageParser.rl"
+#line 86 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_XDIGIT(chunk_length)}
 	goto st65;
 st65:
@@ -1824,13 +1824,13 @@ case 76:
 		goto tr90;
 	goto st0;
 tr90:
-#line 65 "src/panda/protocol/http/MessageParser.rl"
+#line 86 "src/panda/protocol/http/MessageParser.rl"
 	{chunk_length = 0;}
-#line 65 "src/panda/protocol/http/MessageParser.rl"
+#line 86 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_XDIGIT(chunk_length)}
 	goto st77;
 tr92:
-#line 65 "src/panda/protocol/http/MessageParser.rl"
+#line 86 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_XDIGIT(chunk_length)}
 	goto st77;
 st77:
@@ -2257,35 +2257,35 @@ case 99:
 		goto tr125;
 	goto st0;
 tr125:
-#line 82 "src/panda/protocol/http/MessageParser.rl"
+#line 103 "src/panda/protocol/http/MessageParser.rl"
 	{request->method = Request::Method::CONNECT; }
 	goto st100;
 tr202:
-#line 80 "src/panda/protocol/http/MessageParser.rl"
+#line 101 "src/panda/protocol/http/MessageParser.rl"
 	{request->method = Request::Method::DELETE; }
 	goto st100;
 tr205:
-#line 76 "src/panda/protocol/http/MessageParser.rl"
+#line 97 "src/panda/protocol/http/MessageParser.rl"
 	{request->method = Request::Method::GET; }
 	goto st100;
 tr209:
-#line 77 "src/panda/protocol/http/MessageParser.rl"
+#line 98 "src/panda/protocol/http/MessageParser.rl"
 	{request->method = Request::Method::HEAD; }
 	goto st100;
 tr216:
-#line 75 "src/panda/protocol/http/MessageParser.rl"
+#line 96 "src/panda/protocol/http/MessageParser.rl"
 	{request->method = Request::Method::OPTIONS; }
 	goto st100;
 tr221:
-#line 78 "src/panda/protocol/http/MessageParser.rl"
+#line 99 "src/panda/protocol/http/MessageParser.rl"
 	{request->method = Request::Method::POST; }
 	goto st100;
 tr223:
-#line 79 "src/panda/protocol/http/MessageParser.rl"
+#line 100 "src/panda/protocol/http/MessageParser.rl"
 	{request->method = Request::Method::PUT; }
 	goto st100;
 tr228:
-#line 81 "src/panda/protocol/http/MessageParser.rl"
+#line 102 "src/panda/protocol/http/MessageParser.rl"
 	{request->method = Request::Method::TRACE; }
 	goto st100;
 st100:
@@ -2392,7 +2392,7 @@ case 110:
 		goto tr138;
 	goto st0;
 tr138:
-#line 53 "src/panda/protocol/http/MessageParser.rl"
+#line 60 "src/panda/protocol/http/MessageParser.rl"
 	{message->http_version = 10;}
 	goto st111;
 tr149:
@@ -2431,7 +2431,7 @@ tr151:
     }
 	goto st111;
 tr195:
-#line 61 "src/panda/protocol/http/MessageParser.rl"
+#line 82 "src/panda/protocol/http/MessageParser.rl"
 	{message->chunked = true;}
 #line 29 "src/panda/protocol/http/MessageParser.rl"
 	{
@@ -2448,7 +2448,7 @@ tr195:
     }
 	goto st111;
 tr196:
-#line 53 "src/panda/protocol/http/MessageParser.rl"
+#line 60 "src/panda/protocol/http/MessageParser.rl"
 	{message->http_version = 11;}
 	goto st111;
 st111:
@@ -2583,7 +2583,7 @@ tr147:
     }
 	goto st116;
 tr194:
-#line 61 "src/panda/protocol/http/MessageParser.rl"
+#line 82 "src/panda/protocol/http/MessageParser.rl"
 	{message->chunked = true;}
 	goto st116;
 st116:
@@ -3066,7 +3066,7 @@ tr167:
         }
         has_content_length = true;
     }
-#line 60 "src/panda/protocol/http/MessageParser.rl"
+#line 81 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(content_length)}
 #line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
@@ -3075,7 +3075,7 @@ tr167:
     }
 	goto st132;
 tr168:
-#line 60 "src/panda/protocol/http/MessageParser.rl"
+#line 81 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(content_length)}
 	goto st132;
 st132:
@@ -4179,7 +4179,7 @@ case 189:
 	_out: {}
 	}
 
-#line 128 "src/panda/protocol/http/MessageParser.rl"
+#line 149 "src/panda/protocol/http/MessageParser.rl"
     return p - ps;
 }
 

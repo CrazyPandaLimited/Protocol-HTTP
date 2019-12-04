@@ -13,12 +13,10 @@ namespace compression {
 
 enum Compression: std::uint8_t {
     IDENTITY = 1 << 0,
-    COMPRESS = 1 << 1,
-    GZIP     = 1 << 2,
-    DEFLATE  = 1 << 3,
-    BROTLI   = 1 << 4,
-    ALL      = 1 << 5,
-    OTHER = ALL, ANY = ALL, LAST = ALL };
+    GZIP     = 1 << 1,
+    DEFLATE  = 1 << 2,
+    LAST     = DEFLATE,
+};
 using storage_t = std::uint64_t;
 constexpr std::uint64_t ITEM_MASK = 0b11111111ull;
 constexpr std::uint64_t ITEM_VALUE_MASK = 0b00111111ull;
@@ -42,7 +40,9 @@ void for_each(storage_t ordered_prefs, F&& fn) noexcept {
 
 bool inline pack(storage_t& ordered_prefs, std::uint32_t value) {
     if (!(ordered_prefs & FILLED_MASK)) {
-        ordered_prefs = (ordered_prefs << 8) | (value & ITEM_MASK);
+        if (value != IDENTITY) {
+            ordered_prefs = (ordered_prefs << 8) | (value & ITEM_MASK);
+        }
         return true;
     }
     return false;

@@ -57,6 +57,8 @@ private:
     size_t    chunk_length;
     size_t    chunk_so_far;
 
+    std::uint8_t compr = 0;
+
     size_t machine_exec (const string& buffer, size_t off);
 };
 

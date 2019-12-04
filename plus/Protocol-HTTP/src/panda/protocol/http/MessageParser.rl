@@ -49,9 +49,30 @@
         SAVE(target);
         request->uri = new URI(target);
     }
+
+    action push_compression {
+        if (compr) {
+            request->allow_compression(compr);
+            compr = 0;
+        }
+    }
     
     http_version  = "HTTP/1." (("0" %{message->http_version = 10;}) | ("1" %{message->http_version = 11;}));
     
+    ################################## ACCEPT-ENCODING ################################
+    encoding_gzip     = /gzip/     %{ compr = compression::GZIP;     };
+    encoding_deflate  = /deflate/  %{ compr = compression::DEFLATE;  };
+    encoding_identity = /identity/;
+    encoding_compress = /compress/;
+    encoding_br       = /br/;
+    encoding_any      = "*";
+    some_enconding    = encoding_identity | encoding_deflate | encoding_gzip | encoding_compress | encoding_br | encoding_any;
+    q_not             = "0" ("." ("0"){,3})?;
+    q_any             = ("1" ("." ("0"){,3})?) | ("0" ("." digit{,3})? ) %{compr = compression::GZIP | compression::DEFLATE; };
+    q_value           = q_any :> q_not;
+    encoding_value    = some_enconding (OWS ";" OWS "q=" q_value );
+    accept_encoding   = /Accept-Encoding/i ":" OWS encoding_value ( OWS "," OWS encoding_value )*;
+
     ################################## HEADERS ########################################
     field_name     = token >mark %header_name %unmark;
     field_vchar    = VCHAR | WSP | obs_text;
