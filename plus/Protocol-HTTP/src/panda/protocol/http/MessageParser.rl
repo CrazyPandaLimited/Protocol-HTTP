@@ -65,12 +65,12 @@
     encoding_identity = /identity/;
     encoding_compress = /compress/;
     encoding_br       = /br/;
-    encoding_any      = "*";
+    encoding_any      = "*" %{compr = compression::GZIP | compression::DEFLATE; };
     some_enconding    = encoding_identity | encoding_deflate | encoding_gzip | encoding_compress | encoding_br | encoding_any;
-    q_not             = "0" ("." ("0"){,3})?;
-    q_any             = ("1" ("." ("0"){,3})?) | ("0" ("." digit{,3})? ) %{compr = compression::GZIP | compression::DEFLATE; };
-    q_value           = q_any :> q_not;
-    encoding_value    = some_enconding (OWS ";" OWS "q=" q_value );
+    q_not             = "0" ("." ("0"){,3})? %{ compr = 0; };
+    q_any             = ("1" ("." ("0"){,3})?) | ("0" ("." digit{1,3})? );
+    q_value           = q_any | q_not;
+    encoding_value    = some_enconding (OWS ";" OWS "q=" q_value )? %push_compression;
     accept_encoding   = /Accept-Encoding/i ":" OWS encoding_value ( OWS "," OWS encoding_value )*;
 
     ################################## HEADERS ########################################
@@ -104,7 +104,7 @@
            ;
     request_target  = VCHAR+ >mark %request_target %unmark;
     request_line    = method SP request_target SP http_version :> CRLF;
-    request_header  = header;
+    request_header  = accept_encoding | header;
     request_headers = (request_header CRLF)* CRLF;
     request        := request_line request_headers @done;
     
