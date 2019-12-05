@@ -44,6 +44,13 @@
         has_content_length = true;
     }
 
+    action transfer_encoding_err {
+        printf("transfer_encoding_err\n");
+        cs = message_parser_error;
+        set_error(errc::unsupported_compression);
+        fbreak;
+    }
+
     action request_target {
         string target;
         SAVE(target);
@@ -74,14 +81,20 @@
     accept_encoding   = /Accept-Encoding/i ":" OWS encoding_value ( OWS "," OWS encoding_value )*;
 
     ################################## HEADERS ########################################
-    field_name     = token >mark %header_name %unmark;
-    field_vchar    = VCHAR | WSP | obs_text;
-    field_value    = field_vchar* >mark %header_value %unmark;
-    header_field   = field_name ":" OWS <: field_value;
-    content_length = /Content-Length/i ":" OWS digit+ >content_length_start ${ADD_DIGIT(content_length)} OWS;
-    te_chunked     = /Transfer-Encoding/i ":" OWS /chunked/i %{message->chunked = true;} OWS;
-    header         = content_length | te_chunked | header_field;
-    
+    field_name        = token >mark %header_name %unmark;
+    field_vchar       = VCHAR | WSP | obs_text;
+    field_value       = field_vchar* >mark %header_value %unmark;
+    header_field      = field_name ":" OWS <: field_value;
+    content_length    = /Content-Length/i ":" OWS digit+ >content_length_start ${ADD_DIGIT(content_length)} OWS;
+    te_chunked        = /chunked/i %{message->chunked = true;                     };
+    te_identity       = /identity/ %{message->compressed = compression::IDENTITY; };
+    te_gzip           = /gzip/     %{message->compressed = compression::GZIP;     };
+    te_deflate        = /deflate/  %{message->compressed = compression::DEFLATE;  };
+    te_compression    = te_identity | te_gzip | te_deflate;
+    te_value          = (te_compression | ((te_compression  OWS "," OWS)? te_chunked)) OWS;
+    transfer_encoding = /Transfer-Encoding/i ":" OWS <: (te_value | (field_vchar+ - te_value) %transfer_encoding_err);
+    header            = content_length | transfer_encoding | header_field;
+
     ################################## CHUNKS ########################################
     chunk_size      = xdigit+ >{chunk_length = 0;} ${ADD_XDIGIT(chunk_length)};
     chunk_ext_name  = token;

@@ -58,6 +58,8 @@ struct Message : virtual Refcnt {
     bool    chunked      = false;
     int     http_version = 0;
 
+    compression::Compression compressed = compression::IDENTITY;
+
     Message () {}
 
     Message (Headers&& headers, Body&& body, bool chunked = false, int http_version = 0) :

@@ -27,7 +27,6 @@ struct Headers : Fields<string, false, 15> {
     string date       () const { return get("Date", ""); }
     string host       () const { return get("Host", ""); }
     string location   () const { return get("Location", ""); }
-    bool   is_chunked () const { return get("Transfer-Encoding", "") == "chunked"; }
 
     Headers&  connection      (const string& ctype) &     { return add("Connection", ctype); }
     Headers&& connection      (const string& ctype) &&    { return std::move(*this).add("Connection", ctype); }

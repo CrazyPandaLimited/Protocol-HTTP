@@ -13,6 +13,7 @@ enum class errc {
     unexpected_body,
     unexpected_eof,
     unexpected_continue,
+    unsupported_compression,
 };
 
 struct ErrorCategory : std::error_category {

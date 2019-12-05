@@ -3,7 +3,6 @@
 #define TEST(name) TEST_CASE("parse-compression: " name, "[parse-compression]")
 
 /* ACCEPT-ENCODING */
-
 TEST("Accept-Encoding: gzip") {
     RequestParser p;
     string raw = "GET / HTTP/1.1\r\n"
@@ -116,3 +115,39 @@ TEST("Accept-Encoding: gzip;q=0.123, deflate;q=0.120") {
     CHECK((req->compression_mask() & compression::DEFLATE));
     CHECK((req->compression_mask() & compression::IDENTITY));
 }
+/* TRANSFER-ENCODING */
+
+
+TEST("Transfer-Encoding: gzip, chunked") {
+    RequestParser p;
+    string raw =
+        "POST /upload HTTP/1.1\r\n"
+        "Transfer-Encoding:  gzip  ,  chunked  \r\n"
+        "\r\n"
+        "0\r\n"
+        "\r\n"
+        ;
+    auto result = p.parse(raw);
+    auto req = result.request;
+    CHECK(result.state == State::done);
+    CHECK(req->chunked);
+    CHECK(req->compressed == compression::GZIP);
+}
+
+/*
+TEST("Transfer-Encoding: gzipPPo, chunked") {
+    RequestParser p;
+    string raw =
+        "POST /upload HTTP/1.1\r\n"
+        "Transfer-Encoding:  gzip  ,  chunked  \r\n"
+        "\r\n"
+        "0\r\n"
+        "\r\n"
+        ;
+    auto result = p.parse(raw);
+    auto req = result.request;
+    CHECK(result.state == State::done);
+    CHECK(req->chunked);
+    CHECK(req->compressed == compression::GZIP);
+}
+*/

@@ -152,6 +152,34 @@ void bench_heavy_headers () {
     }
 }
 
+void bench_heavy_chunked () {
+    RequestParser p;
+    string buf =
+        "POST http://alx3apps.appspot.com/jsonrpc_example/json_service/ HTTP/1.1\r\n"
+        "Host: alx3apps.appspot.com\r\n"
+        "User-Agent: Mozilla/5.0(Windows;U;WindowsNT6.1;en-GB;rv:1.9.2.13)Gecko/20101203Firefox/3.6.13\r\n"
+        "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n"
+        "Accept-Language: en-gb,en;q=0.5\r\n"
+        "Accept-Encoding: gzip,deflate\r\n"
+        "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7\r\n"
+        "Keep-Alive: 115\r\n"
+        "Connection: keep-alive\r\n"
+        "Content-Type: application/json-rpc;charset=UTF-8\r\n"
+        "X-Requested-With: XMLHttpRequest\r\n"
+        "Referer: http://alx3apps.appspot.com/jsonrpc_example/\r\n"
+        "Content-Length: 0\r\n"
+        "Pragma: no-cache\r\n"
+        "Transfer-Encoding: gzip\r\n"
+        "\r\n"
+        ;
+    if (p.parse(buf).error) throw p.parse(buf).error;
+    //warn("%d", p.parse(buf).request->headers.size());
+
+    for (auto i = 0; i < 1000; ++i) {
+        p.parse(buf);
+    }
+}
+
 void bench_heavy_cookies () {
     RequestParser p;
     string buf =
