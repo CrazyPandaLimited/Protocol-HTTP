@@ -45,10 +45,45 @@
     }
 
     action transfer_encoding_err {
-        printf("transfer_encoding_err\n");
         cs = message_parser_error;
-        set_error(errc::unsupported_compression);
+        set_error(errc::unsupported_transfer_encoding);
         fbreak;
+    }
+
+    action unknown_content_encoding {
+        if (uncompress_content) {
+            cs = message_parser_error;
+            set_error(errc::unsupported_compression);
+            fbreak;
+        }
+    }
+
+    action content_gziped {
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::GZIP; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                fbreak;
+            }
+        }
+    }
+
+    action content_deflated {
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::DEFLATE; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                fbreak;
+            }
+        }
+    }
+
+    action attach_compressor {
+        if (message->compressed != compression::IDENTITY) {
+            rx_compressor = compressors[static_cast<int>(message->compressed)];
+        }
     }
 
     action request_target {
@@ -87,13 +122,15 @@
     header_field      = field_name ":" OWS <: field_value;
     content_length    = /Content-Length/i ":" OWS digit+ >content_length_start ${ADD_DIGIT(content_length)} OWS;
     te_chunked        = /chunked/i %{message->chunked = true;                     };
-    te_identity       = /identity/ %{message->compressed = compression::IDENTITY; };
-    te_gzip           = /gzip/     %{message->compressed = compression::GZIP;     };
-    te_deflate        = /deflate/  %{message->compressed = compression::DEFLATE;  };
-    te_compression    = te_identity | te_gzip | te_deflate;
-    te_value          = (te_compression | ((te_compression  OWS "," OWS)? te_chunked)) OWS;
-    transfer_encoding = /Transfer-Encoding/i ":" OWS <: (te_value | (field_vchar+ - te_value) %transfer_encoding_err);
-    header            = content_length | transfer_encoding | header_field;
+    te_value          = te_chunked OWS;
+    transfer_encoding = /Transfer-Encoding/i ":" OWS <: (te_value| (field_vchar+ - te_value) %transfer_encoding_err);
+    ce_identity       = /identity/;
+    ce_gzip           = /gzip/     %content_gziped;
+    ce_deflate        = /deflate/  %content_deflated;
+    ce_compression    = ce_identity | ce_gzip | ce_deflate;
+    ce_value          = (ce_compression (OWS "," OWS ce_compression)*) OWS;
+    content_encoding  = /Content-Encoding/i ":" OWS <: (ce_value | (field_vchar+ - ce_value) %unknown_content_encoding) %attach_compressor;
+    header            = content_length | transfer_encoding | content_encoding | header_field;
 
     ################################## CHUNKS ########################################
     chunk_size      = xdigit+ >{chunk_length = 0;} ${ADD_XDIGIT(chunk_length)};

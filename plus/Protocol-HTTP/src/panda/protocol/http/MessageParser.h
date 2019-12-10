@@ -1,6 +1,7 @@
 #pragma once
 #include "Request.h"
 #include "Response.h"
+#include "compression/Gzip.h"
 
 namespace panda { namespace protocol { namespace http {
 
@@ -9,6 +10,7 @@ constexpr const size_t SIZE_UNLIMITED = size_t(-1);
 struct MessageParser {
     size_t max_headers_size = SIZE_UNLIMITED;
     size_t max_body_size    = SIZE_UNLIMITED;
+    bool   uncompress_content = true;   // false have sense only for proxies
 
 protected:
     MessageSP       message;
@@ -20,10 +22,13 @@ protected:
     uint64_t        content_length;
     std::error_code error;
 
-    MessageParser () {}
+    MessageParser(): compressors{new compression::Gzip(max_body_size), new compression::Gzip(max_body_size)}, rx_compressor{nullptr} {}
 
     MessageParser (const MessageParser&) = delete;
     MessageParser (MessageParser&&)      = default;
+    ~MessageParser() {
+        for(auto it: compressors) { delete it; }
+    }
 
     inline void reset () {
         message            = nullptr;
@@ -57,6 +62,8 @@ private:
     size_t    chunk_length;
     size_t    chunk_so_far;
 
+    compression::Compressor *compressors[2];
+    compression::Compressor *rx_compressor;
     std::uint8_t compr = 0;
 
     size_t machine_exec (const string& buffer, size_t off);

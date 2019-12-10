@@ -73,16 +73,18 @@ size_t MessageParser::parse (const string& buffer, F1&& after_headers_cb, F2&& n
             
             if (content_length) {
                 auto left = content_length - body_so_far;
-                if (have >= left) {
-                    message->body.parts.push_back(buffer.substr(pos, left));
-                    state = State::done;
-                    return pos + left;
-                }
-                else {
-                    body_so_far += have;
-                    message->body.parts.push_back(buffer.substr(pos));
-                    return len;
-                }
+                size_t consumed;
+                bool final;
+                if (have >= left) { consumed = left; final = true;                           }
+                else              { consumed = have; final = false; body_so_far += consumed; }
+                string piece = buffer.substr(pos, consumed);
+
+                bool appended;
+                if (rx_compressor) { appended = rx_compressor->uncompress(piece, message->body); }
+                else               { message->body.parts.push_back(piece); appended = true;      }
+
+                if (final) { state = State::done; }
+                return pos + consumed;
             }
 
             body_so_far += have;
