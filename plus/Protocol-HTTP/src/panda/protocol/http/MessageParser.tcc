@@ -70,37 +70,40 @@ size_t MessageParser::parse (const string& buffer, F1&& after_headers_cb, F2&& n
         case State::body: {
             //printf("body\n");
             auto have = len - pos;
-            
+            size_t consumed;
+            bool final = false;
+
+            /* 1. determine how much it can be consumed */
             if (content_length) {
                 auto left = content_length - body_so_far;
-                size_t consumed;
-                bool final;
-                if (have >= left) { consumed = left; final = true;  }
-                else              { consumed = have; final = false; }
-                string piece = buffer.substr(pos, consumed);
-
-                if (rx_compressor) {
-                    bool appended = rx_compressor->uncompress(piece, message->body);
-                    if (!appended) { set_error(errc::uncompression_failure); return pos; }
-                }
-                else { message->body.parts.push_back(piece);  }
-
-                body_so_far += consumed;
-
-                if (final) {
-                    if (rx_compressor && rx_compressor->consumed_bytes != body_so_far) {
-                        set_error(errc::unexpected_eof);
-                        return pos;
-                    }
-                    state = State::done;
-                }
-                return pos + consumed;
+                if (have >= left) { consumed = left; final = true; }
+                else              { consumed = have;               }
+            } else {
+                consumed = have;
             }
 
+            /* 2. try to consume the available bytes */
+            string piece = buffer.substr(pos, consumed);
             body_so_far += have;
-            RETURN_IF_MAX_BODY_SIZE(body_so_far);
-            message->body.parts.push_back(buffer.substr(pos));
-            return len;
+            if (rx_compressor) {
+                bool appended = rx_compressor->uncompress(piece, message->body);
+                if (!appended) { set_error(errc::uncompression_failure); return pos; }
+            }
+            else {
+                if (!content_length) { RETURN_IF_MAX_BODY_SIZE(body_so_far); }
+                message->body.parts.push_back(piece);
+            }
+
+            /* 3. possibly finalize */
+            if (final) {
+                if (rx_compressor && rx_compressor->consumed_bytes != body_so_far) {
+                    set_error(errc::unexpected_eof);
+                    return pos;
+                }
+                state = State::done;
+            }
+
+            return pos + consumed;
         }
         case State::chunk: {
             //printf("chunk. rest: %s\n", buffer.substr(pos).c_str());
