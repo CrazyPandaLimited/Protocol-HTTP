@@ -4,9 +4,9 @@ namespace panda { namespace protocol { namespace http {
 
 const ErrorCategory error_category;
 
-const char* ErrorCategory::name () const throw() { return "protocol-http"; }
+const char* ErrorCategory::name () const noexcept { return "protocol-http"; }
 
-std::string ErrorCategory::message (int condition) const throw() {
+std::string ErrorCategory::message (int condition) const noexcept {
     switch ((errc)condition) {
         case errc::semantic_error          : return "http parsing semantic error";
         case errc::lexical_error           : return "http parsing lexical error";
@@ -16,6 +16,7 @@ std::string ErrorCategory::message (int condition) const throw() {
         case errc::unexpected_body         : return "body is prohibited";
         case errc::unexpected_eof          : return "http parsing error: unexpected EOF";
         case errc::unexpected_continue     : return "response code 100-continue was not expected";
+        case errc::unsupported_compression : return "compression is unsupported";
     }
     return {};
 }
