@@ -15,7 +15,7 @@ enum class errc {
     unexpected_continue,
     unsupported_transfer_encoding,
     unsupported_compression,
-    uncompression_failed,
+    uncompression_failure,
 };
 
 struct ErrorCategory : std::error_category {

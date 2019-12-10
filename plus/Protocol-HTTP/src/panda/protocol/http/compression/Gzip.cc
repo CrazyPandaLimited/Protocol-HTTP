@@ -20,11 +20,13 @@ static bool initialized = check_zlib();
 
 Gzip::Gzip(size_t& max_body_size_):Compressor(max_body_size_) {
     rx_stream.avail_in = 0;
+    rx_stream.next_in = Z_NULL;
     rx_stream.zalloc = Z_NULL;
     rx_stream.zfree = Z_NULL;
     rx_stream.opaque = Z_NULL;
 
     tx_stream.avail_in = 0;
+    tx_stream.next_in = 0;
     tx_stream.zalloc = Z_NULL;
     tx_stream.zfree = Z_NULL;
     tx_stream.opaque = Z_NULL;
@@ -54,6 +56,7 @@ bool Gzip::uncompress(const string& piece, Body& body) noexcept {
     auto consume_buff = [&](bool final){
         acc.length(acc.capacity() - rx_stream.avail_out);
         body.parts.emplace_back(std::move(acc));
+        consumed_bytes += (piece.size() - rx_stream.avail_in);
         if (!final) {
             acc.clear();
             acc.reserve(piece.size() * RX_BUFF_SCALE);
@@ -88,6 +91,7 @@ bool Gzip::uncompress(const string& piece, Body& body) noexcept {
 
 void Gzip::reset() noexcept {
     rx_done = false;
+    consumed_bytes = 0;
 }
 
 
