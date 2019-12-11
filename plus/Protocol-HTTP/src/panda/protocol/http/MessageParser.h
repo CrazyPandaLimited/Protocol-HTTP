@@ -22,13 +22,13 @@ protected:
     uint64_t        content_length;
     std::error_code error;
 
-    MessageParser(): compressors{new compression::Gzip(max_body_size), new compression::Gzip(max_body_size)}, rx_compressor{nullptr} {}
+    MessageParser(): gzip{max_body_size} {
+        /* zlib supports deflate and gzip streams uncompression. Use the same object */
+        compressors[0] = compressors[1] = &gzip;
+    }
 
     MessageParser (const MessageParser&) = delete;
-    MessageParser (MessageParser&&)      = default;
-    ~MessageParser() {
-        for(auto it: compressors) { delete it; }
-    }
+    MessageParser (MessageParser&&)      = delete;
 
     inline void reset () {
         message            = nullptr;
@@ -43,6 +43,11 @@ protected:
         content_length     = 0;
         body_so_far        = 0;
         error.clear();
+
+        if (compressor) {
+            compressor->reset();
+            compressor = nullptr;
+        }
     }
 
     template <class F1, class F2> size_t parse (const string& buffer, F1&& after_headers_cb, F2&& no_body_cb);
@@ -52,7 +57,7 @@ protected:
         state = State::error;
     }
 
-    compression::Compressor *rx_compressor;
+    compression::Compressor *compressor = nullptr;
 
 private:
     ptrdiff_t mark;
@@ -64,6 +69,7 @@ private:
     size_t    chunk_length;
     size_t    chunk_so_far;
 
+    compression::Gzip gzip;
     compression::Compressor *compressors[2];
     std::uint8_t compr = 0;
 

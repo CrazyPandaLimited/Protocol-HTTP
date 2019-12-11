@@ -84,8 +84,8 @@ size_t MessageParser::parse (const string& buffer, F1&& after_headers_cb, F2&& n
             /* 2. try to consume the available bytes */
             string piece = buffer.substr(pos, consumed);
             body_so_far += have;
-            if (rx_compressor) {
-                bool appended = rx_compressor->uncompress(piece, message->body);
+            if (compressor) {
+                bool appended = compressor->uncompress(piece, message->body);
                 if (!appended) { set_error(errc::uncompression_failure); return pos; }
             }
             else {

@@ -58,7 +58,7 @@ ResponseParser::Result ResponseParser::eof () {
     if (!_context_request) return {{}, 0, State::headers, {}};
 
     bool done = response && !response->keep_alive() && !content_length && !response->chunked && state == State::body
-            && (!rx_compressor || rx_compressor->rx_done);
+            && (!compressor || compressor->eof());
 
     if (done) {
         state = State::done;

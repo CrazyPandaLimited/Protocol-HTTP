@@ -82,7 +82,13 @@
 
     action attach_compressor {
         if (message->compressed != compression::IDENTITY) {
-            rx_compressor = compressors[static_cast<int>(message->compressed)];
+            int index = 0;
+            auto mask = static_cast<int>(message->compressed);
+            while(!(mask & 0b1)) {
+                ++index;
+                mask = mask >> 1;
+            }
+            compressor = compressors[index];
         }
     }
 

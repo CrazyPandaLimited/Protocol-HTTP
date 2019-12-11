@@ -13,10 +13,10 @@ struct Compressor {
 
     virtual bool uncompress(const string& piece, Body& body) noexcept = 0;
     virtual void reset() noexcept = 0;
-
+    bool eof() noexcept  { return rx_done ;}
     virtual ~Compressor() {}
-    size_t unpacked_bytes = 0;
-    size_t acked_bytes = 0;
+
+protected:
     size_t& max_body_size;
     bool rx_done = false;
 };
