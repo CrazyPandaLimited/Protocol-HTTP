@@ -277,6 +277,16 @@ Content-Type: application/x-www-form-urlencoded
     CHECK(req->compressed == compression::GZIP);
     REQUIRE(req->body.parts.size() == 1);
     CHECK(req->body.parts[0] == "Lorem ipsum dolor\n");
+
+    SECTION("check reset") {
+        // p.reset() is implicitly called
+        auto req = result.request;
+        CHECK(result.state == State::done);
+        CHECK(result.error.value() == 0);
+        CHECK(req->compressed == compression::GZIP);
+        REQUIRE(req->body.parts.size() == 1);
+        CHECK(req->body.parts[0] == "Lorem ipsum dolor\n");
+    }
 }
 
 TEST("request with corrupted gzip payload") {

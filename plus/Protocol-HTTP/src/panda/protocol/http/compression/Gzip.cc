@@ -27,12 +27,6 @@ Gzip::Gzip(size_t& max_body_size_):Compressor(max_body_size_) {
     rx_stream.zfree = Z_NULL;
     rx_stream.opaque = Z_NULL;
 
-    tx_stream.avail_in = 0;
-    tx_stream.next_in = 0;
-    tx_stream.zalloc = Z_NULL;
-    tx_stream.zfree = Z_NULL;
-    tx_stream.opaque = Z_NULL;
-
     // https://stackoverflow.com/questions/1838699/how-can-i-decompress-a-gzip-stream-with-zlib
     int err;
     err = inflateInit2(&rx_stream, 16 + MAX_WBITS);
@@ -99,6 +93,11 @@ void Gzip::reset() noexcept {
     rx_done = false;
     rx_stream.total_out = 0;
     rx_stream.total_in = 0;
+    rx_stream.avail_in = 0;
+
+    int err;
+    err = inflateReset2(&rx_stream, 16 + MAX_WBITS);
+    assert(err == Z_OK);
 }
 
 

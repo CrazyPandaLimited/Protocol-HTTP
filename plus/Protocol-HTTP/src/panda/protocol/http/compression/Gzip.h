@@ -14,7 +14,6 @@ struct Gzip: Compressor {
 
 private:
     z_stream rx_stream;
-    z_stream tx_stream;
 };
 
 }}}}
