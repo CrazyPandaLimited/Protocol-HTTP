@@ -16,7 +16,6 @@ struct Compressor {
 
     virtual ~Compressor() {}
     size_t unpacked_bytes = 0;
-    size_t consumed_bytes = 0;
     size_t acked_bytes = 0;
     size_t& max_body_size;
     bool rx_done = false;

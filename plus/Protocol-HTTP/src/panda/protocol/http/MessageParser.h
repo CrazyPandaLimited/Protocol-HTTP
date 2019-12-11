@@ -52,6 +52,8 @@ protected:
         state = State::error;
     }
 
+    compression::Compressor *rx_compressor;
+
 private:
     ptrdiff_t mark;
     bool      marked;
@@ -63,7 +65,6 @@ private:
     size_t    chunk_so_far;
 
     compression::Compressor *compressors[2];
-    compression::Compressor *rx_compressor;
     std::uint8_t compr = 0;
 
     size_t machine_exec (const string& buffer, size_t off);

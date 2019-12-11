@@ -19,6 +19,8 @@ static bool check_zlib(){
 static bool initialized = check_zlib();
 
 Gzip::Gzip(size_t& max_body_size_):Compressor(max_body_size_) {
+    rx_stream.total_out = 0;
+    rx_stream.total_in = 0;
     rx_stream.avail_in = 0;
     rx_stream.next_in = Z_NULL;
     rx_stream.zalloc = Z_NULL;
@@ -52,8 +54,11 @@ bool Gzip::uncompress(const string& piece, Body& body) noexcept {
     rx_stream.avail_out = static_cast<uInt>(acc.capacity());
     rx_stream.avail_in = static_cast<uInt>(piece.size());
     rx_stream.next_in = (Bytef*)(piece.data());
+    size_t consumed_bytes = 0;
 
     auto consume_buff = [&](bool final){
+        if (rx_stream.total_out >= max_body_size) { return false; }
+
         acc.length(acc.capacity() - rx_stream.avail_out);
         body.parts.emplace_back(std::move(acc));
         consumed_bytes += (piece.size() - rx_stream.avail_in);
@@ -63,21 +68,22 @@ bool Gzip::uncompress(const string& piece, Body& body) noexcept {
             rx_stream.next_out = reinterpret_cast<Bytef*>(acc.buf());
             rx_stream.avail_out = static_cast<uInt>(acc.capacity());
         }
+        return true;
     };
 
     do {
         int r = ::inflate(&rx_stream, Z_SYNC_FLUSH);
         switch (r) {
         case Z_STREAM_END:
-            consume_buff(true);
-            rx_done = true;
-            return true;
+            if (!consume_buff(true)) { return false; }
+            rx_done = consumed_bytes == piece.size();
+            return rx_done;
         case Z_OK:
-            consume_buff(false);
+            if (!consume_buff(false)) { return false; }
             continue;
         case Z_BUF_ERROR:
             if (rx_stream.avail_out != acc.capacity()) {
-                consume_buff(false);
+                if (!consume_buff(false)) { return false; }
                 continue;
             } else {
                 assert(!rx_stream.avail_in);
@@ -91,7 +97,8 @@ bool Gzip::uncompress(const string& piece, Body& body) noexcept {
 
 void Gzip::reset() noexcept {
     rx_done = false;
-    consumed_bytes = 0;
+    rx_stream.total_out = 0;
+    rx_stream.total_in = 0;
 }
 
 

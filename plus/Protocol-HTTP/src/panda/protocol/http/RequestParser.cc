@@ -27,7 +27,7 @@ RequestParser::Result RequestParser::parse (const string& buffer) {
             state = State::done;
             return false;
         }
-    );
+   );
     Result ret = {request, pos, state, error};
     if (state >= State::done) reset();
     return ret;

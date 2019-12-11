@@ -71,13 +71,12 @@ size_t MessageParser::parse (const string& buffer, F1&& after_headers_cb, F2&& n
             //printf("body\n");
             auto have = len - pos;
             size_t consumed;
-            bool final = false;
 
             /* 1. determine how much it can be consumed */
             if (content_length) {
                 auto left = content_length - body_so_far;
-                if (have >= left) { consumed = left; final = true; }
-                else              { consumed = have;               }
+                if (have >= left) { consumed = left; state = State::done; }
+                else              { consumed = have;                      }
             } else {
                 consumed = have;
             }
@@ -92,15 +91,6 @@ size_t MessageParser::parse (const string& buffer, F1&& after_headers_cb, F2&& n
             else {
                 if (!content_length) { RETURN_IF_MAX_BODY_SIZE(body_so_far); }
                 message->body.parts.push_back(piece);
-            }
-
-            /* 3. possibly finalize */
-            if (final) {
-                if (rx_compressor && rx_compressor->consumed_bytes != body_so_far) {
-                    set_error(errc::unexpected_eof);
-                    return pos;
-                }
-                state = State::done;
             }
 
             return pos + consumed;
