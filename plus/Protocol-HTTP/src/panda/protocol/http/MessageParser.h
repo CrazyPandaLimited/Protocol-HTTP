@@ -22,7 +22,8 @@ protected:
     uint64_t        content_length;
     std::error_code error;
 
-    MessageParser(): gzip{max_body_size} {
+    MessageParser() {
+        gzip.prepare_uncompress(max_body_size);
         /* zlib supports deflate and gzip streams uncompression. Use the same object */
         compressors[0] = compressors[1] = &gzip;
     }

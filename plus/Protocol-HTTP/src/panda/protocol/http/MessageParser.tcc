@@ -85,8 +85,8 @@ size_t MessageParser::parse (const string& buffer, F1&& after_headers_cb, F2&& n
             string piece = buffer.substr(pos, consumed);
             body_so_far += have;
             if (compressor) {
-                bool appended = compressor->uncompress(piece, message->body);
-                if (!appended) { set_error(errc::uncompression_failure); return pos; }
+                auto append_err = compressor->uncompress(piece, message->body);
+                if (append_err) { set_error(append_err); return pos; }
             }
             else {
                 if (!content_length) { RETURN_IF_MAX_BODY_SIZE(body_so_far); }
@@ -132,8 +132,8 @@ size_t MessageParser::parse (const string& buffer, F1&& after_headers_cb, F2&& n
 
             auto piece = buffer.substr(pos, consumed);
             if (compressor) {
-                bool appended = compressor->uncompress(piece, message->body);
-                if (!appended) { set_error(errc::uncompression_failure); return pos; }
+                auto append_err = compressor->uncompress(piece, message->body);
+                if (append_err) { set_error(append_err); return pos; }
             }
             else {
                 message->body.parts.push_back(piece);

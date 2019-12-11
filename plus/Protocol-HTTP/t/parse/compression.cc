@@ -460,7 +460,7 @@ TEST("request with gzip payload (max body size)") {
     auto req = result.request;
     CHECK(result.state == State::error);
     CHECK(req->compressed == compression::GZIP);
-    CHECK(result.error == errc::uncompression_failure);
+    CHECK(result.error == errc::body_too_large);
 }
 
 TEST("response with gzipped chunked response") {

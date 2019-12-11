@@ -6,11 +6,15 @@
 namespace panda { namespace protocol { namespace http { namespace compression {
 
 struct Gzip: Compressor {
-    Gzip(size_t& max_body_size_);
+    Gzip() {}
     ~Gzip() override;
 
-    bool uncompress(const string& piece, Body& body) noexcept override;
-    void reset() noexcept override;
+    void prepare_uncompress(size_t& max_body_size) noexcept override;
+    void prepare_compress() noexcept override;
+
+    std::error_code uncompress(const string& piece, Body& body) noexcept override;
+
+    virtual void reset() noexcept override;
 
 private:
     z_stream rx_stream;
