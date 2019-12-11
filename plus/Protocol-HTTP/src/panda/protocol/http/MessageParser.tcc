@@ -120,17 +120,34 @@ size_t MessageParser::parse (const string& buffer, F1&& after_headers_cb, F2&& n
             auto left = chunk_length - chunk_so_far;
             auto have = len - pos;
 
+            bool final = false;
+            size_t consumed;
             if (have >= left) {
-                message->body.parts.push_back(buffer.substr(pos, left));
+                consumed = left;
+                final = true;
+            } else {
+                consumed = have;
+            }
+            chunk_so_far += consumed;
+
+            auto piece = buffer.substr(pos, consumed);
+            if (compressor) {
+                bool appended = compressor->uncompress(piece, message->body);
+                if (!appended) { set_error(errc::uncompression_failure); return pos; }
+            }
+            else {
+                message->body.parts.push_back(piece);
+            }
+
+            if (final) {
+                pos += left;
                 state = State::chunk;
                 cs = message_parser_en_chunk;
-                pos += left;
                 continue;
             } else {
-                message->body.parts.push_back(buffer.substr(pos));
-                chunk_so_far += have;
                 return len;
             }
+
         }
         case State::chunk_trailer: {
             //printf("chjunk trailer\n");
