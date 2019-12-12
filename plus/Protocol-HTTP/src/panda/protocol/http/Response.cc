@@ -73,6 +73,7 @@ string Response::_http_header (const Request* req, size_t reserve) {
     if (!message) message = message_for_code(code);
 
     if (!chunked && !headers.has("Content-Length")) headers.add("Content-Length", panda::to_string(body.length()));
+    _content_encoding();
 
     for (const auto& item : cookies.fields) headers.add("Set-Cookie", item.value.to_string(item.name, req));
 

@@ -3,6 +3,9 @@
 #include "Error.h"
 #include "Headers.h"
 #include "compression/Compression.h"
+#include "compression/Compressor.h"
+#include "compression/Gzip.h"
+#include "compression/BodyGuard.h"
 #include <array>
 #include <panda/refcnt.h>
 
@@ -18,7 +21,10 @@ struct Message : virtual Refcnt {
     bool    chunked      = false;
     int     http_version = 0;
 
+    using compressor_ptr = std::unique_ptr<compression::Compressor>;
+    using wrapped_chunk = std::array<string, 3>;
     compression::Compression compressed = compression::IDENTITY;
+    compressor_ptr compressor;
 
     Message () {}
 
@@ -29,14 +35,44 @@ struct Message : virtual Refcnt {
     bool keep_alive () const;
     void keep_alive (bool val) { val ? headers.connection("keep-alive") : headers.connection("close"); }
 
-    std::array<string, 3> make_chunk (const string& s) {
+
+     wrapped_chunk wrap_into_chunk (const string& s) {
         if (!s) return {"", "", ""};
         return {string::from_number(s.length(), 16) + "\r\n", s, "\r\n"};
     }
 
-    string final_chunk () { return "0\r\n\r\n"; }
+    wrapped_chunk make_chunk (const string& s) {
+        if (!s) return {"", "", ""};
+        if(compressor) {
+            return wrap_into_chunk(compressor->compress(s));
+        } else {
+            return wrap_into_chunk(s);
+        }
+    }
+
+    wrapped_chunk final_chunk () {
+        if (compressor) {
+            auto chunk = wrap_into_chunk(compressor->flush());
+            chunk[2] += "0\r\n\r\n";
+            return chunk;
+        } else {
+            return {"", "","0\r\n\r\n"};
+        }
+    }
+
 
 protected:
+    inline void _content_encoding() {
+        using namespace compression;
+        if (!headers.has("Content-Encoding")) {
+            switch (compressed) {
+            case GZIP: headers.add("Content-Encoding", "gzip"); break;
+            case DEFLATE: headers.add("Content-Encoding", "deflate"); break;
+            case IDENTITY: break;
+            }
+        }
+    }
+
     inline void _compile_prepare () {
         if (chunked) {
             http_version = 11;
@@ -48,6 +84,8 @@ protected:
 
     template <class T>
     inline std::vector<string> _to_vector (const T& f) {
+        _prepare_compressor();
+        auto body_holder = maybe_compress();
         _compile_prepare();
         auto hdr = f();
         if (!body.length()) return {hdr};
@@ -57,12 +95,8 @@ protected:
         if (chunked) {
             result.reserve(1 + sz * 3 + 1);
             result.emplace_back(hdr);
-            for (auto& part : body.parts) {
-                if (!part) continue;
-                auto ss = make_chunk(part);
-                for (auto& s : ss) result.emplace_back(s);
-            }
-            result.emplace_back(final_chunk());
+            auto append_piecewise = [&](auto& piece) { result.emplace_back(piece); };
+            _serialize_body(append_piecewise);
         } else {
             result.reserve(1 + sz);
             result.emplace_back(hdr);
@@ -74,6 +108,8 @@ protected:
 
     template <class T>
     inline string _to_string (const T& f) {
+        _prepare_compressor();
+        auto body_holder = maybe_compress();
         _compile_prepare();
         auto blen = body.length();
         if (chunked && blen) blen += body.parts.size() * 8 + 5;
@@ -81,11 +117,8 @@ protected:
         if (!blen) return ret;
 
         if (chunked) {
-            for (auto& part : body.parts) {
-                auto ss = make_chunk(part);
-                for (auto& s : ss) ret += s;
-            }
-            ret += final_chunk();
+            auto append_piecewise = [&](auto& piece) { ret += piece; };
+            _serialize_body(append_piecewise);
         }
         else for (auto& part : body.parts) ret += part;
 
@@ -93,6 +126,36 @@ protected:
     }
 
 private:
+    compression::BodyGuard maybe_compress();
+
+    template<typename Fn>
+    inline void _append_chunk(wrapped_chunk chunk, Fn&& fn) {
+        for (auto& piece : chunk) if (piece) { fn(piece); }
+    }
+
+    template<typename Fn>
+    inline void _serialize_body(Fn&& fn) {
+        for (auto& part : body.parts) {
+            _append_chunk(make_chunk(part), fn);
+        }
+        _append_chunk(final_chunk(), fn);
+    }
+
+    inline void _prepare_compressor() {
+        switch (compressed) {
+        case compression::DEFLATE:
+            compressed = compression::GZIP;
+            /* fall-through */
+        case compression::GZIP: {
+            auto gzip = std::make_unique<compression::Gzip>();
+            gzip->prepare_compress();
+            compressor = std::move(gzip);
+            break;
+        }
+        case compression::IDENTITY: /* NOOP */ break;
+        }
+    }
+
     //friend struct Parser; friend struct RequestParser; friend struct ResponseParser;
 };
 using MessageSP = iptr<Message>;
@@ -132,6 +195,11 @@ struct Message::Builder {
         return self();
     }
 
+    T& compress(compression::Compression method) {
+        _message->compressed = method;
+        return self();
+    }
+
     MP build () { return _message; }
 
 protected:
@@ -141,5 +209,6 @@ protected:
 
     T& self () { return static_cast<T&>(*this); }
 };
+
 
 }}}

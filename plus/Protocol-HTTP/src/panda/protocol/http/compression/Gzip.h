@@ -13,11 +13,14 @@ struct Gzip: Compressor {
     void prepare_compress() noexcept override;
 
     std::error_code uncompress(const string& piece, Body& body) noexcept override;
+    string compress(const string& piece) noexcept override;
+    string flush() noexcept override;
+
 
     virtual void reset() noexcept override;
 
 private:
-    z_stream rx_stream;
+    z_stream stream;
 };
 
 }}}}

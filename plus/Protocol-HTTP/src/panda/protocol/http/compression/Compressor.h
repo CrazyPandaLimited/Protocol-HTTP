@@ -10,6 +10,7 @@ enum class Mode { none = 0, compress, uncompress };
 
 struct Compressor {
     static const constexpr std::size_t RX_BUFF_SCALE = 10;
+    static const constexpr std::size_t TX_CHUNK_SCALE = 5;
 
     Compressor(){}
     Compressor(const Compressor& ) = delete;
@@ -20,7 +21,10 @@ struct Compressor {
     virtual void reset() noexcept = 0;
 
     virtual std::error_code uncompress(const string& piece, Body& body) noexcept = 0;
+    virtual string compress(const string& piece) noexcept = 0;
+
     bool eof() noexcept  { return rx_done ;}
+    virtual string flush() noexcept = 0;
 
     virtual ~Compressor() {}
 

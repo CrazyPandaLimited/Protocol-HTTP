@@ -80,6 +80,8 @@ string Request::http_header (size_t reserve) {
         headers.add("Cookie", coo);
     }
 
+    _content_encoding();
+
     string s(meth.length() + 1 + reluri.length() + 6 + 5 + headers.length() + 2 + reserve);
 
     s += meth;
