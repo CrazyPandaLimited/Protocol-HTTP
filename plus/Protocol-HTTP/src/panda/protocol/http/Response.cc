@@ -55,7 +55,7 @@ string Response::Cookie::to_string (const string& name, const Request* req) cons
     return str;
 }
 
-string Response::_http_header (const Request* req, size_t reserve) {
+string Response::_http_header (const Request* req, compression::Compression applied_compression) {
     if (!code) code = 200;
 
     if (req) {
@@ -73,11 +73,11 @@ string Response::_http_header (const Request* req, size_t reserve) {
     if (!message) message = message_for_code(code);
 
     if (!chunked && !headers.has("Content-Length")) headers.add("Content-Length", panda::to_string(body.length()));
-    _content_encoding();
+    _content_encoding(applied_compression);
 
     for (const auto& item : cookies.fields) headers.add("Set-Cookie", item.value.to_string(item.name, req));
 
-    string s(5 + 4 + 4 + message.length() + 2 + headers.length() + 2 + reserve);
+    string s(5 + 4 + 4 + message.length() + 2 + headers.length() + 2);
 
     s += "HTTP/";
     switch (http_version) {
@@ -96,8 +96,15 @@ string Response::_http_header (const Request* req, size_t reserve) {
     return s;
 }
 
-std::vector<string> Response::to_vector (const Request* req) { return _to_vector([this,req]{ return _http_header(req, 0); }); }
-string              Response::to_string (const Request* req) { return _to_string([this,req](size_t r){ return _http_header(req, r); }); }
+std::vector<string> Response::to_vector (const Request* req) {
+    /* if client didn't announce Accept-Encoding or we do not support it, just pass data as it is */
+    compression::Compression applied_compression
+            = req && (req->compression_mask() & static_cast<std::uint8_t>(compressed))
+            ? compressed
+            : compression::IDENTITY;
+
+    return _to_vector(applied_compression, [&]{ return _http_header(req,  applied_compression); });
+}
 
 string Response::message_for_code (int code) {
     switch (code) {

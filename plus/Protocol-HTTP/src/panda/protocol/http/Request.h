@@ -30,8 +30,8 @@ struct Request : Message, AllocatedObject<Request> {
     bool expects_continue () const;
 
     std::vector<string> to_vector ();
-    string              to_string ();
-    std::uint8_t        compression_mask(bool inverse = false) noexcept;
+    string              to_string () { return Message::to_string(to_vector()); }
+    std::uint8_t        compression_mask(bool inverse = false) const noexcept;
 
     virtual ResponseSP new_response () const { return make_iptr<Response>(); }
 
@@ -60,7 +60,7 @@ protected:
 private:
     friend struct RequestParser;
 
-    string http_header (size_t);
+    string http_header (compression::Compression applied_compression);
 };
 using RequestSP = iptr<Request>;
 

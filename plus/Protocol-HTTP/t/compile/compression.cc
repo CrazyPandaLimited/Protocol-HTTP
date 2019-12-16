@@ -172,3 +172,19 @@ Nullam quis tempus lectus. Quisque purus est, venenatis at auctor a, laoreet in 
         REQUIRE(req->body.to_string() == body_concat);
     }
 }
+
+TEST("ignore compression in response if request didn't support it") {
+    auto req = Request::Builder()
+        .method(Method::GET)
+        .allow_compression(compression::IDENTITY)
+        .uri("/")
+        .build();
+
+    auto res = Response::Builder().code(200)
+            .body("my body")
+            .compress(compression::GZIP)
+            .build();
+
+    auto data = res->to_string(req);
+    CHECK(data == "HTTP/1.1 200 OK\r\nContent-Length: 7\r\n\r\nmy body");
+}

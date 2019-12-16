@@ -10,7 +10,7 @@ bool Message::keep_alive () const {
 }
 
 compression::BodyGuard Message::maybe_compress() {
-    if ((compressed == compression::IDENTITY) || body.parts.empty()) {
+    if (!compressor || body.parts.empty()) {
         return compression::BodyGuard{};
     }
     compression::BodyGuard body_holder(&body);
@@ -25,5 +25,12 @@ compression::BodyGuard Message::maybe_compress() {
     body = std::move(compressed);
     return body_holder;
 }
+
+string Message::to_string(const std::vector<string>& pieces) {
+    string r;
+    for(auto piece: pieces) { r += piece; }
+    return r;
+}
+
 
 }}}

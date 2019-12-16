@@ -62,10 +62,12 @@ struct Message : virtual Refcnt {
 
 
 protected:
-    inline void _content_encoding() {
+    static string to_string(const std::vector<string>& pieces);
+
+    inline void _content_encoding(compression::Compression applied_compression) {
         using namespace compression;
         if (!headers.has("Content-Encoding")) {
-            switch (compressed) {
+            switch (applied_compression) {
             case GZIP: headers.add("Content-Encoding", "gzip"); break;
             case DEFLATE: headers.add("Content-Encoding", "deflate"); break;
             case IDENTITY: break;
@@ -83,8 +85,8 @@ protected:
     }
 
     template <class T>
-    inline std::vector<string> _to_vector (const T& f) {
-        _prepare_compressor();
+    inline std::vector<string> _to_vector (compression::Compression applied_compression, const T& f) {
+        _prepare_compressor(applied_compression);
         auto body_holder = maybe_compress();
         _compile_prepare();
         auto hdr = f();
@@ -106,25 +108,6 @@ protected:
         return result;
     }
 
-    template <class T>
-    inline string _to_string (const T& f) {
-        _prepare_compressor();
-        auto body_holder = maybe_compress();
-        _compile_prepare();
-        auto blen = body.length();
-        if (chunked && blen) blen += body.parts.size() * 8 + 5;
-        auto ret = f(blen);
-        if (!blen) return ret;
-
-        if (chunked) {
-            auto append_piecewise = [&](auto& piece) { ret += piece; };
-            _serialize_body(append_piecewise);
-        }
-        else for (auto& part : body.parts) ret += part;
-
-        return ret;
-    }
-
 private:
     compression::BodyGuard maybe_compress();
 
@@ -141,11 +124,9 @@ private:
         _append_chunk(final_chunk(), fn);
     }
 
-    inline void _prepare_compressor() {
-        switch (compressed) {
-        case compression::DEFLATE:
-            compressed = compression::GZIP;
-            /* fall-through */
+    inline void _prepare_compressor(compression::Compression applied_compression) {
+        switch (applied_compression) {
+        case compression::DEFLATE: /* NOOP */ break;
         case compression::GZIP: {
             auto gzip = std::make_unique<compression::Gzip>();
             gzip->prepare_compress();
