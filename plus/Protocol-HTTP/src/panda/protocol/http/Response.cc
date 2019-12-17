@@ -99,7 +99,7 @@ string Response::_http_header (const Request* req, compression::Compression appl
 std::vector<string> Response::to_vector (const Request* req) {
     /* if client didn't announce Accept-Encoding or we do not support it, just pass data as it is */
     compression::Compression applied_compression
-            = req && (req->compression_mask() & static_cast<std::uint8_t>(compressed))
+            = req && (compressed != compression::IDENTITY) && (req->compression_mask() & static_cast<std::uint8_t>(compressed))
             ? compressed
             : compression::IDENTITY;
 
