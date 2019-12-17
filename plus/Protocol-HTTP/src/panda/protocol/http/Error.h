@@ -19,8 +19,8 @@ enum class errc {
 };
 
 struct ErrorCategory : std::error_category {
-    const char* name () const throw() override;
-    std::string message (int condition) const throw() override;
+    const char* name () const noexcept override;
+    std::string message (int condition) const noexcept override;
 };
 extern const ErrorCategory error_category;
 

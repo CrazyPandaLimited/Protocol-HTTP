@@ -4,9 +4,9 @@ namespace panda { namespace protocol { namespace http {
 
 const ErrorCategory error_category;
 
-const char* ErrorCategory::name () const throw() { return "protocol-http"; }
+const char* ErrorCategory::name () const noexcept { return "protocol-http"; }
 
-std::string ErrorCategory::message (int condition) const throw() {
+std::string ErrorCategory::message (int condition) const noexcept {
     switch ((errc)condition) {
         case errc::semantic_error                : return "http parsing semantic error";
         case errc::lexical_error                 : return "http parsing lexical error";
