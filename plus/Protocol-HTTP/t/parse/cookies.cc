@@ -58,8 +58,7 @@ TEST("response single cookie") {
     CHECK(coo.path() == "/");
     CHECK(coo.max_age() == 999);
     REQUIRE(coo.expires());
-    // TODO: uncomment when Date supports Cookie's date RFCs
-    //CHECK(exp.value() == Date(2019, 11, 28, 18, 43, 59, 0, -1, panda::time::tzget("GMT")));
+    CHECK(coo.expires().value() == Date(2019, 11, 28, 18, 43, 59, 0, -1, panda::time::tzget("GMT")));
     CHECK(coo.secure());
     CHECK(coo.http_only());
     CHECK(coo.same_site() == Response::Cookie::SameSite::Lax);

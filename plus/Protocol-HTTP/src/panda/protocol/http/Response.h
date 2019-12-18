@@ -8,6 +8,8 @@ namespace panda { namespace protocol { namespace http {
 
 struct Request;
 
+extern const panda::time::Timezone* gmtz;
+
 struct Response : Message, AllocatedObject<Response> {
     using Date = panda::date::Date;
     struct Builder; template <class, class> struct BuilderImpl;
@@ -35,10 +37,17 @@ struct Response : Message, AllocatedObject<Response> {
         Cookie& domain    (const string& v) { _domain    = v; return *this; }
         Cookie& path      (const string& v) { _path      = v; return *this; }
         Cookie& max_age   (uint64_t v)      { _max_age   = v; _expires.clear(); return *this; }
-        Cookie& expires   (const Date& d)   { _expires = d.iso(); _max_age = 0; return *this; }
         Cookie& secure    (bool v)          { _secure    = v; return *this; }
         Cookie& http_only (bool v)          { _http_only = v; return *this; }
         Cookie& same_site (SameSite v)      { _same_site = v; return *this; }
+
+        Cookie& expires (const Date& _d) {
+            auto d = _d;
+            d.to_timezone(gmtz);
+            _expires = d.to_string(Date::Format::rfc1123);
+            _max_age = 0;
+            return *this;
+        }
 
         string to_string (const string& cookie_name, const Request* context = nullptr) const;
 

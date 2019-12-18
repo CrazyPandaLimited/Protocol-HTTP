@@ -58,8 +58,7 @@ TEST("response cookie in vacuum") {
         CHECK(coo.max_age(999).to_string("k") == "k=v; Max-Age=999");
     }
     SECTION("expires") {
-        // TODO: uncomment when Date supports Cookie's date RFCs
-        //CHECK(coo.expires(Date("2019-11-28 21:43:59")).to_string("k") == "k=v; Expires=Thu, 28 Nov 2019 18:43:59 GMT");
+        CHECK(coo.expires(Date("2019-11-28 21:43:59")).to_string("k") == "k=v; Expires=Thu, 28 Nov 2019 18:43:59 GMT");
     }
     SECTION("secure") {
         CHECK(coo.secure(true).to_string("k") == "k=v; Secure");
