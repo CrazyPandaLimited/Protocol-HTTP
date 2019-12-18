@@ -188,3 +188,20 @@ TEST("ignore compression in response if request didn't support it") {
     auto data = res->to_string(req);
     CHECK(data == "HTTP/1.1 200 OK\r\nContent-Length: 7\r\n\r\nmy body");
 }
+
+TEST("brotli is ignored if there is no plugin for it") {
+    auto req = Request::Builder()
+        .method(Method::GET)
+        .allow_compression(compression::IDENTITY)
+        .allow_compression(compression::BROTLI)
+        .uri("/")
+        .build();
+
+    auto res = Response::Builder().code(200)
+            .body("my body")
+            .compress(compression::BROTLI)
+            .build();
+
+    auto data = res->to_string(req);
+    CHECK(data == "HTTP/1.1 200 OK\r\nContent-Length: 7\r\n\r\nmy body");
+}

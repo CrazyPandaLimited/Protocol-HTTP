@@ -6,9 +6,12 @@ namespace panda { namespace protocol { namespace http { namespace compression {
 enum Compression: std::uint8_t {
     GZIP     = 1 << 0,
     DEFLATE  = 1 << 1,
-    IDENTITY = 1 << 2, /* must be last to do not allocate it in Parser */
+    BROTLI   = 1 << 2,
+    IDENTITY = 1 << 3,
     LAST     = IDENTITY,
 };
+
+
 using storage_t = std::uint64_t;
 constexpr std::uint64_t ITEM_MASK = 0b11111111ull;
 constexpr std::uint64_t ITEM_VALUE_MASK = 0b00111111ull;

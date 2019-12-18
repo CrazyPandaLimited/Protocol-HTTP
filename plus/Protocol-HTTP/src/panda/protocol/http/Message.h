@@ -4,7 +4,6 @@
 #include "Headers.h"
 #include "compression/Compression.h"
 #include "compression/Compressor.h"
-#include "compression/Gzip.h"
 #include "compression/BodyGuard.h"
 #include <array>
 #include <panda/refcnt.h>
@@ -21,10 +20,9 @@ struct Message : virtual Refcnt {
     bool    chunked      = false;
     int     http_version = 0;
 
-    using compressor_ptr = std::unique_ptr<compression::Compressor>;
     using wrapped_chunk = std::array<string, 3>;
     compression::Compression compressed = compression::IDENTITY;
-    compressor_ptr compressor;
+    compression::CompressorPtr compressor;
 
     Message () {}
 
@@ -66,10 +64,11 @@ protected:
 
     inline void _content_encoding(compression::Compression applied_compression) {
         using namespace compression;
-        if (!headers.has("Content-Encoding")) {
+        if (!headers.has("Content-Encoding") && compressor) {
             switch (applied_compression) {
-            case GZIP: headers.add("Content-Encoding", "gzip"); break;
+            case GZIP:    headers.add("Content-Encoding", "gzip");    break;
             case DEFLATE: headers.add("Content-Encoding", "deflate"); break;
+            case BROTLI:  headers.add("Content-Encoding", "br");      break;
             case IDENTITY: break;
             }
         }
@@ -126,14 +125,14 @@ private:
 
     inline void _prepare_compressor(compression::Compression applied_compression) {
         switch (applied_compression) {
-        case compression::DEFLATE: /* NOOP */ break;
-        case compression::GZIP: {
-            auto gzip = std::make_unique<compression::Gzip>();
-            gzip->prepare_compress();
-            compressor = std::move(gzip);
-            break;
-        }
         case compression::IDENTITY: /* NOOP */ break;
+        default: {
+            auto it(compression::instantiate(applied_compression));
+            if (it) {
+                it->prepare_compress();
+                compressor = std::move(it);
+            }
+        }
         }
     }
 

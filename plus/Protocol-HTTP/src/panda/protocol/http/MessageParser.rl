@@ -80,15 +80,28 @@
         }
     }
 
+    action content_brotlied {
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::BROTLI; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                fbreak;
+            }
+        }
+    }
+
     action attach_compressor {
         if (message->compressed != compression::IDENTITY) {
-            int index = 0;
-            auto mask = static_cast<int>(message->compressed);
-            while(!(mask & 0b1)) {
-                ++index;
-                mask = mask >> 1;
+            auto it  = compression::instantiate(message->compressed);
+            if (it) {
+                it->prepare_uncompress(max_body_size);
+                compressor = std::move(it);
+            } else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                fbreak;
             }
-            compressor = compressors[index];
         }
     }
 
@@ -110,9 +123,9 @@
     ################################## ACCEPT-ENCODING ################################
     encoding_gzip     = /gzip/     %{ compr = compression::GZIP;     };
     encoding_deflate  = /deflate/  %{ compr = compression::DEFLATE;  };
+    encoding_br       = /br/       %{ compr = compression::BROTLI;  };
     encoding_identity = /identity/;
     encoding_compress = /compress/;
-    encoding_br       = /br/;
     encoding_any      = "*" %{compr = compression::GZIP | compression::DEFLATE; };
     some_enconding    = encoding_identity | encoding_deflate | encoding_gzip | encoding_compress | encoding_br | encoding_any;
     q_not             = "0" ("." ("0"){,3})? %{ compr = 0; };
@@ -133,7 +146,8 @@
     ce_identity       = /identity/;
     ce_gzip           = /gzip/     %content_gziped;
     ce_deflate        = /deflate/  %content_deflated;
-    ce_compression    = ce_identity | ce_gzip | ce_deflate;
+    ce_br             = /br/       %content_brotlied;
+    ce_compression    = ce_identity | ce_gzip | ce_deflate | ce_br;
     ce_value          = (ce_compression (OWS "," OWS ce_compression)*) OWS;
     content_encoding  = /Content-Encoding/i ":" OWS <: (ce_value | (field_vchar+ - ce_value) %unknown_content_encoding) %attach_compressor;
     header            = content_length | transfer_encoding | content_encoding | header_field;

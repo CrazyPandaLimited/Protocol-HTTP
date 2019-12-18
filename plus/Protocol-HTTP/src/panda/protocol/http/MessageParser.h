@@ -1,7 +1,7 @@
 #pragma once
 #include "Request.h"
 #include "Response.h"
-#include "compression/Gzip.h"
+#include "compression/Compressor.h"
 
 namespace panda { namespace protocol { namespace http {
 
@@ -22,12 +22,7 @@ protected:
     uint64_t        content_length;
     std::error_code error;
 
-    MessageParser() {
-        gzip.prepare_uncompress(max_body_size);
-        /* zlib supports deflate and gzip streams uncompression. Use the same object */
-        compressors[0] = compressors[1] = &gzip;
-    }
-
+    MessageParser () {}
     MessageParser (const MessageParser&) = delete;
     MessageParser (MessageParser&&)      = delete;
 
@@ -47,7 +42,7 @@ protected:
 
         if (compressor) {
             compressor->reset();
-            compressor = nullptr;
+            compressor.reset();
         }
     }
 
@@ -58,7 +53,7 @@ protected:
         state = State::error;
     }
 
-    compression::Compressor *compressor = nullptr;
+    compression::CompressorPtr compressor;
 
 private:
     ptrdiff_t mark;
@@ -70,8 +65,6 @@ private:
     size_t    chunk_length;
     size_t    chunk_so_far;
 
-    compression::Gzip gzip;
-    compression::Compressor *compressors[2];
     std::uint8_t compr = 0;
 
     size_t machine_exec (const string& buffer, size_t off);

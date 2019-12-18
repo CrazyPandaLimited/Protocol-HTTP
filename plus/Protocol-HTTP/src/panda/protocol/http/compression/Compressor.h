@@ -1,5 +1,7 @@
 #pragma once
 #include <system_error>
+#include <functional>
+#include "Compression.h"
 #include "panda/string.h"
 #include "../Body.h"
 
@@ -33,5 +35,12 @@ protected:
     Mode mode = Mode::none;
     bool rx_done = false;
 };
+
+using CompressorFactory = Compressor*(*)() noexcept;
+using CompressorPtr = std::unique_ptr<Compressor>;
+
+bool register_factory(Compression compression, CompressorFactory factory) noexcept;
+CompressorPtr instantiate(Compression compression) noexcept;
+
 
 }}}};
