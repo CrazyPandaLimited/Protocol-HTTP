@@ -16,9 +16,7 @@ struct Gzip: Compressor {
     string compress(const string& piece) noexcept override;
     string flush() noexcept override;
 
-
     virtual void reset() noexcept override;
-
 private:
     z_stream stream;
 };

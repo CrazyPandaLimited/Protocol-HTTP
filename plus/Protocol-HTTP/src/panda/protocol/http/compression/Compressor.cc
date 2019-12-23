@@ -3,12 +3,12 @@
 
 namespace panda { namespace protocol { namespace http { namespace compression {
 
-static Compressor* create_gzip_compressor() noexcept { return new Gzip(); }
+static Compressor* create_gzip_compressor() { return new Gzip(); }
 
 static const CompressorFactory gzip_factory = create_gzip_compressor;
 static CompressorFactory brotli_factory = nullptr;
 
-bool register_factory(Compression compression, CompressorFactory& factory) noexcept {
+bool register_factory(Compression compression, const CompressorFactory& factory) {
     bool result = false;
     if (compression == Compression::BROTLI && !brotli_factory) {
         brotli_factory = factory;

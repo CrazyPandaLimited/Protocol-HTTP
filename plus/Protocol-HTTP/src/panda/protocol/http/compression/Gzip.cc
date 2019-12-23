@@ -28,7 +28,7 @@ Gzip::~Gzip() {
     assert(err == Z_OK);
 }
 
-void Gzip::prepare_uncompress(size_t& max_body_size_) noexcept{
+void Gzip::prepare_uncompress(size_t& max_body_size_) noexcept {
     assert(mode == Mode::none);
     max_body_size = &max_body_size_;
     stream.total_out = 0;
