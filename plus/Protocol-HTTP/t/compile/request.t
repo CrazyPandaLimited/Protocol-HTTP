@@ -38,4 +38,9 @@ subtest 'no uri' => sub {
     is $req->to_string, "GET / HTTP/1.1\r\n\r\n";
 };
 
+subtest "method string" => sub {
+    is Protocol::HTTP::Request::method_str(METHOD_POST), 'POST';
+    is Protocol::HTTP::Request::method_str(99), '[UNKNOWN]';
+};
+
 done_testing();

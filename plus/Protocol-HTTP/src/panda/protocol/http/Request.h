@@ -11,6 +11,21 @@ using panda::uri::URISP;
 struct Request : Message, AllocatedObject<Request> {
     enum class Method {OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT};
 
+    static inline string method_str(Request::Method rm) noexcept {
+        using Method = Request::Method;
+        switch (rm) {
+            case Method::OPTIONS : return "OPTIONS";
+            case Method::GET     : return "GET";
+            case Method::HEAD    : return "HEAD";
+            case Method::POST    : return "POST";
+            case Method::PUT     : return "PUT";
+            case Method::DELETE  : return "DELETE";
+            case Method::TRACE   : return "TRACE";
+            case Method::CONNECT : return "CONNECT";
+            default: return "[UNKNOWN]";
+        }
+    }
+
     struct Builder; template <class, class> struct BuilderImpl;
     using Cookies = Fields<string, true, 3>;
 

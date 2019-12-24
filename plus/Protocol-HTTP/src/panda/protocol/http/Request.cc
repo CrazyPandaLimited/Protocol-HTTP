@@ -2,23 +2,8 @@
 
 namespace panda { namespace protocol { namespace http {
 
-static inline string _method_str (Request::Method rm) {
-    using Method = Request::Method;
-    switch (rm) {
-        case Method::OPTIONS : return "OPTIONS";
-        case Method::GET     : return "GET";
-        case Method::HEAD    : return "HEAD";
-        case Method::POST    : return "POST";
-        case Method::PUT     : return "PUT";
-        case Method::DELETE  : return "DELETE";
-        case Method::TRACE   : return "TRACE";
-        case Method::CONNECT : return "CONNECT";
-        default: return "[UNKNOWN]";
-    }
-}
-
 string Request::http_header (size_t reserve) {
-    auto meth = _method_str(method);
+    auto meth = method_str(method);
     auto reluri  = uri ? uri->relative() : string("/");
     if (!http_version) http_version = 11;
 
