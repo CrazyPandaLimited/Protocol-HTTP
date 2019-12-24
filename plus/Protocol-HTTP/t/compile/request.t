@@ -41,6 +41,13 @@ subtest 'no uri' => sub {
 subtest "method string" => sub {
     is Protocol::HTTP::Request::method_str(METHOD_POST), 'POST';
     is Protocol::HTTP::Request::method_str(99), '[UNKNOWN]';
+
+    my $req = Protocol::HTTP::Request->new({
+        method       => METHOD_GET,
+        uri          => "http://crazypanda.ru/hello/world",
+        http_version => 10,
+    });
+    is $req->method_str, 'GET';
 };
 
 done_testing();
