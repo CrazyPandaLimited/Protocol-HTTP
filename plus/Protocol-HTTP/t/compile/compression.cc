@@ -125,7 +125,7 @@ Nullam quis tempus lectus. Quisque purus est, venenatis at auctor a, laoreet in 
             .method(Method::POST)
             .uri("http://crazypanda.ru/hello/world")
             .body(body_sample)
-            .compress(compression::GZIP)
+            .compress(compression::GZIP, compression::Level::optimal)
             .build();
 
         auto data = req->to_string();

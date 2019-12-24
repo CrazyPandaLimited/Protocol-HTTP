@@ -21,8 +21,9 @@ struct Message : virtual Refcnt {
     int     http_version = 0;
 
     using wrapped_chunk = std::array<string, 3>;
-    compression::Compression compressed = compression::IDENTITY;
     compression::CompressorPtr compressor;
+    compression::Compression compressed = compression::IDENTITY;
+    compression::Level level = compression::Level::min;
 
     Message () {}
 
@@ -85,7 +86,7 @@ protected:
 
     template <class T>
     inline std::vector<string> _to_vector (compression::Compression applied_compression, const T& f) {
-        _prepare_compressor(applied_compression);
+        _prepare_compressor(applied_compression, level);
         auto body_holder = maybe_compress();
         _compile_prepare();
         auto hdr = f();
@@ -123,13 +124,13 @@ private:
         _append_chunk(final_chunk(), fn);
     }
 
-    inline void _prepare_compressor(compression::Compression applied_compression) {
+    inline void _prepare_compressor(compression::Compression applied_compression, compression::Level level) {
         switch (applied_compression) {
         case compression::IDENTITY: /* NOOP */ break;
         default: {
             auto it(compression::instantiate(applied_compression));
             if (it) {
-                it->prepare_compress();
+                it->prepare_compress(level);
                 compressor = std::move(it);
             }
         }
@@ -175,8 +176,9 @@ struct Message::Builder {
         return self();
     }
 
-    T& compress(compression::Compression method) {
+    T& compress(compression::Compression method, compression::Level level = compression::Level::min) {
         _message->compressed = method;
+        _message->level = level;
         return self();
     }
 

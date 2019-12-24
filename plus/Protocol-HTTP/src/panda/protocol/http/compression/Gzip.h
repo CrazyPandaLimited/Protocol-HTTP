@@ -10,7 +10,7 @@ struct Gzip: Compressor {
     ~Gzip() override;
 
     void prepare_uncompress(size_t& max_body_size) noexcept override;
-    void prepare_compress() noexcept override;
+    void prepare_compress(Level level) noexcept override;
 
     std::error_code uncompress(const string& piece, Body& body) noexcept override;
     string compress(const string& piece) noexcept override;
