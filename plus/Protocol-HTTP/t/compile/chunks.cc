@@ -23,7 +23,7 @@ TEST("generating chunks later") {
     CHECK(v[1].data() == s.data()); // payload doesn't get copied
     CHECK(v[2] == "\r\n");
 
-    CHECK(req->final_chunk() == "0\r\n\r\n");
+    CHECK(req->final_chunk() == Message::wrapped_chunk{"", "", "0\r\n\r\n" });
 }
 
 TEST("empty chunk is not a final chunk - it gets ignored") {

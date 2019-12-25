@@ -57,7 +57,10 @@ ResponseParser::Result ResponseParser::parse (const string& buffer) {
 ResponseParser::Result ResponseParser::eof () {
     if (!_context_request) return {{}, 0, State::headers, {}};
 
-    if (response && !response->keep_alive() && !content_length && !response->chunked && state == State::body) {
+    bool done = response && !response->keep_alive() && !content_length && !response->chunked && state == State::body
+            && (!compressor || compressor->eof());
+
+    if (done) {
         state = State::done;
     } else {
         ensure_response_created();

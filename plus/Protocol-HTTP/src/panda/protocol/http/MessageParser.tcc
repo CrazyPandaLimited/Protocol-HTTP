@@ -70,25 +70,30 @@ size_t MessageParser::parse (const string& buffer, F1&& after_headers_cb, F2&& n
         case State::body: {
             //printf("body\n");
             auto have = len - pos;
-            
+            size_t consumed;
+
+            /* 1. determine how much it can be consumed */
             if (content_length) {
                 auto left = content_length - body_so_far;
-                if (have >= left) {
-                    message->body.parts.push_back(buffer.substr(pos, left));
-                    state = State::done;
-                    return pos + left;
-                }
-                else {
-                    body_so_far += have;
-                    message->body.parts.push_back(buffer.substr(pos));
-                    return len;
-                }
+                if (have >= left) { consumed = left; state = State::done; }
+                else              { consumed = have;                      }
+            } else {
+                consumed = have;
             }
 
+            /* 2. try to consume the available bytes */
+            string piece = buffer.substr(pos, consumed);
             body_so_far += have;
-            RETURN_IF_MAX_BODY_SIZE(body_so_far);
-            message->body.parts.push_back(buffer.substr(pos));
-            return len;
+            if (compressor) {
+                auto append_err = compressor->uncompress(piece, message->body);
+                if (append_err) { set_error(append_err); return pos; }
+            }
+            else {
+                if (!content_length) { RETURN_IF_MAX_BODY_SIZE(body_so_far); }
+                message->body.parts.push_back(piece);
+            }
+
+            return pos + consumed;
         }
         case State::chunk: {
             //printf("chunk. rest: %s\n", buffer.substr(pos).c_str());
@@ -115,17 +120,34 @@ size_t MessageParser::parse (const string& buffer, F1&& after_headers_cb, F2&& n
             auto left = chunk_length - chunk_so_far;
             auto have = len - pos;
 
+            bool final = false;
+            size_t consumed;
             if (have >= left) {
-                message->body.parts.push_back(buffer.substr(pos, left));
+                consumed = left;
+                final = true;
+            } else {
+                consumed = have;
+            }
+            chunk_so_far += consumed;
+
+            auto piece = buffer.substr(pos, consumed);
+            if (compressor) {
+                auto append_err = compressor->uncompress(piece, message->body);
+                if (append_err) { set_error(append_err); return pos; }
+            }
+            else {
+                message->body.parts.push_back(piece);
+            }
+
+            if (final) {
+                pos += left;
                 state = State::chunk;
                 cs = message_parser_en_chunk;
-                pos += left;
                 continue;
             } else {
-                message->body.parts.push_back(buffer.substr(pos));
-                chunk_so_far += have;
                 return len;
             }
+
         }
         case State::chunk_trailer: {
             //printf("chjunk trailer\n");

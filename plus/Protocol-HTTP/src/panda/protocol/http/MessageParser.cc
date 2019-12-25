@@ -3,7 +3,7 @@
 #include "MessageParser.h"
 
 
-#line 131 "src/panda/protocol/http/MessageParser.rl"
+#line 188 "src/panda/protocol/http/MessageParser.rl"
 
 
 namespace panda { namespace protocol { namespace http {
@@ -11,17 +11,17 @@ namespace panda { namespace protocol { namespace http {
 
 #line 13 "src/panda/protocol/http/MessageParser.cc"
 static const int message_parser_start = 1;
-static const int message_parser_first_final = 298;
+static const int message_parser_first_final = 321;
 static const int message_parser_error = 0;
 
-static const int message_parser_en_first_chunk = 87;
-static const int message_parser_en_chunk = 97;
-static const int message_parser_en_chunk_trailer = 109;
-static const int message_parser_en_request = 115;
+static const int message_parser_en_first_chunk = 98;
+static const int message_parser_en_chunk = 108;
+static const int message_parser_en_chunk_trailer = 120;
+static const int message_parser_en_request = 126;
 static const int message_parser_en_response = 1;
 
 
-#line 136 "src/panda/protocol/http/MessageParser.rl"
+#line 193 "src/panda/protocol/http/MessageParser.rl"
 
 #ifdef PARSER_DEFINITIONS_ONLY
 #undef PARSER_DEFINITIONS_ONLY
@@ -109,7 +109,7 @@ st8:
 case 8:
 	switch( (*p) ) {
 		case 48: goto st9;
-		case 49: goto st86;
+		case 49: goto st97;
 	}
 	goto st0;
 st9:
@@ -120,11 +120,11 @@ case 9:
 		goto tr10;
 	goto st0;
 tr10:
-#line 67 "src/panda/protocol/http/MessageParser.rl"
+#line 121 "src/panda/protocol/http/MessageParser.rl"
 	{message->http_version = 10;}
 	goto st10;
-tr111:
-#line 67 "src/panda/protocol/http/MessageParser.rl"
+tr129:
+#line 121 "src/panda/protocol/http/MessageParser.rl"
 	{message->http_version = 11;}
 	goto st10;
 st10:
@@ -136,7 +136,7 @@ case 10:
 		goto tr11;
 	goto st0;
 tr11:
-#line 125 "src/panda/protocol/http/MessageParser.rl"
+#line 182 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(response->code)}
 	goto st11;
 st11:
@@ -148,7 +148,7 @@ case 11:
 		goto tr12;
 	goto st0;
 tr12:
-#line 125 "src/panda/protocol/http/MessageParser.rl"
+#line 182 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(response->code)}
 	goto st12;
 st12:
@@ -160,7 +160,7 @@ case 12:
 		goto tr13;
 	goto st0;
 tr13:
-#line 125 "src/panda/protocol/http/MessageParser.rl"
+#line 182 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(response->code)}
 	goto st13;
 st13:
@@ -213,7 +213,7 @@ tr16:
         mark   = p - ps;
         marked = true;
     }
-#line 126 "src/panda/protocol/http/MessageParser.rl"
+#line 183 "src/panda/protocol/http/MessageParser.rl"
 	{SAVE(response->message)}
 #line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
@@ -221,7 +221,7 @@ tr16:
     }
 	goto st16;
 tr18:
-#line 126 "src/panda/protocol/http/MessageParser.rl"
+#line 183 "src/panda/protocol/http/MessageParser.rl"
 	{SAVE(response->message)}
 #line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
@@ -263,13 +263,137 @@ tr31:
         marked = false;
     }
 	goto st16;
-tr73:
-#line 47 "src/panda/protocol/http/MessageParser.rl"
+tr56:
+#line 53 "src/panda/protocol/http/MessageParser.rl"
 	{
-        printf("transfer_encoding_err\n");
-        cs = message_parser_error;
-        set_error(errc::unsupported_compression);
-        {p++; cs = 16; goto _out;}
+        if (uncompress_content) {
+            cs = message_parser_error;
+            set_error(errc::unsupported_compression);
+            {p++; cs = 16; goto _out;}
+        }
+    }
+#line 94 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (message->compressed != compression::IDENTITY) {
+            auto it  = compression::instantiate(message->compressed);
+            if (it) {
+                it->prepare_uncompress(max_body_size);
+                compressor = std::move(it);
+            } else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 16; goto _out;}
+            }
+        }
+    }
+#line 29 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 12 "src/panda/protocol/http/MessageParser.rl"
+	{
+        marked = false;
+    }
+	goto st16;
+tr59:
+#line 83 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::BROTLI; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 16; goto _out;}
+            }
+        }
+    }
+#line 94 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (message->compressed != compression::IDENTITY) {
+            auto it  = compression::instantiate(message->compressed);
+            if (it) {
+                it->prepare_uncompress(max_body_size);
+                compressor = std::move(it);
+            } else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 16; goto _out;}
+            }
+        }
+    }
+#line 29 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 12 "src/panda/protocol/http/MessageParser.rl"
+	{
+        marked = false;
+    }
+	goto st16;
+tr62:
+#line 94 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (message->compressed != compression::IDENTITY) {
+            auto it  = compression::instantiate(message->compressed);
+            if (it) {
+                it->prepare_uncompress(max_body_size);
+                compressor = std::move(it);
+            } else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 16; goto _out;}
+            }
+        }
+    }
+#line 29 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 12 "src/panda/protocol/http/MessageParser.rl"
+	{
+        marked = false;
+    }
+	goto st16;
+tr75:
+#line 72 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::DEFLATE; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 16; goto _out;}
+            }
+        }
+    }
+#line 94 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (message->compressed != compression::IDENTITY) {
+            auto it  = compression::instantiate(message->compressed);
+            if (it) {
+                it->prepare_uncompress(max_body_size);
+                compressor = std::move(it);
+            } else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 16; goto _out;}
+            }
+        }
     }
 #line 29 "src/panda/protocol/http/MessageParser.rl"
 	{
@@ -286,59 +410,69 @@ tr73:
     }
 	goto st16;
 tr81:
-#line 89 "src/panda/protocol/http/MessageParser.rl"
+#line 61 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::GZIP; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 16; goto _out;}
+            }
+        }
+    }
+#line 94 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (message->compressed != compression::IDENTITY) {
+            auto it  = compression::instantiate(message->compressed);
+            if (it) {
+                it->prepare_uncompress(max_body_size);
+                compressor = std::move(it);
+            } else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 16; goto _out;}
+            }
+        }
+    }
+#line 29 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 12 "src/panda/protocol/http/MessageParser.rl"
+	{
+        marked = false;
+    }
+	goto st16;
+tr119:
+#line 47 "src/panda/protocol/http/MessageParser.rl"
+	{
+        cs = message_parser_error;
+        set_error(errc::unsupported_transfer_encoding);
+        {p++; cs = 16; goto _out;}
+    }
+#line 29 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 12 "src/panda/protocol/http/MessageParser.rl"
+	{
+        marked = false;
+    }
+	goto st16;
+tr127:
+#line 143 "src/panda/protocol/http/MessageParser.rl"
 	{message->chunked = true;                     }
-#line 29 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (!headers_finished) {
-            string& value = message->headers.fields.back().value;
-            SAVE(value);
-            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
-        }
-        else {} // trailing header after chunks, currently we just ignore them
-    }
-#line 12 "src/panda/protocol/http/MessageParser.rl"
-	{
-        marked = false;
-    }
-	goto st16;
-tr90:
-#line 92 "src/panda/protocol/http/MessageParser.rl"
-	{message->compressed = compression::DEFLATE;  }
-#line 29 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (!headers_finished) {
-            string& value = message->headers.fields.back().value;
-            SAVE(value);
-            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
-        }
-        else {} // trailing header after chunks, currently we just ignore them
-    }
-#line 12 "src/panda/protocol/http/MessageParser.rl"
-	{
-        marked = false;
-    }
-	goto st16;
-tr99:
-#line 91 "src/panda/protocol/http/MessageParser.rl"
-	{message->compressed = compression::GZIP;     }
-#line 29 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (!headers_finished) {
-            string& value = message->headers.fields.back().value;
-            SAVE(value);
-            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
-        }
-        else {} // trailing header after chunks, currently we just ignore them
-    }
-#line 12 "src/panda/protocol/http/MessageParser.rl"
-	{
-        marked = false;
-    }
-	goto st16;
-tr109:
-#line 90 "src/panda/protocol/http/MessageParser.rl"
-	{message->compressed = compression::IDENTITY; }
 #line 29 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
@@ -357,7 +491,7 @@ st16:
 	if ( ++p == pe )
 		goto _test_eof16;
 case 16:
-#line 361 "src/panda/protocol/http/MessageParser.cc"
+#line 495 "src/panda/protocol/http/MessageParser.cc"
 	if ( (*p) == 10 )
 		goto st17;
 	goto st0;
@@ -403,14 +537,14 @@ case 18:
 tr24:
 #line 16 "src/panda/protocol/http/MessageParser.rl"
 	{
-        {p++; cs = 298; goto _out;}
+        {p++; cs = 321; goto _out;}
     }
-	goto st298;
-st298:
+	goto st321;
+st321:
 	if ( ++p == pe )
-		goto _test_eof298;
-case 298:
-#line 414 "src/panda/protocol/http/MessageParser.cc"
+		goto _test_eof321;
+case 321:
+#line 548 "src/panda/protocol/http/MessageParser.cc"
 	goto st0;
 tr21:
 #line 7 "src/panda/protocol/http/MessageParser.rl"
@@ -423,7 +557,7 @@ st19:
 	if ( ++p == pe )
 		goto _test_eof19;
 case 19:
-#line 427 "src/panda/protocol/http/MessageParser.cc"
+#line 561 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
@@ -467,7 +601,7 @@ st20:
 	if ( ++p == pe )
 		goto _test_eof20;
 case 20:
-#line 471 "src/panda/protocol/http/MessageParser.cc"
+#line 605 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st20;
 		case 13: goto tr29;
@@ -488,7 +622,7 @@ st21:
 	if ( ++p == pe )
 		goto _test_eof21;
 case 21:
-#line 492 "src/panda/protocol/http/MessageParser.cc"
+#line 626 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr31;
 		case 127: goto st0;
@@ -510,7 +644,7 @@ st22:
 	if ( ++p == pe )
 		goto _test_eof22;
 case 22:
-#line 514 "src/panda/protocol/http/MessageParser.cc"
+#line 648 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
@@ -721,8 +855,10 @@ case 29:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 76: goto st30;
-		case 108: goto st30;
+		case 69: goto st30;
+		case 76: goto st62;
+		case 101: goto st30;
+		case 108: goto st62;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -751,8 +887,8 @@ case 30:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 69: goto st31;
-		case 101: goto st31;
+		case 78: goto st31;
+		case 110: goto st31;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -781,8 +917,8 @@ case 31:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 78: goto st32;
-		case 110: goto st32;
+		case 67: goto st32;
+		case 99: goto st32;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -811,8 +947,8 @@ case 32:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 71: goto st33;
-		case 103: goto st33;
+		case 79: goto st33;
+		case 111: goto st33;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -841,8 +977,8 @@ case 33:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 84: goto st34;
-		case 116: goto st34;
+		case 68: goto st34;
+		case 100: goto st34;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -871,8 +1007,8 @@ case 34:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 72: goto st35;
-		case 104: goto st35;
+		case 73: goto st35;
+		case 105: goto st35;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -900,7 +1036,9 @@ st35:
 case 35:
 	switch( (*p) ) {
 		case 33: goto st19;
-		case 58: goto tr45;
+		case 58: goto tr26;
+		case 78: goto st36;
+		case 110: goto st36;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -922,7 +1060,65 @@ case 35:
 	} else
 		goto st19;
 	goto st0;
-tr45:
+st36:
+	if ( ++p == pe )
+		goto _test_eof36;
+case 36:
+	switch( (*p) ) {
+		case 33: goto st19;
+		case 58: goto tr26;
+		case 71: goto st37;
+		case 103: goto st37;
+		case 124: goto st19;
+		case 126: goto st19;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st19;
+		} else if ( (*p) >= 35 )
+			goto st19;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st19;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st19;
+		} else
+			goto st19;
+	} else
+		goto st19;
+	goto st0;
+st37:
+	if ( ++p == pe )
+		goto _test_eof37;
+case 37:
+	switch( (*p) ) {
+		case 33: goto st19;
+		case 58: goto tr48;
+		case 124: goto st19;
+		case 126: goto st19;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st19;
+		} else if ( (*p) >= 35 )
+			goto st19;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st19;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st19;
+		} else
+			goto st19;
+	} else
+		goto st19;
+	goto st0;
+tr48:
 #line 20 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
@@ -936,81 +1132,496 @@ tr45:
 	{
         marked = false;
     }
-	goto st36;
-st36:
-	if ( ++p == pe )
-		goto _test_eof36;
-case 36:
-#line 945 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 9: goto st36;
-		case 13: goto tr29;
-		case 32: goto st36;
-		case 127: goto st0;
-	}
-	if ( (*p) > 31 ) {
-		if ( 48 <= (*p) && (*p) <= 57 )
-			goto tr47;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto tr27;
-tr47:
-#line 38 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (has_content_length) {
-            cs = message_parser_error;
-            set_error(errc::multiple_content_length);
-            {p++; cs = 37; goto _out;}
-        }
-        has_content_length = true;
-    }
-#line 88 "src/panda/protocol/http/MessageParser.rl"
-	{ADD_DIGIT(content_length)}
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st37;
-tr48:
-#line 88 "src/panda/protocol/http/MessageParser.rl"
-	{ADD_DIGIT(content_length)}
-	goto st37;
-st37:
-	if ( ++p == pe )
-		goto _test_eof37;
-case 37:
-#line 984 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 13: goto tr31;
-		case 127: goto st0;
-	}
-	if ( (*p) < 10 ) {
-		if ( 0 <= (*p) && (*p) <= 8 )
-			goto st0;
-	} else if ( (*p) > 31 ) {
-		if ( 48 <= (*p) && (*p) <= 57 )
-			goto tr48;
-	} else
-		goto st0;
-	goto st21;
-tr23:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
 	goto st38;
 st38:
 	if ( ++p == pe )
 		goto _test_eof38;
 case 38:
-#line 1009 "src/panda/protocol/http/MessageParser.cc"
+#line 1141 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 9: goto st38;
+		case 13: goto tr29;
+		case 32: goto st38;
+		case 98: goto tr51;
+		case 100: goto tr52;
+		case 103: goto tr53;
+		case 105: goto tr54;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto tr49;
+tr49:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st39;
+st39:
+	if ( ++p == pe )
+		goto _test_eof39;
+case 39:
+#line 1166 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 13: goto tr56;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st39;
+tr51:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st40;
+st40:
+	if ( ++p == pe )
+		goto _test_eof40;
+case 40:
+#line 1188 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 13: goto tr56;
+		case 114: goto st41;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st39;
+st41:
+	if ( ++p == pe )
+		goto _test_eof41;
+case 41:
+	switch( (*p) ) {
+		case 9: goto tr58;
+		case 13: goto tr59;
+		case 32: goto tr58;
+		case 44: goto tr60;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st39;
+tr58:
+#line 83 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::BROTLI; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 42; goto _out;}
+            }
+        }
+    }
+	goto st42;
+tr74:
+#line 72 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::DEFLATE; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 42; goto _out;}
+            }
+        }
+    }
+	goto st42;
+tr80:
+#line 61 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::GZIP; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 42; goto _out;}
+            }
+        }
+    }
+	goto st42;
+st42:
+	if ( ++p == pe )
+		goto _test_eof42;
+case 42:
+#line 1257 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 9: goto st42;
+		case 13: goto tr62;
+		case 32: goto st42;
+		case 44: goto st43;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st39;
+tr60:
+#line 83 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::BROTLI; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 43; goto _out;}
+            }
+        }
+    }
+	goto st43;
+tr76:
+#line 72 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::DEFLATE; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 43; goto _out;}
+            }
+        }
+    }
+	goto st43;
+tr82:
+#line 61 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::GZIP; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 43; goto _out;}
+            }
+        }
+    }
+	goto st43;
+st43:
+	if ( ++p == pe )
+		goto _test_eof43;
+case 43:
+#line 1311 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 9: goto st43;
+		case 13: goto tr56;
+		case 32: goto st43;
+		case 98: goto st40;
+		case 100: goto st44;
+		case 103: goto st51;
+		case 105: goto st55;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st39;
+tr52:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st44;
+st44:
+	if ( ++p == pe )
+		goto _test_eof44;
+case 44:
+#line 1336 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 13: goto tr56;
+		case 101: goto st45;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st39;
+st45:
+	if ( ++p == pe )
+		goto _test_eof45;
+case 45:
+	switch( (*p) ) {
+		case 13: goto tr56;
+		case 102: goto st46;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st39;
+st46:
+	if ( ++p == pe )
+		goto _test_eof46;
+case 46:
+	switch( (*p) ) {
+		case 13: goto tr56;
+		case 108: goto st47;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st39;
+st47:
+	if ( ++p == pe )
+		goto _test_eof47;
+case 47:
+	switch( (*p) ) {
+		case 13: goto tr56;
+		case 97: goto st48;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st39;
+st48:
+	if ( ++p == pe )
+		goto _test_eof48;
+case 48:
+	switch( (*p) ) {
+		case 13: goto tr56;
+		case 116: goto st49;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st39;
+st49:
+	if ( ++p == pe )
+		goto _test_eof49;
+case 49:
+	switch( (*p) ) {
+		case 13: goto tr56;
+		case 101: goto st50;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st39;
+st50:
+	if ( ++p == pe )
+		goto _test_eof50;
+case 50:
+	switch( (*p) ) {
+		case 9: goto tr74;
+		case 13: goto tr75;
+		case 32: goto tr74;
+		case 44: goto tr76;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st39;
+tr53:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st51;
+st51:
+	if ( ++p == pe )
+		goto _test_eof51;
+case 51:
+#line 1448 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 13: goto tr56;
+		case 122: goto st52;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st39;
+st52:
+	if ( ++p == pe )
+		goto _test_eof52;
+case 52:
+	switch( (*p) ) {
+		case 13: goto tr56;
+		case 105: goto st53;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st39;
+st53:
+	if ( ++p == pe )
+		goto _test_eof53;
+case 53:
+	switch( (*p) ) {
+		case 13: goto tr56;
+		case 112: goto st54;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st39;
+st54:
+	if ( ++p == pe )
+		goto _test_eof54;
+case 54:
+	switch( (*p) ) {
+		case 9: goto tr80;
+		case 13: goto tr81;
+		case 32: goto tr80;
+		case 44: goto tr82;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st39;
+tr54:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st55;
+st55:
+	if ( ++p == pe )
+		goto _test_eof55;
+case 55:
+#line 1515 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 13: goto tr56;
+		case 100: goto st56;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st39;
+st56:
+	if ( ++p == pe )
+		goto _test_eof56;
+case 56:
+	switch( (*p) ) {
+		case 13: goto tr56;
+		case 101: goto st57;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st39;
+st57:
+	if ( ++p == pe )
+		goto _test_eof57;
+case 57:
+	switch( (*p) ) {
+		case 13: goto tr56;
+		case 110: goto st58;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st39;
+st58:
+	if ( ++p == pe )
+		goto _test_eof58;
+case 58:
+	switch( (*p) ) {
+		case 13: goto tr56;
+		case 116: goto st59;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st39;
+st59:
+	if ( ++p == pe )
+		goto _test_eof59;
+case 59:
+	switch( (*p) ) {
+		case 13: goto tr56;
+		case 105: goto st60;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st39;
+st60:
+	if ( ++p == pe )
+		goto _test_eof60;
+case 60:
+	switch( (*p) ) {
+		case 13: goto tr56;
+		case 116: goto st61;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st39;
+st61:
+	if ( ++p == pe )
+		goto _test_eof61;
+case 61:
+	switch( (*p) ) {
+		case 13: goto tr56;
+		case 121: goto st42;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st39;
+st62:
+	if ( ++p == pe )
+		goto _test_eof62;
+case 62:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 82: goto st39;
-		case 114: goto st39;
+		case 69: goto st63;
+		case 101: goto st63;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -1032,15 +1643,273 @@ case 38:
 	} else
 		goto st19;
 	goto st0;
-st39:
+st63:
 	if ( ++p == pe )
-		goto _test_eof39;
-case 39:
+		goto _test_eof63;
+case 63:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 65: goto st40;
-		case 97: goto st40;
+		case 78: goto st64;
+		case 110: goto st64;
+		case 124: goto st19;
+		case 126: goto st19;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st19;
+		} else if ( (*p) >= 35 )
+			goto st19;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st19;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st19;
+		} else
+			goto st19;
+	} else
+		goto st19;
+	goto st0;
+st64:
+	if ( ++p == pe )
+		goto _test_eof64;
+case 64:
+	switch( (*p) ) {
+		case 33: goto st19;
+		case 58: goto tr26;
+		case 71: goto st65;
+		case 103: goto st65;
+		case 124: goto st19;
+		case 126: goto st19;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st19;
+		} else if ( (*p) >= 35 )
+			goto st19;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st19;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st19;
+		} else
+			goto st19;
+	} else
+		goto st19;
+	goto st0;
+st65:
+	if ( ++p == pe )
+		goto _test_eof65;
+case 65:
+	switch( (*p) ) {
+		case 33: goto st19;
+		case 58: goto tr26;
+		case 84: goto st66;
+		case 116: goto st66;
+		case 124: goto st19;
+		case 126: goto st19;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st19;
+		} else if ( (*p) >= 35 )
+			goto st19;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st19;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st19;
+		} else
+			goto st19;
+	} else
+		goto st19;
+	goto st0;
+st66:
+	if ( ++p == pe )
+		goto _test_eof66;
+case 66:
+	switch( (*p) ) {
+		case 33: goto st19;
+		case 58: goto tr26;
+		case 72: goto st67;
+		case 104: goto st67;
+		case 124: goto st19;
+		case 126: goto st19;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st19;
+		} else if ( (*p) >= 35 )
+			goto st19;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st19;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st19;
+		} else
+			goto st19;
+	} else
+		goto st19;
+	goto st0;
+st67:
+	if ( ++p == pe )
+		goto _test_eof67;
+case 67:
+	switch( (*p) ) {
+		case 33: goto st19;
+		case 58: goto tr94;
+		case 124: goto st19;
+		case 126: goto st19;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st19;
+		} else if ( (*p) >= 35 )
+			goto st19;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st19;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st19;
+		} else
+			goto st19;
+	} else
+		goto st19;
+	goto st0;
+tr94:
+#line 20 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (!headers_finished) {
+            string value;
+            SAVE(value);
+            message->headers.add(value, {});
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 12 "src/panda/protocol/http/MessageParser.rl"
+	{
+        marked = false;
+    }
+	goto st68;
+st68:
+	if ( ++p == pe )
+		goto _test_eof68;
+case 68:
+#line 1814 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 9: goto st68;
+		case 13: goto tr29;
+		case 32: goto st68;
+		case 127: goto st0;
+	}
+	if ( (*p) > 31 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto tr96;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto tr27;
+tr96:
+#line 38 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (has_content_length) {
+            cs = message_parser_error;
+            set_error(errc::multiple_content_length);
+            {p++; cs = 69; goto _out;}
+        }
+        has_content_length = true;
+    }
+#line 142 "src/panda/protocol/http/MessageParser.rl"
+	{ADD_DIGIT(content_length)}
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st69;
+tr97:
+#line 142 "src/panda/protocol/http/MessageParser.rl"
+	{ADD_DIGIT(content_length)}
+	goto st69;
+st69:
+	if ( ++p == pe )
+		goto _test_eof69;
+case 69:
+#line 1853 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 13: goto tr31;
+		case 127: goto st0;
+	}
+	if ( (*p) < 10 ) {
+		if ( 0 <= (*p) && (*p) <= 8 )
+			goto st0;
+	} else if ( (*p) > 31 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto tr97;
+	} else
+		goto st0;
+	goto st21;
+tr23:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st70;
+st70:
+	if ( ++p == pe )
+		goto _test_eof70;
+case 70:
+#line 1878 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 33: goto st19;
+		case 58: goto tr26;
+		case 82: goto st71;
+		case 114: goto st71;
+		case 124: goto st19;
+		case 126: goto st19;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st19;
+		} else if ( (*p) >= 35 )
+			goto st19;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st19;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st19;
+		} else
+			goto st19;
+	} else
+		goto st19;
+	goto st0;
+st71:
+	if ( ++p == pe )
+		goto _test_eof71;
+case 71:
+	switch( (*p) ) {
+		case 33: goto st19;
+		case 58: goto tr26;
+		case 65: goto st72;
+		case 97: goto st72;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -1062,15 +1931,15 @@ case 39:
 	} else
 		goto st19;
 	goto st0;
-st40:
+st72:
 	if ( ++p == pe )
-		goto _test_eof40;
-case 40:
+		goto _test_eof72;
+case 72:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 78: goto st41;
-		case 110: goto st41;
+		case 78: goto st73;
+		case 110: goto st73;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -1092,15 +1961,15 @@ case 40:
 	} else
 		goto st19;
 	goto st0;
-st41:
+st73:
 	if ( ++p == pe )
-		goto _test_eof41;
-case 41:
+		goto _test_eof73;
+case 73:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 83: goto st42;
-		case 115: goto st42;
+		case 83: goto st74;
+		case 115: goto st74;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -1122,15 +1991,15 @@ case 41:
 	} else
 		goto st19;
 	goto st0;
-st42:
+st74:
 	if ( ++p == pe )
-		goto _test_eof42;
-case 42:
+		goto _test_eof74;
+case 74:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 70: goto st43;
-		case 102: goto st43;
+		case 70: goto st75;
+		case 102: goto st75;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -1152,15 +2021,15 @@ case 42:
 	} else
 		goto st19;
 	goto st0;
-st43:
+st75:
 	if ( ++p == pe )
-		goto _test_eof43;
-case 43:
+		goto _test_eof75;
+case 75:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 69: goto st44;
-		case 101: goto st44;
+		case 69: goto st76;
+		case 101: goto st76;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -1182,15 +2051,15 @@ case 43:
 	} else
 		goto st19;
 	goto st0;
-st44:
+st76:
 	if ( ++p == pe )
-		goto _test_eof44;
-case 44:
+		goto _test_eof76;
+case 76:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 82: goto st45;
-		case 114: goto st45;
+		case 82: goto st77;
+		case 114: goto st77;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -1212,13 +2081,13 @@ case 44:
 	} else
 		goto st19;
 	goto st0;
-st45:
+st77:
 	if ( ++p == pe )
-		goto _test_eof45;
-case 45:
+		goto _test_eof77;
+case 77:
 	switch( (*p) ) {
 		case 33: goto st19;
-		case 45: goto st46;
+		case 45: goto st78;
 		case 46: goto st19;
 		case 58: goto tr26;
 		case 124: goto st19;
@@ -1239,15 +2108,15 @@ case 45:
 	} else
 		goto st19;
 	goto st0;
-st46:
+st78:
 	if ( ++p == pe )
-		goto _test_eof46;
-case 46:
+		goto _test_eof78;
+case 78:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 69: goto st47;
-		case 101: goto st47;
+		case 69: goto st79;
+		case 101: goto st79;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -1269,15 +2138,15 @@ case 46:
 	} else
 		goto st19;
 	goto st0;
-st47:
+st79:
 	if ( ++p == pe )
-		goto _test_eof47;
-case 47:
+		goto _test_eof79;
+case 79:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 78: goto st48;
-		case 110: goto st48;
+		case 78: goto st80;
+		case 110: goto st80;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -1299,15 +2168,15 @@ case 47:
 	} else
 		goto st19;
 	goto st0;
-st48:
+st80:
 	if ( ++p == pe )
-		goto _test_eof48;
-case 48:
+		goto _test_eof80;
+case 80:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 67: goto st49;
-		case 99: goto st49;
+		case 67: goto st81;
+		case 99: goto st81;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -1329,15 +2198,15 @@ case 48:
 	} else
 		goto st19;
 	goto st0;
-st49:
+st81:
 	if ( ++p == pe )
-		goto _test_eof49;
-case 49:
+		goto _test_eof81;
+case 81:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 79: goto st50;
-		case 111: goto st50;
+		case 79: goto st82;
+		case 111: goto st82;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -1359,15 +2228,15 @@ case 49:
 	} else
 		goto st19;
 	goto st0;
-st50:
+st82:
 	if ( ++p == pe )
-		goto _test_eof50;
-case 50:
+		goto _test_eof82;
+case 82:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 68: goto st51;
-		case 100: goto st51;
+		case 68: goto st83;
+		case 100: goto st83;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -1389,15 +2258,15 @@ case 50:
 	} else
 		goto st19;
 	goto st0;
-st51:
+st83:
 	if ( ++p == pe )
-		goto _test_eof51;
-case 51:
+		goto _test_eof83;
+case 83:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 73: goto st52;
-		case 105: goto st52;
+		case 73: goto st84;
+		case 105: goto st84;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -1419,15 +2288,15 @@ case 51:
 	} else
 		goto st19;
 	goto st0;
-st52:
+st84:
 	if ( ++p == pe )
-		goto _test_eof52;
-case 52:
+		goto _test_eof84;
+case 84:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 78: goto st53;
-		case 110: goto st53;
+		case 78: goto st85;
+		case 110: goto st85;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -1449,15 +2318,15 @@ case 52:
 	} else
 		goto st19;
 	goto st0;
-st53:
+st85:
 	if ( ++p == pe )
-		goto _test_eof53;
-case 53:
+		goto _test_eof85;
+case 85:
 	switch( (*p) ) {
 		case 33: goto st19;
 		case 58: goto tr26;
-		case 71: goto st54;
-		case 103: goto st54;
+		case 71: goto st86;
+		case 103: goto st86;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -1479,13 +2348,13 @@ case 53:
 	} else
 		goto st19;
 	goto st0;
-st54:
+st86:
 	if ( ++p == pe )
-		goto _test_eof54;
-case 54:
+		goto _test_eof86;
+case 86:
 	switch( (*p) ) {
 		case 33: goto st19;
-		case 58: goto tr65;
+		case 58: goto tr114;
 		case 124: goto st19;
 		case 126: goto st19;
 	}
@@ -1507,7 +2376,7 @@ case 54:
 	} else
 		goto st19;
 	goto st0;
-tr65:
+tr114:
 #line 20 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
@@ -1521,728 +2390,37 @@ tr65:
 	{
         marked = false;
     }
-	goto st55;
-st55:
+	goto st87;
+st87:
 	if ( ++p == pe )
-		goto _test_eof55;
-case 55:
-#line 1530 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 9: goto st55;
-		case 13: goto tr29;
-		case 32: goto st55;
-		case 67: goto tr68;
-		case 99: goto tr68;
-		case 100: goto tr69;
-		case 103: goto tr70;
-		case 105: goto tr71;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto tr66;
-tr66:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st56;
-st56:
-	if ( ++p == pe )
-		goto _test_eof56;
-case 56:
-#line 1556 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-tr68:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st57;
-st57:
-	if ( ++p == pe )
-		goto _test_eof57;
-case 57:
-#line 1578 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 72: goto st58;
-		case 104: goto st58;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st58:
-	if ( ++p == pe )
-		goto _test_eof58;
-case 58:
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 85: goto st59;
-		case 117: goto st59;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st59:
-	if ( ++p == pe )
-		goto _test_eof59;
-case 59:
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 78: goto st60;
-		case 110: goto st60;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st60:
-	if ( ++p == pe )
-		goto _test_eof60;
-case 60:
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 75: goto st61;
-		case 107: goto st61;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st61:
-	if ( ++p == pe )
-		goto _test_eof61;
-case 61:
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 69: goto st62;
-		case 101: goto st62;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st62:
-	if ( ++p == pe )
-		goto _test_eof62;
-case 62:
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 68: goto st63;
-		case 100: goto st63;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st63:
-	if ( ++p == pe )
-		goto _test_eof63;
-case 63:
-	switch( (*p) ) {
-		case 9: goto tr80;
-		case 13: goto tr81;
-		case 32: goto tr80;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st56;
-tr80:
-#line 89 "src/panda/protocol/http/MessageParser.rl"
-	{message->chunked = true;                     }
-	goto st64;
-st64:
-	if ( ++p == pe )
-		goto _test_eof64;
-case 64:
-#line 1692 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 9: goto st64;
-		case 13: goto tr31;
-		case 32: goto st64;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st56;
-tr69:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st65;
-st65:
-	if ( ++p == pe )
-		goto _test_eof65;
-case 65:
-#line 1713 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 101: goto st66;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st66:
-	if ( ++p == pe )
-		goto _test_eof66;
-case 66:
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 102: goto st67;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st67:
-	if ( ++p == pe )
-		goto _test_eof67;
-case 67:
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 108: goto st68;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st68:
-	if ( ++p == pe )
-		goto _test_eof68;
-case 68:
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 97: goto st69;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st69:
-	if ( ++p == pe )
-		goto _test_eof69;
-case 69:
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 116: goto st70;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st70:
-	if ( ++p == pe )
-		goto _test_eof70;
-case 70:
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 101: goto st71;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st71:
-	if ( ++p == pe )
-		goto _test_eof71;
-case 71:
-	switch( (*p) ) {
-		case 9: goto tr89;
-		case 13: goto tr90;
-		case 32: goto tr89;
-		case 44: goto tr91;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st56;
-tr89:
-#line 92 "src/panda/protocol/http/MessageParser.rl"
-	{message->compressed = compression::DEFLATE;  }
-	goto st72;
-tr98:
-#line 91 "src/panda/protocol/http/MessageParser.rl"
-	{message->compressed = compression::GZIP;     }
-	goto st72;
-tr108:
-#line 90 "src/panda/protocol/http/MessageParser.rl"
-	{message->compressed = compression::IDENTITY; }
-	goto st72;
-st72:
-	if ( ++p == pe )
-		goto _test_eof72;
-case 72:
-#line 1830 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 9: goto st72;
-		case 13: goto tr31;
-		case 32: goto st72;
-		case 44: goto st73;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st56;
-tr91:
-#line 92 "src/panda/protocol/http/MessageParser.rl"
-	{message->compressed = compression::DEFLATE;  }
-	goto st73;
-tr100:
-#line 91 "src/panda/protocol/http/MessageParser.rl"
-	{message->compressed = compression::GZIP;     }
-	goto st73;
-tr110:
-#line 90 "src/panda/protocol/http/MessageParser.rl"
-	{message->compressed = compression::IDENTITY; }
-	goto st73;
-st73:
-	if ( ++p == pe )
-		goto _test_eof73;
-case 73:
-#line 1857 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 9: goto st73;
-		case 13: goto tr73;
-		case 32: goto st73;
-		case 67: goto st57;
-		case 99: goto st57;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st56;
-tr70:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st74;
-st74:
-	if ( ++p == pe )
-		goto _test_eof74;
-case 74:
-#line 1880 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 122: goto st75;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st75:
-	if ( ++p == pe )
-		goto _test_eof75;
-case 75:
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 105: goto st76;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st76:
-	if ( ++p == pe )
-		goto _test_eof76;
-case 76:
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 112: goto st77;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st77:
-	if ( ++p == pe )
-		goto _test_eof77;
-case 77:
-	switch( (*p) ) {
-		case 9: goto tr98;
-		case 13: goto tr99;
-		case 32: goto tr98;
-		case 44: goto tr100;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st56;
-tr71:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st78;
-st78:
-	if ( ++p == pe )
-		goto _test_eof78;
-case 78:
-#line 1947 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 100: goto st79;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st79:
-	if ( ++p == pe )
-		goto _test_eof79;
-case 79:
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 101: goto st80;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st80:
-	if ( ++p == pe )
-		goto _test_eof80;
-case 80:
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 110: goto st81;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st81:
-	if ( ++p == pe )
-		goto _test_eof81;
-case 81:
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 116: goto st82;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st82:
-	if ( ++p == pe )
-		goto _test_eof82;
-case 82:
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 105: goto st83;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st83:
-	if ( ++p == pe )
-		goto _test_eof83;
-case 83:
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 116: goto st84;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st84:
-	if ( ++p == pe )
-		goto _test_eof84;
-case 84:
-	switch( (*p) ) {
-		case 13: goto tr73;
-		case 121: goto st85;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st56;
-st85:
-	if ( ++p == pe )
-		goto _test_eof85;
-case 85:
-	switch( (*p) ) {
-		case 9: goto tr108;
-		case 13: goto tr109;
-		case 32: goto tr108;
-		case 44: goto tr110;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st56;
-st86:
-	if ( ++p == pe )
-		goto _test_eof86;
-case 86:
-	if ( (*p) == 32 )
-		goto tr111;
-	goto st0;
+		goto _test_eof87;
 case 87:
-	if ( (*p) < 65 ) {
-		if ( 48 <= (*p) && (*p) <= 57 )
-			goto tr112;
-	} else if ( (*p) > 70 ) {
-		if ( 97 <= (*p) && (*p) <= 102 )
-			goto tr112;
-	} else
-		goto tr112;
-	goto st0;
-tr112:
-#line 99 "src/panda/protocol/http/MessageParser.rl"
-	{chunk_length = 0;}
-#line 99 "src/panda/protocol/http/MessageParser.rl"
-	{ADD_XDIGIT(chunk_length)}
-	goto st88;
-tr114:
-#line 99 "src/panda/protocol/http/MessageParser.rl"
-	{ADD_XDIGIT(chunk_length)}
+#line 2399 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 9: goto st87;
+		case 13: goto tr29;
+		case 32: goto st87;
+		case 67: goto tr117;
+		case 99: goto tr117;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto tr115;
+tr115:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
 	goto st88;
 st88:
 	if ( ++p == pe )
 		goto _test_eof88;
 case 88:
-#line 2094 "src/panda/protocol/http/MessageParser.cc"
+#line 2422 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 13: goto st89;
-		case 59: goto st90;
-	}
-	if ( (*p) < 65 ) {
-		if ( 48 <= (*p) && (*p) <= 57 )
-			goto tr114;
-	} else if ( (*p) > 70 ) {
-		if ( 97 <= (*p) && (*p) <= 102 )
-			goto tr114;
-	} else
-		goto tr114;
-	goto st0;
-st89:
-	if ( ++p == pe )
-		goto _test_eof89;
-case 89:
-	if ( (*p) == 10 )
-		goto tr116;
-	goto st0;
-tr116:
-#line 16 "src/panda/protocol/http/MessageParser.rl"
-	{
-        {p++; cs = 299; goto _out;}
-    }
-	goto st299;
-st299:
-	if ( ++p == pe )
-		goto _test_eof299;
-case 299:
-#line 2125 "src/panda/protocol/http/MessageParser.cc"
-	goto st0;
-st90:
-	if ( ++p == pe )
-		goto _test_eof90;
-case 90:
-	switch( (*p) ) {
-		case 33: goto st91;
-		case 124: goto st91;
-		case 126: goto st91;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st91;
-		} else if ( (*p) >= 35 )
-			goto st91;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st91;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st91;
-		} else
-			goto st91;
-	} else
-		goto st91;
-	goto st0;
-st91:
-	if ( ++p == pe )
-		goto _test_eof91;
-case 91:
-	switch( (*p) ) {
-		case 13: goto st89;
-		case 33: goto st91;
-		case 59: goto st90;
-		case 61: goto st92;
-		case 124: goto st91;
-		case 126: goto st91;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st91;
-		} else if ( (*p) >= 35 )
-			goto st91;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st91;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st91;
-		} else
-			goto st91;
-	} else
-		goto st91;
-	goto st0;
-st92:
-	if ( ++p == pe )
-		goto _test_eof92;
-case 92:
-	switch( (*p) ) {
-		case 34: goto st94;
-		case 124: goto st93;
-		case 126: goto st93;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st93;
-		} else if ( (*p) >= 33 )
-			goto st93;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st93;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st93;
-		} else
-			goto st93;
-	} else
-		goto st93;
-	goto st0;
-st93:
-	if ( ++p == pe )
-		goto _test_eof93;
-case 93:
-	switch( (*p) ) {
-		case 13: goto st89;
-		case 33: goto st93;
-		case 59: goto st90;
-		case 124: goto st93;
-		case 126: goto st93;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st93;
-		} else if ( (*p) >= 35 )
-			goto st93;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st93;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st93;
-		} else
-			goto st93;
-	} else
-		goto st93;
-	goto st0;
-st94:
-	if ( ++p == pe )
-		goto _test_eof94;
-case 94:
-	switch( (*p) ) {
-		case 34: goto st95;
-		case 92: goto st96;
+		case 13: goto tr119;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -2250,219 +2428,326 @@ case 94:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st94;
-st95:
+	goto st88;
+tr117:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st89;
+st89:
 	if ( ++p == pe )
-		goto _test_eof95;
-case 95:
+		goto _test_eof89;
+case 89:
+#line 2444 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 13: goto st89;
-		case 59: goto st90;
+		case 13: goto tr119;
+		case 72: goto st90;
+		case 104: goto st90;
+		case 127: goto st0;
 	}
-	goto st0;
-st96:
-	if ( ++p == pe )
-		goto _test_eof96;
-case 96:
-	if ( (*p) == 127 )
-		goto st0;
 	if ( (*p) > 8 ) {
 		if ( 10 <= (*p) && (*p) <= 31 )
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st94;
-case 97:
-	if ( (*p) == 13 )
-		goto st98;
-	goto st0;
-st98:
+	goto st88;
+st90:
 	if ( ++p == pe )
-		goto _test_eof98;
-case 98:
-	if ( (*p) == 10 )
-		goto st99;
+		goto _test_eof90;
+case 90:
+	switch( (*p) ) {
+		case 13: goto tr119;
+		case 85: goto st91;
+		case 117: goto st91;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st88;
+st91:
+	if ( ++p == pe )
+		goto _test_eof91;
+case 91:
+	switch( (*p) ) {
+		case 13: goto tr119;
+		case 78: goto st92;
+		case 110: goto st92;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st88;
+st92:
+	if ( ++p == pe )
+		goto _test_eof92;
+case 92:
+	switch( (*p) ) {
+		case 13: goto tr119;
+		case 75: goto st93;
+		case 107: goto st93;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st88;
+st93:
+	if ( ++p == pe )
+		goto _test_eof93;
+case 93:
+	switch( (*p) ) {
+		case 13: goto tr119;
+		case 69: goto st94;
+		case 101: goto st94;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st88;
+st94:
+	if ( ++p == pe )
+		goto _test_eof94;
+case 94:
+	switch( (*p) ) {
+		case 13: goto tr119;
+		case 68: goto st95;
+		case 100: goto st95;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st88;
+st95:
+	if ( ++p == pe )
+		goto _test_eof95;
+case 95:
+	switch( (*p) ) {
+		case 9: goto tr126;
+		case 13: goto tr127;
+		case 32: goto tr126;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st88;
+tr126:
+#line 143 "src/panda/protocol/http/MessageParser.rl"
+	{message->chunked = true;                     }
+	goto st96;
+st96:
+	if ( ++p == pe )
+		goto _test_eof96;
+case 96:
+#line 2558 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 9: goto st96;
+		case 13: goto tr31;
+		case 32: goto st96;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st88;
+st97:
+	if ( ++p == pe )
+		goto _test_eof97;
+case 97:
+	if ( (*p) == 32 )
+		goto tr129;
 	goto st0;
+case 98:
+	if ( (*p) < 65 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto tr130;
+	} else if ( (*p) > 70 ) {
+		if ( 97 <= (*p) && (*p) <= 102 )
+			goto tr130;
+	} else
+		goto tr130;
+	goto st0;
+tr130:
+#line 156 "src/panda/protocol/http/MessageParser.rl"
+	{chunk_length = 0;}
+#line 156 "src/panda/protocol/http/MessageParser.rl"
+	{ADD_XDIGIT(chunk_length)}
+	goto st99;
+tr132:
+#line 156 "src/panda/protocol/http/MessageParser.rl"
+	{ADD_XDIGIT(chunk_length)}
+	goto st99;
 st99:
 	if ( ++p == pe )
 		goto _test_eof99;
 case 99:
+#line 2599 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 13: goto st100;
+		case 59: goto st101;
+	}
 	if ( (*p) < 65 ) {
 		if ( 48 <= (*p) && (*p) <= 57 )
-			goto tr125;
+			goto tr132;
 	} else if ( (*p) > 70 ) {
 		if ( 97 <= (*p) && (*p) <= 102 )
-			goto tr125;
+			goto tr132;
 	} else
-		goto tr125;
+		goto tr132;
 	goto st0;
-tr125:
-#line 99 "src/panda/protocol/http/MessageParser.rl"
-	{chunk_length = 0;}
-#line 99 "src/panda/protocol/http/MessageParser.rl"
-	{ADD_XDIGIT(chunk_length)}
-	goto st100;
-tr127:
-#line 99 "src/panda/protocol/http/MessageParser.rl"
-	{ADD_XDIGIT(chunk_length)}
-	goto st100;
 st100:
 	if ( ++p == pe )
 		goto _test_eof100;
 case 100:
-#line 2314 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 13: goto st101;
-		case 59: goto st102;
-	}
-	if ( (*p) < 65 ) {
-		if ( 48 <= (*p) && (*p) <= 57 )
-			goto tr127;
-	} else if ( (*p) > 70 ) {
-		if ( 97 <= (*p) && (*p) <= 102 )
-			goto tr127;
-	} else
-		goto tr127;
+	if ( (*p) == 10 )
+		goto tr134;
+	goto st0;
+tr134:
+#line 16 "src/panda/protocol/http/MessageParser.rl"
+	{
+        {p++; cs = 322; goto _out;}
+    }
+	goto st322;
+st322:
+	if ( ++p == pe )
+		goto _test_eof322;
+case 322:
+#line 2630 "src/panda/protocol/http/MessageParser.cc"
 	goto st0;
 st101:
 	if ( ++p == pe )
 		goto _test_eof101;
 case 101:
-	if ( (*p) == 10 )
-		goto tr129;
-	goto st0;
-tr129:
-#line 16 "src/panda/protocol/http/MessageParser.rl"
-	{
-        {p++; cs = 300; goto _out;}
-    }
-	goto st300;
-st300:
-	if ( ++p == pe )
-		goto _test_eof300;
-case 300:
-#line 2345 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 33: goto st102;
+		case 124: goto st102;
+		case 126: goto st102;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st102;
+		} else if ( (*p) >= 35 )
+			goto st102;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st102;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st102;
+		} else
+			goto st102;
+	} else
+		goto st102;
 	goto st0;
 st102:
 	if ( ++p == pe )
 		goto _test_eof102;
 case 102:
 	switch( (*p) ) {
-		case 33: goto st103;
-		case 124: goto st103;
-		case 126: goto st103;
+		case 13: goto st100;
+		case 33: goto st102;
+		case 59: goto st101;
+		case 61: goto st103;
+		case 124: goto st102;
+		case 126: goto st102;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st103;
+				goto st102;
 		} else if ( (*p) >= 35 )
-			goto st103;
+			goto st102;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st103;
+				goto st102;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st103;
+				goto st102;
 		} else
-			goto st103;
+			goto st102;
 	} else
-		goto st103;
+		goto st102;
 	goto st0;
 st103:
 	if ( ++p == pe )
 		goto _test_eof103;
 case 103:
 	switch( (*p) ) {
-		case 13: goto st101;
-		case 33: goto st103;
-		case 59: goto st102;
-		case 61: goto st104;
-		case 124: goto st103;
-		case 126: goto st103;
+		case 34: goto st105;
+		case 124: goto st104;
+		case 126: goto st104;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st103;
-		} else if ( (*p) >= 35 )
-			goto st103;
+				goto st104;
+		} else if ( (*p) >= 33 )
+			goto st104;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st103;
+				goto st104;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st103;
+				goto st104;
 		} else
-			goto st103;
+			goto st104;
 	} else
-		goto st103;
+		goto st104;
 	goto st0;
 st104:
 	if ( ++p == pe )
 		goto _test_eof104;
 case 104:
 	switch( (*p) ) {
-		case 34: goto st106;
-		case 124: goto st105;
-		case 126: goto st105;
+		case 13: goto st100;
+		case 33: goto st104;
+		case 59: goto st101;
+		case 124: goto st104;
+		case 126: goto st104;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st105;
-		} else if ( (*p) >= 33 )
-			goto st105;
+				goto st104;
+		} else if ( (*p) >= 35 )
+			goto st104;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st105;
+				goto st104;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st105;
+				goto st104;
 		} else
-			goto st105;
+			goto st104;
 	} else
-		goto st105;
+		goto st104;
 	goto st0;
 st105:
 	if ( ++p == pe )
 		goto _test_eof105;
 case 105:
 	switch( (*p) ) {
-		case 13: goto st101;
-		case 33: goto st105;
-		case 59: goto st102;
-		case 124: goto st105;
-		case 126: goto st105;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st105;
-		} else if ( (*p) >= 35 )
-			goto st105;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st105;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st105;
-		} else
-			goto st105;
-	} else
-		goto st105;
-	goto st0;
-st106:
-	if ( ++p == pe )
-		goto _test_eof106;
-case 106:
-	switch( (*p) ) {
-		case 34: goto st107;
-		case 92: goto st108;
+		case 34: goto st106;
+		case 92: goto st107;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -2470,20 +2755,20 @@ case 106:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st106;
+	goto st105;
+st106:
+	if ( ++p == pe )
+		goto _test_eof106;
+case 106:
+	switch( (*p) ) {
+		case 13: goto st100;
+		case 59: goto st101;
+	}
+	goto st0;
 st107:
 	if ( ++p == pe )
 		goto _test_eof107;
 case 107:
-	switch( (*p) ) {
-		case 13: goto st101;
-		case 59: goto st102;
-	}
-	goto st0;
-st108:
-	if ( ++p == pe )
-		goto _test_eof108;
-case 108:
 	if ( (*p) == 127 )
 		goto st0;
 	if ( (*p) > 8 ) {
@@ -2491,91 +2776,311 @@ case 108:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st106;
+	goto st105;
+case 108:
+	if ( (*p) == 13 )
+		goto st109;
+	goto st0;
 st109:
 	if ( ++p == pe )
 		goto _test_eof109;
 case 109:
-	switch( (*p) ) {
-		case 13: goto st110;
-		case 33: goto tr137;
-		case 124: goto tr137;
-		case 126: goto tr137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto tr137;
-		} else if ( (*p) >= 35 )
-			goto tr137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto tr137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto tr137;
-		} else
-			goto tr137;
-	} else
-		goto tr137;
+	if ( (*p) == 10 )
+		goto st110;
 	goto st0;
 st110:
 	if ( ++p == pe )
 		goto _test_eof110;
 case 110:
-	if ( (*p) == 10 )
-		goto tr138;
+	if ( (*p) < 65 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto tr143;
+	} else if ( (*p) > 70 ) {
+		if ( 97 <= (*p) && (*p) <= 102 )
+			goto tr143;
+	} else
+		goto tr143;
 	goto st0;
-tr138:
-#line 16 "src/panda/protocol/http/MessageParser.rl"
-	{
-        {p++; cs = 301; goto _out;}
-    }
-	goto st301;
-st301:
-	if ( ++p == pe )
-		goto _test_eof301;
-case 301:
-#line 2541 "src/panda/protocol/http/MessageParser.cc"
-	goto st0;
-tr137:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
+tr143:
+#line 156 "src/panda/protocol/http/MessageParser.rl"
+	{chunk_length = 0;}
+#line 156 "src/panda/protocol/http/MessageParser.rl"
+	{ADD_XDIGIT(chunk_length)}
+	goto st111;
+tr145:
+#line 156 "src/panda/protocol/http/MessageParser.rl"
+	{ADD_XDIGIT(chunk_length)}
 	goto st111;
 st111:
 	if ( ++p == pe )
 		goto _test_eof111;
 case 111:
-#line 2554 "src/panda/protocol/http/MessageParser.cc"
+#line 2819 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 33: goto st111;
-		case 58: goto tr140;
-		case 124: goto st111;
-		case 126: goto st111;
+		case 13: goto st112;
+		case 59: goto st113;
+	}
+	if ( (*p) < 65 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto tr145;
+	} else if ( (*p) > 70 ) {
+		if ( 97 <= (*p) && (*p) <= 102 )
+			goto tr145;
+	} else
+		goto tr145;
+	goto st0;
+st112:
+	if ( ++p == pe )
+		goto _test_eof112;
+case 112:
+	if ( (*p) == 10 )
+		goto tr147;
+	goto st0;
+tr147:
+#line 16 "src/panda/protocol/http/MessageParser.rl"
+	{
+        {p++; cs = 323; goto _out;}
+    }
+	goto st323;
+st323:
+	if ( ++p == pe )
+		goto _test_eof323;
+case 323:
+#line 2850 "src/panda/protocol/http/MessageParser.cc"
+	goto st0;
+st113:
+	if ( ++p == pe )
+		goto _test_eof113;
+case 113:
+	switch( (*p) ) {
+		case 33: goto st114;
+		case 124: goto st114;
+		case 126: goto st114;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st111;
+				goto st114;
 		} else if ( (*p) >= 35 )
-			goto st111;
+			goto st114;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st111;
+				goto st114;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st111;
+				goto st114;
 		} else
-			goto st111;
+			goto st114;
 	} else
-		goto st111;
+		goto st114;
 	goto st0;
-tr140:
+st114:
+	if ( ++p == pe )
+		goto _test_eof114;
+case 114:
+	switch( (*p) ) {
+		case 13: goto st112;
+		case 33: goto st114;
+		case 59: goto st113;
+		case 61: goto st115;
+		case 124: goto st114;
+		case 126: goto st114;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st114;
+		} else if ( (*p) >= 35 )
+			goto st114;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st114;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st114;
+		} else
+			goto st114;
+	} else
+		goto st114;
+	goto st0;
+st115:
+	if ( ++p == pe )
+		goto _test_eof115;
+case 115:
+	switch( (*p) ) {
+		case 34: goto st117;
+		case 124: goto st116;
+		case 126: goto st116;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st116;
+		} else if ( (*p) >= 33 )
+			goto st116;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st116;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st116;
+		} else
+			goto st116;
+	} else
+		goto st116;
+	goto st0;
+st116:
+	if ( ++p == pe )
+		goto _test_eof116;
+case 116:
+	switch( (*p) ) {
+		case 13: goto st112;
+		case 33: goto st116;
+		case 59: goto st113;
+		case 124: goto st116;
+		case 126: goto st116;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st116;
+		} else if ( (*p) >= 35 )
+			goto st116;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st116;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st116;
+		} else
+			goto st116;
+	} else
+		goto st116;
+	goto st0;
+st117:
+	if ( ++p == pe )
+		goto _test_eof117;
+case 117:
+	switch( (*p) ) {
+		case 34: goto st118;
+		case 92: goto st119;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st117;
+st118:
+	if ( ++p == pe )
+		goto _test_eof118;
+case 118:
+	switch( (*p) ) {
+		case 13: goto st112;
+		case 59: goto st113;
+	}
+	goto st0;
+st119:
+	if ( ++p == pe )
+		goto _test_eof119;
+case 119:
+	if ( (*p) == 127 )
+		goto st0;
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st117;
+st120:
+	if ( ++p == pe )
+		goto _test_eof120;
+case 120:
+	switch( (*p) ) {
+		case 13: goto st121;
+		case 33: goto tr155;
+		case 124: goto tr155;
+		case 126: goto tr155;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto tr155;
+		} else if ( (*p) >= 35 )
+			goto tr155;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto tr155;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto tr155;
+		} else
+			goto tr155;
+	} else
+		goto tr155;
+	goto st0;
+st121:
+	if ( ++p == pe )
+		goto _test_eof121;
+case 121:
+	if ( (*p) == 10 )
+		goto tr156;
+	goto st0;
+tr156:
+#line 16 "src/panda/protocol/http/MessageParser.rl"
+	{
+        {p++; cs = 324; goto _out;}
+    }
+	goto st324;
+st324:
+	if ( ++p == pe )
+		goto _test_eof324;
+case 324:
+#line 3046 "src/panda/protocol/http/MessageParser.cc"
+	goto st0;
+tr155:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st122;
+st122:
+	if ( ++p == pe )
+		goto _test_eof122;
+case 122:
+#line 3059 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 33: goto st122;
+		case 58: goto tr158;
+		case 124: goto st122;
+		case 126: goto st122;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st122;
+		} else if ( (*p) >= 35 )
+			goto st122;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st122;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st122;
+		} else
+			goto st122;
+	} else
+		goto st122;
+	goto st0;
+tr158:
 #line 20 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
@@ -2589,187 +3094,22 @@ tr140:
 	{
         marked = false;
     }
-	goto st112;
-st112:
-	if ( ++p == pe )
-		goto _test_eof112;
-case 112:
-#line 2598 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 9: goto st112;
-		case 13: goto tr143;
-		case 32: goto st112;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto tr141;
-tr141:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st113;
-st113:
-	if ( ++p == pe )
-		goto _test_eof113;
-case 113:
-#line 2619 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 13: goto tr145;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st113;
-tr143:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-#line 29 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (!headers_finished) {
-            string& value = message->headers.fields.back().value;
-            SAVE(value);
-            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
-        }
-        else {} // trailing header after chunks, currently we just ignore them
-    }
-#line 12 "src/panda/protocol/http/MessageParser.rl"
-	{
-        marked = false;
-    }
-	goto st114;
-tr145:
-#line 29 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (!headers_finished) {
-            string& value = message->headers.fields.back().value;
-            SAVE(value);
-            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
-        }
-        else {} // trailing header after chunks, currently we just ignore them
-    }
-#line 12 "src/panda/protocol/http/MessageParser.rl"
-	{
-        marked = false;
-    }
-	goto st114;
-st114:
-	if ( ++p == pe )
-		goto _test_eof114;
-case 114:
-#line 2669 "src/panda/protocol/http/MessageParser.cc"
-	if ( (*p) == 10 )
-		goto st109;
-	goto st0;
-case 115:
-	switch( (*p) ) {
-		case 67: goto st116;
-		case 68: goto st267;
-		case 71: goto st273;
-		case 72: goto st276;
-		case 79: goto st280;
-		case 80: goto st287;
-		case 84: goto st293;
-	}
-	goto st0;
-st116:
-	if ( ++p == pe )
-		goto _test_eof116;
-case 116:
-	if ( (*p) == 79 )
-		goto st117;
-	goto st0;
-st117:
-	if ( ++p == pe )
-		goto _test_eof117;
-case 117:
-	if ( (*p) == 78 )
-		goto st118;
-	goto st0;
-st118:
-	if ( ++p == pe )
-		goto _test_eof118;
-case 118:
-	if ( (*p) == 78 )
-		goto st119;
-	goto st0;
-st119:
-	if ( ++p == pe )
-		goto _test_eof119;
-case 119:
-	if ( (*p) == 69 )
-		goto st120;
-	goto st0;
-st120:
-	if ( ++p == pe )
-		goto _test_eof120;
-case 120:
-	if ( (*p) == 67 )
-		goto st121;
-	goto st0;
-st121:
-	if ( ++p == pe )
-		goto _test_eof121;
-case 121:
-	if ( (*p) == 84 )
-		goto st122;
-	goto st0;
-st122:
-	if ( ++p == pe )
-		goto _test_eof122;
-case 122:
-	if ( (*p) == 32 )
-		goto tr160;
-	goto st0;
-tr160:
-#line 116 "src/panda/protocol/http/MessageParser.rl"
-	{request->method = Request::Method::CONNECT; }
-	goto st123;
-tr360:
-#line 114 "src/panda/protocol/http/MessageParser.rl"
-	{request->method = Request::Method::DELETE; }
-	goto st123;
-tr363:
-#line 110 "src/panda/protocol/http/MessageParser.rl"
-	{request->method = Request::Method::GET; }
-	goto st123;
-tr367:
-#line 111 "src/panda/protocol/http/MessageParser.rl"
-	{request->method = Request::Method::HEAD; }
-	goto st123;
-tr374:
-#line 109 "src/panda/protocol/http/MessageParser.rl"
-	{request->method = Request::Method::OPTIONS; }
-	goto st123;
-tr379:
-#line 112 "src/panda/protocol/http/MessageParser.rl"
-	{request->method = Request::Method::POST; }
-	goto st123;
-tr381:
-#line 113 "src/panda/protocol/http/MessageParser.rl"
-	{request->method = Request::Method::PUT; }
-	goto st123;
-tr386:
-#line 115 "src/panda/protocol/http/MessageParser.rl"
-	{request->method = Request::Method::TRACE; }
 	goto st123;
 st123:
 	if ( ++p == pe )
 		goto _test_eof123;
 case 123:
-#line 2769 "src/panda/protocol/http/MessageParser.cc"
-	if ( 33 <= (*p) && (*p) <= 126 )
-		goto tr161;
-	goto st0;
-tr161:
+#line 3103 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 9: goto st123;
+		case 13: goto tr161;
+		case 32: goto st123;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto tr159;
+tr159:
 #line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
@@ -2780,18 +3120,46 @@ st124:
 	if ( ++p == pe )
 		goto _test_eof124;
 case 124:
-#line 2784 "src/panda/protocol/http/MessageParser.cc"
-	if ( (*p) == 32 )
-		goto tr162;
-	if ( 33 <= (*p) && (*p) <= 126 )
-		goto st124;
-	goto st0;
-tr162:
-#line 54 "src/panda/protocol/http/MessageParser.rl"
+#line 3124 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 13: goto tr163;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st124;
+tr161:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
-        string target;
-        SAVE(target);
-        request->uri = new URI(target);
+        mark   = p - ps;
+        marked = true;
+    }
+#line 29 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 12 "src/panda/protocol/http/MessageParser.rl"
+	{
+        marked = false;
+    }
+	goto st125;
+tr163:
+#line 29 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
     }
 #line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
@@ -2802,73 +3170,210 @@ st125:
 	if ( ++p == pe )
 		goto _test_eof125;
 case 125:
-#line 2806 "src/panda/protocol/http/MessageParser.cc"
-	if ( (*p) == 72 )
-		goto st126;
+#line 3174 "src/panda/protocol/http/MessageParser.cc"
+	if ( (*p) == 10 )
+		goto st120;
 	goto st0;
-st126:
-	if ( ++p == pe )
-		goto _test_eof126;
 case 126:
-	if ( (*p) == 84 )
-		goto st127;
+	switch( (*p) ) {
+		case 67: goto st127;
+		case 68: goto st290;
+		case 71: goto st296;
+		case 72: goto st299;
+		case 79: goto st303;
+		case 80: goto st310;
+		case 84: goto st316;
+	}
 	goto st0;
 st127:
 	if ( ++p == pe )
 		goto _test_eof127;
 case 127:
-	if ( (*p) == 84 )
+	if ( (*p) == 79 )
 		goto st128;
 	goto st0;
 st128:
 	if ( ++p == pe )
 		goto _test_eof128;
 case 128:
-	if ( (*p) == 80 )
+	if ( (*p) == 78 )
 		goto st129;
 	goto st0;
 st129:
 	if ( ++p == pe )
 		goto _test_eof129;
 case 129:
-	if ( (*p) == 47 )
+	if ( (*p) == 78 )
 		goto st130;
 	goto st0;
 st130:
 	if ( ++p == pe )
 		goto _test_eof130;
 case 130:
-	if ( (*p) == 49 )
+	if ( (*p) == 69 )
 		goto st131;
 	goto st0;
 st131:
 	if ( ++p == pe )
 		goto _test_eof131;
 case 131:
-	if ( (*p) == 46 )
+	if ( (*p) == 67 )
 		goto st132;
 	goto st0;
 st132:
 	if ( ++p == pe )
 		goto _test_eof132;
 case 132:
-	switch( (*p) ) {
-		case 48: goto st133;
-		case 49: goto st266;
-	}
+	if ( (*p) == 84 )
+		goto st133;
 	goto st0;
 st133:
 	if ( ++p == pe )
 		goto _test_eof133;
 case 133:
-	if ( (*p) == 13 )
-		goto tr173;
+	if ( (*p) == 32 )
+		goto tr178;
 	goto st0;
-tr173:
-#line 67 "src/panda/protocol/http/MessageParser.rl"
-	{message->http_version = 10;}
+tr178:
+#line 173 "src/panda/protocol/http/MessageParser.rl"
+	{request->method = Request::Method::CONNECT; }
 	goto st134;
-tr185:
+tr401:
+#line 171 "src/panda/protocol/http/MessageParser.rl"
+	{request->method = Request::Method::DELETE; }
+	goto st134;
+tr404:
+#line 167 "src/panda/protocol/http/MessageParser.rl"
+	{request->method = Request::Method::GET; }
+	goto st134;
+tr408:
+#line 168 "src/panda/protocol/http/MessageParser.rl"
+	{request->method = Request::Method::HEAD; }
+	goto st134;
+tr415:
+#line 166 "src/panda/protocol/http/MessageParser.rl"
+	{request->method = Request::Method::OPTIONS; }
+	goto st134;
+tr420:
+#line 169 "src/panda/protocol/http/MessageParser.rl"
+	{request->method = Request::Method::POST; }
+	goto st134;
+tr422:
+#line 170 "src/panda/protocol/http/MessageParser.rl"
+	{request->method = Request::Method::PUT; }
+	goto st134;
+tr427:
+#line 172 "src/panda/protocol/http/MessageParser.rl"
+	{request->method = Request::Method::TRACE; }
+	goto st134;
+st134:
+	if ( ++p == pe )
+		goto _test_eof134;
+case 134:
+#line 3274 "src/panda/protocol/http/MessageParser.cc"
+	if ( 33 <= (*p) && (*p) <= 126 )
+		goto tr179;
+	goto st0;
+tr179:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st135;
+st135:
+	if ( ++p == pe )
+		goto _test_eof135;
+case 135:
+#line 3289 "src/panda/protocol/http/MessageParser.cc"
+	if ( (*p) == 32 )
+		goto tr180;
+	if ( 33 <= (*p) && (*p) <= 126 )
+		goto st135;
+	goto st0;
+tr180:
+#line 108 "src/panda/protocol/http/MessageParser.rl"
+	{
+        string target;
+        SAVE(target);
+        request->uri = new URI(target);
+    }
+#line 12 "src/panda/protocol/http/MessageParser.rl"
+	{
+        marked = false;
+    }
+	goto st136;
+st136:
+	if ( ++p == pe )
+		goto _test_eof136;
+case 136:
+#line 3311 "src/panda/protocol/http/MessageParser.cc"
+	if ( (*p) == 72 )
+		goto st137;
+	goto st0;
+st137:
+	if ( ++p == pe )
+		goto _test_eof137;
+case 137:
+	if ( (*p) == 84 )
+		goto st138;
+	goto st0;
+st138:
+	if ( ++p == pe )
+		goto _test_eof138;
+case 138:
+	if ( (*p) == 84 )
+		goto st139;
+	goto st0;
+st139:
+	if ( ++p == pe )
+		goto _test_eof139;
+case 139:
+	if ( (*p) == 80 )
+		goto st140;
+	goto st0;
+st140:
+	if ( ++p == pe )
+		goto _test_eof140;
+case 140:
+	if ( (*p) == 47 )
+		goto st141;
+	goto st0;
+st141:
+	if ( ++p == pe )
+		goto _test_eof141;
+case 141:
+	if ( (*p) == 49 )
+		goto st142;
+	goto st0;
+st142:
+	if ( ++p == pe )
+		goto _test_eof142;
+case 142:
+	if ( (*p) == 46 )
+		goto st143;
+	goto st0;
+st143:
+	if ( ++p == pe )
+		goto _test_eof143;
+case 143:
+	switch( (*p) ) {
+		case 48: goto st144;
+		case 49: goto st289;
+	}
+	goto st0;
+st144:
+	if ( ++p == pe )
+		goto _test_eof144;
+case 144:
+	if ( (*p) == 13 )
+		goto tr191;
+	goto st0;
+tr191:
+#line 121 "src/panda/protocol/http/MessageParser.rl"
+	{message->http_version = 10;}
+	goto st145;
+tr203:
 #line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
@@ -2887,8 +3392,8 @@ tr185:
 	{
         marked = false;
     }
-	goto st134;
-tr187:
+	goto st145;
+tr205:
 #line 29 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
@@ -2902,14 +3407,199 @@ tr187:
 	{
         marked = false;
     }
-	goto st134;
-tr316:
+	goto st145;
+tr322:
+#line 53 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (uncompress_content) {
+            cs = message_parser_error;
+            set_error(errc::unsupported_compression);
+            {p++; cs = 145; goto _out;}
+        }
+    }
+#line 94 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (message->compressed != compression::IDENTITY) {
+            auto it  = compression::instantiate(message->compressed);
+            if (it) {
+                it->prepare_uncompress(max_body_size);
+                compressor = std::move(it);
+            } else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 145; goto _out;}
+            }
+        }
+    }
+#line 29 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 12 "src/panda/protocol/http/MessageParser.rl"
+	{
+        marked = false;
+    }
+	goto st145;
+tr325:
+#line 83 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::BROTLI; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 145; goto _out;}
+            }
+        }
+    }
+#line 94 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (message->compressed != compression::IDENTITY) {
+            auto it  = compression::instantiate(message->compressed);
+            if (it) {
+                it->prepare_uncompress(max_body_size);
+                compressor = std::move(it);
+            } else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 145; goto _out;}
+            }
+        }
+    }
+#line 29 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 12 "src/panda/protocol/http/MessageParser.rl"
+	{
+        marked = false;
+    }
+	goto st145;
+tr328:
+#line 94 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (message->compressed != compression::IDENTITY) {
+            auto it  = compression::instantiate(message->compressed);
+            if (it) {
+                it->prepare_uncompress(max_body_size);
+                compressor = std::move(it);
+            } else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 145; goto _out;}
+            }
+        }
+    }
+#line 29 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 12 "src/panda/protocol/http/MessageParser.rl"
+	{
+        marked = false;
+    }
+	goto st145;
+tr341:
+#line 72 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::DEFLATE; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 145; goto _out;}
+            }
+        }
+    }
+#line 94 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (message->compressed != compression::IDENTITY) {
+            auto it  = compression::instantiate(message->compressed);
+            if (it) {
+                it->prepare_uncompress(max_body_size);
+                compressor = std::move(it);
+            } else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 145; goto _out;}
+            }
+        }
+    }
+#line 29 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 12 "src/panda/protocol/http/MessageParser.rl"
+	{
+        marked = false;
+    }
+	goto st145;
+tr347:
+#line 61 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::GZIP; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 145; goto _out;}
+            }
+        }
+    }
+#line 94 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (message->compressed != compression::IDENTITY) {
+            auto it  = compression::instantiate(message->compressed);
+            if (it) {
+                it->prepare_uncompress(max_body_size);
+                compressor = std::move(it);
+            } else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 145; goto _out;}
+            }
+        }
+    }
+#line 29 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 12 "src/panda/protocol/http/MessageParser.rl"
+	{
+        marked = false;
+    }
+	goto st145;
+tr385:
 #line 47 "src/panda/protocol/http/MessageParser.rl"
 	{
-        printf("transfer_encoding_err\n");
         cs = message_parser_error;
-        set_error(errc::unsupported_compression);
-        {p++; cs = 134; goto _out;}
+        set_error(errc::unsupported_transfer_encoding);
+        {p++; cs = 145; goto _out;}
     }
 #line 29 "src/panda/protocol/http/MessageParser.rl"
 	{
@@ -2924,9 +3614,9 @@ tr316:
 	{
         marked = false;
     }
-	goto st134;
-tr324:
-#line 89 "src/panda/protocol/http/MessageParser.rl"
+	goto st145;
+tr393:
+#line 143 "src/panda/protocol/http/MessageParser.rl"
 	{message->chunked = true;                     }
 #line 29 "src/panda/protocol/http/MessageParser.rl"
 	{
@@ -2941,66 +3631,15 @@ tr324:
 	{
         marked = false;
     }
-	goto st134;
-tr333:
-#line 92 "src/panda/protocol/http/MessageParser.rl"
-	{message->compressed = compression::DEFLATE;  }
-#line 29 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (!headers_finished) {
-            string& value = message->headers.fields.back().value;
-            SAVE(value);
-            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
-        }
-        else {} // trailing header after chunks, currently we just ignore them
-    }
-#line 12 "src/panda/protocol/http/MessageParser.rl"
-	{
-        marked = false;
-    }
-	goto st134;
-tr342:
-#line 91 "src/panda/protocol/http/MessageParser.rl"
-	{message->compressed = compression::GZIP;     }
-#line 29 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (!headers_finished) {
-            string& value = message->headers.fields.back().value;
-            SAVE(value);
-            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
-        }
-        else {} // trailing header after chunks, currently we just ignore them
-    }
-#line 12 "src/panda/protocol/http/MessageParser.rl"
-	{
-        marked = false;
-    }
-	goto st134;
-tr352:
-#line 90 "src/panda/protocol/http/MessageParser.rl"
-	{message->compressed = compression::IDENTITY; }
-#line 29 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (!headers_finished) {
-            string& value = message->headers.fields.back().value;
-            SAVE(value);
-            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
-        }
-        else {} // trailing header after chunks, currently we just ignore them
-    }
-#line 12 "src/panda/protocol/http/MessageParser.rl"
-	{
-        marked = false;
-    }
-	goto st134;
-tr354:
-#line 67 "src/panda/protocol/http/MessageParser.rl"
+	goto st145;
+tr395:
+#line 121 "src/panda/protocol/http/MessageParser.rl"
 	{message->http_version = 11;}
-	goto st134;
-tr211:
-#line 75 "src/panda/protocol/http/MessageParser.rl"
+	goto st145;
+tr229:
+#line 129 "src/panda/protocol/http/MessageParser.rl"
 	{compr = compression::GZIP | compression::DEFLATE; }
-#line 60 "src/panda/protocol/http/MessageParser.rl"
+#line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(compr);
@@ -3020,9 +3659,11 @@ tr211:
 	{
         marked = false;
     }
-	goto st134;
-tr225:
-#line 60 "src/panda/protocol/http/MessageParser.rl"
+	goto st145;
+tr243:
+#line 126 "src/panda/protocol/http/MessageParser.rl"
+	{ compr = compression::BROTLI;  }
+#line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(compr);
@@ -3042,11 +3683,11 @@ tr225:
 	{
         marked = false;
     }
-	goto st134;
-tr232:
-#line 77 "src/panda/protocol/http/MessageParser.rl"
+	goto st145;
+tr251:
+#line 131 "src/panda/protocol/http/MessageParser.rl"
 	{ compr = 0; }
-#line 60 "src/panda/protocol/http/MessageParser.rl"
+#line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(compr);
@@ -3066,11 +3707,33 @@ tr232:
 	{
         marked = false;
     }
-	goto st134;
-tr259:
-#line 71 "src/panda/protocol/http/MessageParser.rl"
+	goto st145;
+tr262:
+#line 114 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (compr) {
+            request->allow_compression(compr);
+            compr = 0;
+        }
+    }
+#line 29 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (!headers_finished) {
+            string& value = message->headers.fields.back().value;
+            SAVE(value);
+            if (value && value.back() <= 0x20) value.offset(0, value.find_last_not_of(" \t") + 1);
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 12 "src/panda/protocol/http/MessageParser.rl"
+	{
+        marked = false;
+    }
+	goto st145;
+tr282:
+#line 125 "src/panda/protocol/http/MessageParser.rl"
 	{ compr = compression::DEFLATE;  }
-#line 60 "src/panda/protocol/http/MessageParser.rl"
+#line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(compr);
@@ -3090,11 +3753,11 @@ tr259:
 	{
         marked = false;
     }
-	goto st134;
-tr266:
-#line 70 "src/panda/protocol/http/MessageParser.rl"
+	goto st145;
+tr289:
+#line 124 "src/panda/protocol/http/MessageParser.rl"
 	{ compr = compression::GZIP;     }
-#line 60 "src/panda/protocol/http/MessageParser.rl"
+#line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(compr);
@@ -3114,609 +3777,105 @@ tr266:
 	{
         marked = false;
     }
-	goto st134;
-st134:
-	if ( ++p == pe )
-		goto _test_eof134;
-case 134:
-#line 3123 "src/panda/protocol/http/MessageParser.cc"
-	if ( (*p) == 10 )
-		goto st135;
-	goto st0;
-st135:
-	if ( ++p == pe )
-		goto _test_eof135;
-case 135:
-	switch( (*p) ) {
-		case 13: goto st136;
-		case 33: goto tr176;
-		case 65: goto tr177;
-		case 67: goto tr178;
-		case 84: goto tr179;
-		case 97: goto tr177;
-		case 99: goto tr178;
-		case 116: goto tr179;
-		case 124: goto tr176;
-		case 126: goto tr176;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto tr176;
-		} else if ( (*p) >= 35 )
-			goto tr176;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 66 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto tr176;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto tr176;
-		} else
-			goto tr176;
-	} else
-		goto tr176;
-	goto st0;
-st136:
-	if ( ++p == pe )
-		goto _test_eof136;
-case 136:
-	if ( (*p) == 10 )
-		goto tr180;
-	goto st0;
-tr180:
-#line 16 "src/panda/protocol/http/MessageParser.rl"
-	{
-        {p++; cs = 302; goto _out;}
-    }
-	goto st302;
-st302:
-	if ( ++p == pe )
-		goto _test_eof302;
-case 302:
-#line 3178 "src/panda/protocol/http/MessageParser.cc"
-	goto st0;
-tr176:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st137;
-st137:
-	if ( ++p == pe )
-		goto _test_eof137;
-case 137:
-#line 3191 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
-tr182:
-#line 20 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (!headers_finished) {
-            string value;
-            SAVE(value);
-            message->headers.add(value, {});
-        }
-        else {} // trailing header after chunks, currently we just ignore them
-    }
-#line 12 "src/panda/protocol/http/MessageParser.rl"
-	{
-        marked = false;
-    }
-	goto st138;
-st138:
-	if ( ++p == pe )
-		goto _test_eof138;
-case 138:
-#line 3235 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 9: goto st138;
-		case 13: goto tr185;
-		case 32: goto st138;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto tr183;
-tr183:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st139;
-st139:
-	if ( ++p == pe )
-		goto _test_eof139;
-case 139:
-#line 3256 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 13: goto tr187;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st139;
-tr177:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st140;
-st140:
-	if ( ++p == pe )
-		goto _test_eof140;
-case 140:
-#line 3278 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 67: goto st141;
-		case 99: goto st141;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
-st141:
-	if ( ++p == pe )
-		goto _test_eof141;
-case 141:
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 67: goto st142;
-		case 99: goto st142;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
-st142:
-	if ( ++p == pe )
-		goto _test_eof142;
-case 142:
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 69: goto st143;
-		case 101: goto st143;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
-st143:
-	if ( ++p == pe )
-		goto _test_eof143;
-case 143:
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 80: goto st144;
-		case 112: goto st144;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
-st144:
-	if ( ++p == pe )
-		goto _test_eof144;
-case 144:
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 84: goto st145;
-		case 116: goto st145;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
+	goto st145;
 st145:
 	if ( ++p == pe )
 		goto _test_eof145;
 case 145:
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 45: goto st146;
-		case 46: goto st137;
-		case 58: goto tr182;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 48 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 57 ) {
-		if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else if ( (*p) >= 65 )
-			goto st137;
-	} else
-		goto st137;
+#line 3786 "src/panda/protocol/http/MessageParser.cc"
+	if ( (*p) == 10 )
+		goto st146;
 	goto st0;
 st146:
 	if ( ++p == pe )
 		goto _test_eof146;
 case 146:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 69: goto st147;
-		case 101: goto st147;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 13: goto st147;
+		case 33: goto tr194;
+		case 65: goto tr195;
+		case 67: goto tr196;
+		case 84: goto tr197;
+		case 97: goto tr195;
+		case 99: goto tr196;
+		case 116: goto tr197;
+		case 124: goto tr194;
+		case 126: goto tr194;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
+				goto tr194;
 		} else if ( (*p) >= 35 )
-			goto st137;
+			goto tr194;
 	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
+		if ( (*p) < 66 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
+				goto tr194;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
+				goto tr194;
 		} else
-			goto st137;
+			goto tr194;
 	} else
-		goto st137;
+		goto tr194;
 	goto st0;
 st147:
 	if ( ++p == pe )
 		goto _test_eof147;
 case 147:
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 78: goto st148;
-		case 110: goto st148;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
+	if ( (*p) == 10 )
+		goto tr198;
 	goto st0;
+tr198:
+#line 16 "src/panda/protocol/http/MessageParser.rl"
+	{
+        {p++; cs = 325; goto _out;}
+    }
+	goto st325;
+st325:
+	if ( ++p == pe )
+		goto _test_eof325;
+case 325:
+#line 3841 "src/panda/protocol/http/MessageParser.cc"
+	goto st0;
+tr194:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st148;
 st148:
 	if ( ++p == pe )
 		goto _test_eof148;
 case 148:
+#line 3854 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 67: goto st149;
-		case 99: goto st149;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) >= 35 )
-			goto st137;
+			goto st148;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
+				goto st148;
 		} else
-			goto st137;
+			goto st148;
 	} else
-		goto st137;
+		goto st148;
 	goto st0;
-st149:
-	if ( ++p == pe )
-		goto _test_eof149;
-case 149:
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 79: goto st150;
-		case 111: goto st150;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
-st150:
-	if ( ++p == pe )
-		goto _test_eof150;
-case 150:
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 68: goto st151;
-		case 100: goto st151;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
-st151:
-	if ( ++p == pe )
-		goto _test_eof151;
-case 151:
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 73: goto st152;
-		case 105: goto st152;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
-st152:
-	if ( ++p == pe )
-		goto _test_eof152;
-case 152:
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 78: goto st153;
-		case 110: goto st153;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
-st153:
-	if ( ++p == pe )
-		goto _test_eof153;
-case 153:
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 71: goto st154;
-		case 103: goto st154;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
-st154:
-	if ( ++p == pe )
-		goto _test_eof154;
-case 154:
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr202;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
-tr202:
+tr200:
 #line 20 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
@@ -3730,196 +3889,35 @@ tr202:
 	{
         marked = false;
     }
-	goto st155;
-st155:
+	goto st149;
+st149:
 	if ( ++p == pe )
-		goto _test_eof155;
-case 155:
-#line 3739 "src/panda/protocol/http/MessageParser.cc"
+		goto _test_eof149;
+case 149:
+#line 3898 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 9: goto st155;
-		case 13: goto tr185;
-		case 32: goto st155;
-		case 42: goto tr204;
-		case 98: goto tr205;
-		case 99: goto tr206;
-		case 100: goto tr207;
-		case 103: goto tr208;
-		case 105: goto tr209;
+		case 9: goto st149;
+		case 13: goto tr203;
+		case 32: goto st149;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto tr183;
-tr204:
+	goto tr201;
+tr201:
 #line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
     }
-	goto st156;
-st156:
+	goto st150;
+st150:
 	if ( ++p == pe )
-		goto _test_eof156;
-case 156:
-#line 3766 "src/panda/protocol/http/MessageParser.cc"
+		goto _test_eof150;
+case 150:
+#line 3919 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 9: goto tr210;
-		case 13: goto tr211;
-		case 32: goto tr210;
-		case 44: goto tr212;
-		case 59: goto tr213;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st139;
-tr210:
-#line 75 "src/panda/protocol/http/MessageParser.rl"
-	{compr = compression::GZIP | compression::DEFLATE; }
-#line 60 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (compr) {
-            request->allow_compression(compr);
-            compr = 0;
-        }
-    }
-	goto st157;
-tr224:
-#line 60 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (compr) {
-            request->allow_compression(compr);
-            compr = 0;
-        }
-    }
-	goto st157;
-tr258:
-#line 71 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = compression::DEFLATE;  }
-#line 60 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (compr) {
-            request->allow_compression(compr);
-            compr = 0;
-        }
-    }
-	goto st157;
-tr265:
-#line 70 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = compression::GZIP;     }
-#line 60 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (compr) {
-            request->allow_compression(compr);
-            compr = 0;
-        }
-    }
-	goto st157;
-st157:
-	if ( ++p == pe )
-		goto _test_eof157;
-case 157:
-#line 3824 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 9: goto st157;
-		case 13: goto tr187;
-		case 32: goto st157;
-		case 44: goto st158;
-		case 59: goto st161;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st139;
-tr212:
-#line 75 "src/panda/protocol/http/MessageParser.rl"
-	{compr = compression::GZIP | compression::DEFLATE; }
-#line 60 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (compr) {
-            request->allow_compression(compr);
-            compr = 0;
-        }
-    }
-	goto st158;
-tr226:
-#line 60 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (compr) {
-            request->allow_compression(compr);
-            compr = 0;
-        }
-    }
-	goto st158;
-tr233:
-#line 77 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = 0; }
-#line 60 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (compr) {
-            request->allow_compression(compr);
-            compr = 0;
-        }
-    }
-	goto st158;
-tr260:
-#line 71 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = compression::DEFLATE;  }
-#line 60 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (compr) {
-            request->allow_compression(compr);
-            compr = 0;
-        }
-    }
-	goto st158;
-tr267:
-#line 70 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = compression::GZIP;     }
-#line 60 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (compr) {
-            request->allow_compression(compr);
-            compr = 0;
-        }
-    }
-	goto st158;
-st158:
-	if ( ++p == pe )
-		goto _test_eof158;
-case 158:
-#line 3893 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 9: goto st158;
-		case 13: goto tr187;
-		case 32: goto st158;
-		case 42: goto st156;
-		case 98: goto st159;
-		case 99: goto st177;
-		case 100: goto st184;
-		case 103: goto st191;
-		case 105: goto st195;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st139;
-tr205:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st159;
-st159:
-	if ( ++p == pe )
-		goto _test_eof159;
-case 159:
-#line 3920 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 13: goto tr187;
-		case 114: goto st160;
+		case 13: goto tr205;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -3927,72 +3925,686 @@ case 159:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
+	goto st150;
+tr195:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st151;
+st151:
+	if ( ++p == pe )
+		goto _test_eof151;
+case 151:
+#line 3941 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 67: goto st152;
+		case 99: goto st152;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st152:
+	if ( ++p == pe )
+		goto _test_eof152;
+case 152:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 67: goto st153;
+		case 99: goto st153;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st153:
+	if ( ++p == pe )
+		goto _test_eof153;
+case 153:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 69: goto st154;
+		case 101: goto st154;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st154:
+	if ( ++p == pe )
+		goto _test_eof154;
+case 154:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 80: goto st155;
+		case 112: goto st155;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st155:
+	if ( ++p == pe )
+		goto _test_eof155;
+case 155:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 84: goto st156;
+		case 116: goto st156;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st156:
+	if ( ++p == pe )
+		goto _test_eof156;
+case 156:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 45: goto st157;
+		case 46: goto st148;
+		case 58: goto tr200;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 48 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 57 ) {
+		if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else if ( (*p) >= 65 )
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st157:
+	if ( ++p == pe )
+		goto _test_eof157;
+case 157:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 69: goto st158;
+		case 101: goto st158;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st158:
+	if ( ++p == pe )
+		goto _test_eof158;
+case 158:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 78: goto st159;
+		case 110: goto st159;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st159:
+	if ( ++p == pe )
+		goto _test_eof159;
+case 159:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 67: goto st160;
+		case 99: goto st160;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
 st160:
 	if ( ++p == pe )
 		goto _test_eof160;
 case 160:
 	switch( (*p) ) {
-		case 9: goto tr224;
-		case 13: goto tr225;
-		case 32: goto tr224;
-		case 44: goto tr226;
-		case 59: goto st161;
-		case 127: goto st0;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 79: goto st161;
+		case 111: goto st161;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st139;
-tr213:
-#line 75 "src/panda/protocol/http/MessageParser.rl"
-	{compr = compression::GZIP | compression::DEFLATE; }
-	goto st161;
-tr261:
-#line 71 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = compression::DEFLATE;  }
-	goto st161;
-tr268:
-#line 70 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = compression::GZIP;     }
-	goto st161;
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
 st161:
 	if ( ++p == pe )
 		goto _test_eof161;
 case 161:
-#line 3963 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 9: goto st161;
-		case 13: goto tr187;
-		case 32: goto st161;
-		case 113: goto st162;
-		case 127: goto st0;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 68: goto st162;
+		case 100: goto st162;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st139;
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
 st162:
 	if ( ++p == pe )
 		goto _test_eof162;
 case 162:
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 61: goto st163;
-		case 127: goto st0;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 73: goto st163;
+		case 105: goto st163;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st139;
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
 st163:
 	if ( ++p == pe )
 		goto _test_eof163;
 case 163:
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 48: goto st164;
-		case 49: goto st173;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 78: goto st164;
+		case 110: goto st164;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st164:
+	if ( ++p == pe )
+		goto _test_eof164;
+case 164:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 71: goto st165;
+		case 103: goto st165;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st165:
+	if ( ++p == pe )
+		goto _test_eof165;
+case 165:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr220;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+tr220:
+#line 20 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (!headers_finished) {
+            string value;
+            SAVE(value);
+            message->headers.add(value, {});
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 12 "src/panda/protocol/http/MessageParser.rl"
+	{
+        marked = false;
+    }
+	goto st166;
+st166:
+	if ( ++p == pe )
+		goto _test_eof166;
+case 166:
+#line 4402 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 9: goto st166;
+		case 13: goto tr203;
+		case 32: goto st166;
+		case 42: goto tr222;
+		case 98: goto tr223;
+		case 99: goto tr224;
+		case 100: goto tr225;
+		case 103: goto tr226;
+		case 105: goto tr227;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto tr201;
+tr222:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st167;
+st167:
+	if ( ++p == pe )
+		goto _test_eof167;
+case 167:
+#line 4429 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 9: goto tr228;
+		case 13: goto tr229;
+		case 32: goto tr228;
+		case 44: goto tr230;
+		case 59: goto tr231;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st150;
+tr228:
+#line 129 "src/panda/protocol/http/MessageParser.rl"
+	{compr = compression::GZIP | compression::DEFLATE; }
+#line 114 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (compr) {
+            request->allow_compression(compr);
+            compr = 0;
+        }
+    }
+	goto st168;
+tr242:
+#line 126 "src/panda/protocol/http/MessageParser.rl"
+	{ compr = compression::BROTLI;  }
+#line 114 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (compr) {
+            request->allow_compression(compr);
+            compr = 0;
+        }
+    }
+	goto st168;
+tr274:
+#line 114 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (compr) {
+            request->allow_compression(compr);
+            compr = 0;
+        }
+    }
+	goto st168;
+tr281:
+#line 125 "src/panda/protocol/http/MessageParser.rl"
+	{ compr = compression::DEFLATE;  }
+#line 114 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (compr) {
+            request->allow_compression(compr);
+            compr = 0;
+        }
+    }
+	goto st168;
+tr288:
+#line 124 "src/panda/protocol/http/MessageParser.rl"
+	{ compr = compression::GZIP;     }
+#line 114 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (compr) {
+            request->allow_compression(compr);
+            compr = 0;
+        }
+    }
+	goto st168;
+st168:
+	if ( ++p == pe )
+		goto _test_eof168;
+case 168:
+#line 4498 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 9: goto st168;
+		case 13: goto tr205;
+		case 32: goto st168;
+		case 44: goto st169;
+		case 59: goto st172;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st150;
+tr230:
+#line 129 "src/panda/protocol/http/MessageParser.rl"
+	{compr = compression::GZIP | compression::DEFLATE; }
+#line 114 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (compr) {
+            request->allow_compression(compr);
+            compr = 0;
+        }
+    }
+	goto st169;
+tr244:
+#line 126 "src/panda/protocol/http/MessageParser.rl"
+	{ compr = compression::BROTLI;  }
+#line 114 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (compr) {
+            request->allow_compression(compr);
+            compr = 0;
+        }
+    }
+	goto st169;
+tr252:
+#line 131 "src/panda/protocol/http/MessageParser.rl"
+	{ compr = 0; }
+#line 114 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (compr) {
+            request->allow_compression(compr);
+            compr = 0;
+        }
+    }
+	goto st169;
+tr263:
+#line 114 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (compr) {
+            request->allow_compression(compr);
+            compr = 0;
+        }
+    }
+	goto st169;
+tr283:
+#line 125 "src/panda/protocol/http/MessageParser.rl"
+	{ compr = compression::DEFLATE;  }
+#line 114 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (compr) {
+            request->allow_compression(compr);
+            compr = 0;
+        }
+    }
+	goto st169;
+tr290:
+#line 124 "src/panda/protocol/http/MessageParser.rl"
+	{ compr = compression::GZIP;     }
+#line 114 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (compr) {
+            request->allow_compression(compr);
+            compr = 0;
+        }
+    }
+	goto st169;
+st169:
+	if ( ++p == pe )
+		goto _test_eof169;
+case 169:
+#line 4578 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 9: goto st169;
+		case 13: goto tr205;
+		case 32: goto st169;
+		case 42: goto st167;
+		case 98: goto st170;
+		case 99: goto st188;
+		case 100: goto st196;
+		case 103: goto st203;
+		case 105: goto st207;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st150;
+tr223:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st170;
+st170:
+	if ( ++p == pe )
+		goto _test_eof170;
+case 170:
+#line 4605 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 13: goto tr205;
+		case 114: goto st171;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -4000,421 +4612,325 @@ case 163:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
-st164:
-	if ( ++p == pe )
-		goto _test_eof164;
-case 164:
-	switch( (*p) ) {
-		case 9: goto tr231;
-		case 13: goto tr232;
-		case 32: goto tr231;
-		case 44: goto tr233;
-		case 46: goto st166;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st139;
-tr242:
-#line 60 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (compr) {
-            request->allow_compression(compr);
-            compr = 0;
-        }
-    }
-	goto st165;
-tr231:
-#line 77 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = 0; }
-#line 60 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (compr) {
-            request->allow_compression(compr);
-            compr = 0;
-        }
-    }
-	goto st165;
-st165:
-	if ( ++p == pe )
-		goto _test_eof165;
-case 165:
-#line 4044 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 9: goto st165;
-		case 13: goto tr187;
-		case 32: goto st165;
-		case 44: goto st158;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st139;
-st166:
-	if ( ++p == pe )
-		goto _test_eof166;
-case 166:
-	switch( (*p) ) {
-		case 9: goto tr231;
-		case 13: goto tr232;
-		case 32: goto tr231;
-		case 44: goto tr233;
-		case 48: goto st167;
-		case 127: goto st0;
-	}
-	if ( (*p) > 31 ) {
-		if ( 49 <= (*p) && (*p) <= 57 )
-			goto st172;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st139;
-st167:
-	if ( ++p == pe )
-		goto _test_eof167;
-case 167:
-	switch( (*p) ) {
-		case 9: goto tr231;
-		case 13: goto tr232;
-		case 32: goto tr231;
-		case 44: goto tr233;
-		case 48: goto st168;
-		case 127: goto st0;
-	}
-	if ( (*p) > 31 ) {
-		if ( 49 <= (*p) && (*p) <= 57 )
-			goto st171;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st139;
-st168:
-	if ( ++p == pe )
-		goto _test_eof168;
-case 168:
-	switch( (*p) ) {
-		case 9: goto tr231;
-		case 13: goto tr232;
-		case 32: goto tr231;
-		case 44: goto tr233;
-		case 48: goto st169;
-		case 127: goto st0;
-	}
-	if ( (*p) > 31 ) {
-		if ( 49 <= (*p) && (*p) <= 57 )
-			goto st170;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st139;
-st169:
-	if ( ++p == pe )
-		goto _test_eof169;
-case 169:
-	switch( (*p) ) {
-		case 9: goto tr231;
-		case 13: goto tr232;
-		case 32: goto tr231;
-		case 44: goto tr233;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st139;
-st170:
-	if ( ++p == pe )
-		goto _test_eof170;
-case 170:
-	switch( (*p) ) {
-		case 9: goto tr242;
-		case 13: goto tr225;
-		case 32: goto tr242;
-		case 44: goto tr226;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st139;
+	goto st150;
 st171:
 	if ( ++p == pe )
 		goto _test_eof171;
 case 171:
 	switch( (*p) ) {
 		case 9: goto tr242;
-		case 13: goto tr225;
+		case 13: goto tr243;
 		case 32: goto tr242;
-		case 44: goto tr226;
+		case 44: goto tr244;
+		case 59: goto tr245;
 		case 127: goto st0;
 	}
-	if ( (*p) > 31 ) {
-		if ( 48 <= (*p) && (*p) <= 57 )
-			goto st170;
-	} else if ( (*p) >= 0 )
+	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto st139;
+	goto st150;
+tr231:
+#line 129 "src/panda/protocol/http/MessageParser.rl"
+	{compr = compression::GZIP | compression::DEFLATE; }
+	goto st172;
+tr245:
+#line 126 "src/panda/protocol/http/MessageParser.rl"
+	{ compr = compression::BROTLI;  }
+	goto st172;
+tr284:
+#line 125 "src/panda/protocol/http/MessageParser.rl"
+	{ compr = compression::DEFLATE;  }
+	goto st172;
+tr291:
+#line 124 "src/panda/protocol/http/MessageParser.rl"
+	{ compr = compression::GZIP;     }
+	goto st172;
 st172:
 	if ( ++p == pe )
 		goto _test_eof172;
 case 172:
+#line 4652 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 9: goto tr242;
-		case 13: goto tr225;
-		case 32: goto tr242;
-		case 44: goto tr226;
+		case 9: goto st172;
+		case 13: goto tr205;
+		case 32: goto st172;
+		case 113: goto st173;
 		case 127: goto st0;
 	}
-	if ( (*p) > 31 ) {
-		if ( 48 <= (*p) && (*p) <= 57 )
-			goto st171;
-	} else if ( (*p) >= 0 )
+	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto st139;
+	goto st150;
 st173:
 	if ( ++p == pe )
 		goto _test_eof173;
 case 173:
 	switch( (*p) ) {
-		case 9: goto tr242;
-		case 13: goto tr225;
-		case 32: goto tr242;
-		case 44: goto tr226;
-		case 46: goto st174;
+		case 13: goto tr205;
+		case 61: goto st174;
 		case 127: goto st0;
 	}
-	if ( 0 <= (*p) && (*p) <= 31 )
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
+	goto st150;
 st174:
 	if ( ++p == pe )
 		goto _test_eof174;
 case 174:
 	switch( (*p) ) {
-		case 9: goto tr242;
-		case 13: goto tr225;
-		case 32: goto tr242;
-		case 44: goto tr226;
+		case 13: goto tr205;
 		case 48: goto st175;
+		case 49: goto st184;
 		case 127: goto st0;
 	}
-	if ( 0 <= (*p) && (*p) <= 31 )
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
+	goto st150;
 st175:
 	if ( ++p == pe )
 		goto _test_eof175;
 case 175:
 	switch( (*p) ) {
-		case 9: goto tr242;
-		case 13: goto tr225;
-		case 32: goto tr242;
-		case 44: goto tr226;
-		case 48: goto st176;
+		case 9: goto tr250;
+		case 13: goto tr251;
+		case 32: goto tr250;
+		case 44: goto tr252;
+		case 46: goto st177;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto st139;
+	goto st150;
+tr250:
+#line 131 "src/panda/protocol/http/MessageParser.rl"
+	{ compr = 0; }
+#line 114 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (compr) {
+            request->allow_compression(compr);
+            compr = 0;
+        }
+    }
+	goto st176;
+tr261:
+#line 114 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (compr) {
+            request->allow_compression(compr);
+            compr = 0;
+        }
+    }
+	goto st176;
 st176:
 	if ( ++p == pe )
 		goto _test_eof176;
 case 176:
+#line 4733 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 9: goto tr242;
-		case 13: goto tr225;
-		case 32: goto tr242;
-		case 44: goto tr226;
-		case 48: goto st170;
+		case 9: goto st176;
+		case 13: goto tr205;
+		case 32: goto st176;
+		case 44: goto st169;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto st139;
-tr206:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st177;
+	goto st150;
 st177:
 	if ( ++p == pe )
 		goto _test_eof177;
 case 177:
-#line 4242 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 111: goto st178;
+		case 9: goto tr250;
+		case 13: goto tr251;
+		case 32: goto tr250;
+		case 44: goto tr252;
+		case 48: goto st178;
 		case 127: goto st0;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
+	if ( (*p) > 31 ) {
+		if ( 49 <= (*p) && (*p) <= 57 )
+			goto st183;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
+	goto st150;
 st178:
 	if ( ++p == pe )
 		goto _test_eof178;
 case 178:
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 109: goto st179;
+		case 9: goto tr250;
+		case 13: goto tr251;
+		case 32: goto tr250;
+		case 44: goto tr252;
+		case 48: goto st179;
 		case 127: goto st0;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
+	if ( (*p) > 31 ) {
+		if ( 49 <= (*p) && (*p) <= 57 )
+			goto st182;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
+	goto st150;
 st179:
 	if ( ++p == pe )
 		goto _test_eof179;
 case 179:
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 112: goto st180;
+		case 9: goto tr250;
+		case 13: goto tr251;
+		case 32: goto tr250;
+		case 44: goto tr252;
+		case 48: goto st180;
 		case 127: goto st0;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
+	if ( (*p) > 31 ) {
+		if ( 49 <= (*p) && (*p) <= 57 )
+			goto st181;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
+	goto st150;
 st180:
 	if ( ++p == pe )
 		goto _test_eof180;
 case 180:
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 114: goto st181;
+		case 9: goto tr250;
+		case 13: goto tr251;
+		case 32: goto tr250;
+		case 44: goto tr252;
 		case 127: goto st0;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
+	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto st139;
+	goto st150;
 st181:
 	if ( ++p == pe )
 		goto _test_eof181;
 case 181:
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 101: goto st182;
+		case 9: goto tr261;
+		case 13: goto tr262;
+		case 32: goto tr261;
+		case 44: goto tr263;
 		case 127: goto st0;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
+	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto st139;
+	goto st150;
 st182:
 	if ( ++p == pe )
 		goto _test_eof182;
 case 182:
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 115: goto st183;
+		case 9: goto tr261;
+		case 13: goto tr262;
+		case 32: goto tr261;
+		case 44: goto tr263;
 		case 127: goto st0;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
+	if ( (*p) > 31 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto st181;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
+	goto st150;
 st183:
 	if ( ++p == pe )
 		goto _test_eof183;
 case 183:
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 115: goto st160;
+		case 9: goto tr261;
+		case 13: goto tr262;
+		case 32: goto tr261;
+		case 44: goto tr263;
 		case 127: goto st0;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
+	if ( (*p) > 31 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto st182;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
-tr207:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st184;
+	goto st150;
 st184:
 	if ( ++p == pe )
 		goto _test_eof184;
 case 184:
-#line 4355 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 101: goto st185;
+		case 9: goto tr261;
+		case 13: goto tr262;
+		case 32: goto tr261;
+		case 44: goto tr263;
+		case 46: goto st185;
 		case 127: goto st0;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
+	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto st139;
+	goto st150;
 st185:
 	if ( ++p == pe )
 		goto _test_eof185;
 case 185:
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 102: goto st186;
+		case 9: goto tr261;
+		case 13: goto tr262;
+		case 32: goto tr261;
+		case 44: goto tr263;
+		case 48: goto st186;
 		case 127: goto st0;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
+	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto st139;
+	goto st150;
 st186:
 	if ( ++p == pe )
 		goto _test_eof186;
 case 186:
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 108: goto st187;
+		case 9: goto tr261;
+		case 13: goto tr262;
+		case 32: goto tr261;
+		case 44: goto tr263;
+		case 48: goto st187;
 		case 127: goto st0;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
+	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto st139;
+	goto st150;
 st187:
 	if ( ++p == pe )
 		goto _test_eof187;
 case 187:
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 97: goto st188;
+		case 9: goto tr261;
+		case 13: goto tr262;
+		case 32: goto tr261;
+		case 44: goto tr263;
+		case 48: goto st181;
 		case 127: goto st0;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
+	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto st139;
+	goto st150;
+tr224:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st188;
 st188:
 	if ( ++p == pe )
 		goto _test_eof188;
 case 188:
+#line 4931 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 116: goto st189;
+		case 13: goto tr205;
+		case 111: goto st189;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -4422,14 +4938,14 @@ case 188:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
+	goto st150;
 st189:
 	if ( ++p == pe )
 		goto _test_eof189;
 case 189:
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 101: goto st190;
+		case 13: goto tr205;
+		case 109: goto st190;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -4437,37 +4953,14 @@ case 189:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
+	goto st150;
 st190:
 	if ( ++p == pe )
 		goto _test_eof190;
 case 190:
 	switch( (*p) ) {
-		case 9: goto tr258;
-		case 13: goto tr259;
-		case 32: goto tr258;
-		case 44: goto tr260;
-		case 59: goto tr261;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st139;
-tr208:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st191;
-st191:
-	if ( ++p == pe )
-		goto _test_eof191;
-case 191:
-#line 4468 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 13: goto tr187;
-		case 122: goto st192;
+		case 13: goto tr205;
+		case 112: goto st191;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -4475,14 +4968,29 @@ case 191:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
+	goto st150;
+st191:
+	if ( ++p == pe )
+		goto _test_eof191;
+case 191:
+	switch( (*p) ) {
+		case 13: goto tr205;
+		case 114: goto st192;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st150;
 st192:
 	if ( ++p == pe )
 		goto _test_eof192;
 case 192:
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 105: goto st193;
+		case 13: goto tr205;
+		case 101: goto st193;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -4490,14 +4998,14 @@ case 192:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
+	goto st150;
 st193:
 	if ( ++p == pe )
 		goto _test_eof193;
 case 193:
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 112: goto st194;
+		case 13: goto tr205;
+		case 115: goto st194;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -4505,37 +5013,14 @@ case 193:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
+	goto st150;
 st194:
 	if ( ++p == pe )
 		goto _test_eof194;
 case 194:
 	switch( (*p) ) {
-		case 9: goto tr265;
-		case 13: goto tr266;
-		case 32: goto tr265;
-		case 44: goto tr267;
-		case 59: goto tr268;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st139;
-tr209:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st195;
-st195:
-	if ( ++p == pe )
-		goto _test_eof195;
-case 195:
-#line 4536 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 13: goto tr187;
-		case 100: goto st196;
+		case 13: goto tr205;
+		case 115: goto st195;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -4543,13 +5028,36 @@ case 195:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
+	goto st150;
+st195:
+	if ( ++p == pe )
+		goto _test_eof195;
+case 195:
+	switch( (*p) ) {
+		case 9: goto tr274;
+		case 13: goto tr262;
+		case 32: goto tr274;
+		case 44: goto tr263;
+		case 59: goto st172;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st150;
+tr225:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st196;
 st196:
 	if ( ++p == pe )
 		goto _test_eof196;
 case 196:
+#line 5059 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 13: goto tr187;
+		case 13: goto tr205;
 		case 101: goto st197;
 		case 127: goto st0;
 	}
@@ -4558,14 +5066,14 @@ case 196:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
+	goto st150;
 st197:
 	if ( ++p == pe )
 		goto _test_eof197;
 case 197:
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 110: goto st198;
+		case 13: goto tr205;
+		case 102: goto st198;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -4573,14 +5081,14 @@ case 197:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
+	goto st150;
 st198:
 	if ( ++p == pe )
 		goto _test_eof198;
 case 198:
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 116: goto st199;
+		case 13: goto tr205;
+		case 108: goto st199;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -4588,14 +5096,14 @@ case 198:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
+	goto st150;
 st199:
 	if ( ++p == pe )
 		goto _test_eof199;
 case 199:
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 105: goto st200;
+		case 13: goto tr205;
+		case 97: goto st200;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -4603,13 +5111,13 @@ case 199:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
+	goto st150;
 st200:
 	if ( ++p == pe )
 		goto _test_eof200;
 case 200:
 	switch( (*p) ) {
-		case 13: goto tr187;
+		case 13: goto tr205;
 		case 116: goto st201;
 		case 127: goto st0;
 	}
@@ -4618,14 +5126,14 @@ case 200:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
+	goto st150;
 st201:
 	if ( ++p == pe )
 		goto _test_eof201;
 case 201:
 	switch( (*p) ) {
-		case 13: goto tr187;
-		case 121: goto st160;
+		case 13: goto tr205;
+		case 101: goto st202;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -4633,1016 +5141,689 @@ case 201:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st139;
-tr178:
+	goto st150;
+st202:
+	if ( ++p == pe )
+		goto _test_eof202;
+case 202:
+	switch( (*p) ) {
+		case 9: goto tr281;
+		case 13: goto tr282;
+		case 32: goto tr281;
+		case 44: goto tr283;
+		case 59: goto tr284;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st150;
+tr226:
 #line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
     }
-	goto st202;
-st202:
-	if ( ++p == pe )
-		goto _test_eof202;
-case 202:
-#line 4649 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 79: goto st203;
-		case 111: goto st203;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
+	goto st203;
 st203:
 	if ( ++p == pe )
 		goto _test_eof203;
 case 203:
+#line 5172 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 78: goto st204;
-		case 110: goto st204;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 13: goto tr205;
+		case 122: goto st204;
+		case 127: goto st0;
 	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st150;
 st204:
 	if ( ++p == pe )
 		goto _test_eof204;
 case 204:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 84: goto st205;
-		case 116: goto st205;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 13: goto tr205;
+		case 105: goto st205;
+		case 127: goto st0;
 	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st150;
 st205:
 	if ( ++p == pe )
 		goto _test_eof205;
 case 205:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 69: goto st206;
-		case 101: goto st206;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 13: goto tr205;
+		case 112: goto st206;
+		case 127: goto st0;
 	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st150;
 st206:
 	if ( ++p == pe )
 		goto _test_eof206;
 case 206:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 78: goto st207;
-		case 110: goto st207;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 9: goto tr288;
+		case 13: goto tr289;
+		case 32: goto tr288;
+		case 44: goto tr290;
+		case 59: goto tr291;
+		case 127: goto st0;
 	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st150;
+tr227:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st207;
 st207:
 	if ( ++p == pe )
 		goto _test_eof207;
 case 207:
+#line 5240 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 84: goto st208;
-		case 116: goto st208;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 13: goto tr205;
+		case 100: goto st208;
+		case 127: goto st0;
 	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st150;
 st208:
 	if ( ++p == pe )
 		goto _test_eof208;
 case 208:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 45: goto st209;
-		case 46: goto st137;
-		case 58: goto tr182;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 13: goto tr205;
+		case 101: goto st209;
+		case 127: goto st0;
 	}
-	if ( (*p) < 48 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 57 ) {
-		if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else if ( (*p) >= 65 )
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st150;
 st209:
 	if ( ++p == pe )
 		goto _test_eof209;
 case 209:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 76: goto st210;
-		case 108: goto st210;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 13: goto tr205;
+		case 110: goto st210;
+		case 127: goto st0;
 	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st150;
 st210:
 	if ( ++p == pe )
 		goto _test_eof210;
 case 210:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 69: goto st211;
-		case 101: goto st211;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 13: goto tr205;
+		case 116: goto st211;
+		case 127: goto st0;
 	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st150;
 st211:
 	if ( ++p == pe )
 		goto _test_eof211;
 case 211:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 78: goto st212;
-		case 110: goto st212;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 13: goto tr205;
+		case 105: goto st212;
+		case 127: goto st0;
 	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st150;
 st212:
 	if ( ++p == pe )
 		goto _test_eof212;
 case 212:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 71: goto st213;
-		case 103: goto st213;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 13: goto tr205;
+		case 116: goto st213;
+		case 127: goto st0;
 	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st150;
 st213:
 	if ( ++p == pe )
 		goto _test_eof213;
 case 213:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 84: goto st214;
-		case 116: goto st214;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 13: goto tr205;
+		case 121: goto st195;
+		case 127: goto st0;
 	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st150;
+tr196:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st214;
 st214:
 	if ( ++p == pe )
 		goto _test_eof214;
 case 214:
+#line 5353 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 72: goto st215;
-		case 104: goto st215;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 79: goto st215;
+		case 111: goto st215;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) >= 35 )
-			goto st137;
+			goto st148;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
+				goto st148;
 		} else
-			goto st137;
+			goto st148;
 	} else
-		goto st137;
+		goto st148;
 	goto st0;
 st215:
 	if ( ++p == pe )
 		goto _test_eof215;
 case 215:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr288;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 78: goto st216;
+		case 110: goto st216;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) >= 35 )
-			goto st137;
+			goto st148;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
+				goto st148;
 		} else
-			goto st137;
+			goto st148;
 	} else
-		goto st137;
+		goto st148;
 	goto st0;
-tr288:
-#line 20 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (!headers_finished) {
-            string value;
-            SAVE(value);
-            message->headers.add(value, {});
-        }
-        else {} // trailing header after chunks, currently we just ignore them
-    }
-#line 12 "src/panda/protocol/http/MessageParser.rl"
-	{
-        marked = false;
-    }
-	goto st216;
 st216:
 	if ( ++p == pe )
 		goto _test_eof216;
 case 216:
-#line 5080 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 9: goto st216;
-		case 13: goto tr185;
-		case 32: goto st216;
-		case 127: goto st0;
-	}
-	if ( (*p) > 31 ) {
-		if ( 48 <= (*p) && (*p) <= 57 )
-			goto tr290;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto tr183;
-tr290:
-#line 38 "src/panda/protocol/http/MessageParser.rl"
-	{
-        if (has_content_length) {
-            cs = message_parser_error;
-            set_error(errc::multiple_content_length);
-            {p++; cs = 217; goto _out;}
-        }
-        has_content_length = true;
-    }
-#line 88 "src/panda/protocol/http/MessageParser.rl"
-	{ADD_DIGIT(content_length)}
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st217;
-tr291:
-#line 88 "src/panda/protocol/http/MessageParser.rl"
-	{ADD_DIGIT(content_length)}
-	goto st217;
-st217:
-	if ( ++p == pe )
-		goto _test_eof217;
-case 217:
-#line 5119 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 13: goto tr187;
-		case 127: goto st0;
-	}
-	if ( (*p) < 10 ) {
-		if ( 0 <= (*p) && (*p) <= 8 )
-			goto st0;
-	} else if ( (*p) > 31 ) {
-		if ( 48 <= (*p) && (*p) <= 57 )
-			goto tr291;
-	} else
-		goto st0;
-	goto st139;
-tr179:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st218;
-st218:
-	if ( ++p == pe )
-		goto _test_eof218;
-case 218:
-#line 5144 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 82: goto st219;
-		case 114: goto st219;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 84: goto st217;
+		case 116: goto st217;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) >= 35 )
-			goto st137;
+			goto st148;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
+				goto st148;
 		} else
-			goto st137;
+			goto st148;
 	} else
-		goto st137;
+		goto st148;
+	goto st0;
+st217:
+	if ( ++p == pe )
+		goto _test_eof217;
+case 217:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 69: goto st218;
+		case 101: goto st218;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st218:
+	if ( ++p == pe )
+		goto _test_eof218;
+case 218:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 78: goto st219;
+		case 110: goto st219;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
 	goto st0;
 st219:
 	if ( ++p == pe )
 		goto _test_eof219;
 case 219:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 65: goto st220;
-		case 97: goto st220;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 84: goto st220;
+		case 116: goto st220;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) >= 35 )
-			goto st137;
+			goto st148;
 	} else if ( (*p) > 46 ) {
-		if ( (*p) < 66 ) {
+		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
+				goto st148;
 		} else
-			goto st137;
+			goto st148;
 	} else
-		goto st137;
+		goto st148;
 	goto st0;
 st220:
 	if ( ++p == pe )
 		goto _test_eof220;
 case 220:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 78: goto st221;
-		case 110: goto st221;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 33: goto st148;
+		case 45: goto st221;
+		case 46: goto st148;
+		case 58: goto tr200;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
-	if ( (*p) < 45 ) {
+	if ( (*p) < 48 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
+			goto st148;
+	} else if ( (*p) > 57 ) {
+		if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
+				goto st148;
+		} else if ( (*p) >= 65 )
+			goto st148;
 	} else
-		goto st137;
+		goto st148;
 	goto st0;
 st221:
 	if ( ++p == pe )
 		goto _test_eof221;
 case 221:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 83: goto st222;
-		case 115: goto st222;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 69: goto st222;
+		case 76: goto st254;
+		case 101: goto st222;
+		case 108: goto st254;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) >= 35 )
-			goto st137;
+			goto st148;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
+				goto st148;
 		} else
-			goto st137;
+			goto st148;
 	} else
-		goto st137;
+		goto st148;
 	goto st0;
 st222:
 	if ( ++p == pe )
 		goto _test_eof222;
 case 222:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 70: goto st223;
-		case 102: goto st223;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 78: goto st223;
+		case 110: goto st223;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) >= 35 )
-			goto st137;
+			goto st148;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
+				goto st148;
 		} else
-			goto st137;
+			goto st148;
 	} else
-		goto st137;
+		goto st148;
 	goto st0;
 st223:
 	if ( ++p == pe )
 		goto _test_eof223;
 case 223:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 69: goto st224;
-		case 101: goto st224;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 67: goto st224;
+		case 99: goto st224;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) >= 35 )
-			goto st137;
+			goto st148;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
+				goto st148;
 		} else
-			goto st137;
+			goto st148;
 	} else
-		goto st137;
+		goto st148;
 	goto st0;
 st224:
 	if ( ++p == pe )
 		goto _test_eof224;
 case 224:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 82: goto st225;
-		case 114: goto st225;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 79: goto st225;
+		case 111: goto st225;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) >= 35 )
-			goto st137;
+			goto st148;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
+				goto st148;
 		} else
-			goto st137;
+			goto st148;
 	} else
-		goto st137;
+		goto st148;
 	goto st0;
 st225:
 	if ( ++p == pe )
 		goto _test_eof225;
 case 225:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 45: goto st226;
-		case 46: goto st137;
-		case 58: goto tr182;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 68: goto st226;
+		case 100: goto st226;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
-	if ( (*p) < 48 ) {
+	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 57 ) {
-		if ( (*p) > 90 ) {
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else if ( (*p) >= 65 )
-			goto st137;
+				goto st148;
+		} else
+			goto st148;
 	} else
-		goto st137;
+		goto st148;
 	goto st0;
 st226:
 	if ( ++p == pe )
 		goto _test_eof226;
 case 226:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 69: goto st227;
-		case 101: goto st227;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 73: goto st227;
+		case 105: goto st227;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) >= 35 )
-			goto st137;
+			goto st148;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
+				goto st148;
 		} else
-			goto st137;
+			goto st148;
 	} else
-		goto st137;
+		goto st148;
 	goto st0;
 st227:
 	if ( ++p == pe )
 		goto _test_eof227;
 case 227:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
+		case 33: goto st148;
+		case 58: goto tr200;
 		case 78: goto st228;
 		case 110: goto st228;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) >= 35 )
-			goto st137;
+			goto st148;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
+				goto st148;
 		} else
-			goto st137;
+			goto st148;
 	} else
-		goto st137;
+		goto st148;
 	goto st0;
 st228:
 	if ( ++p == pe )
 		goto _test_eof228;
 case 228:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 67: goto st229;
-		case 99: goto st229;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 71: goto st229;
+		case 103: goto st229;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) >= 35 )
-			goto st137;
+			goto st148;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
+				goto st148;
 		} else
-			goto st137;
+			goto st148;
 	} else
-		goto st137;
+		goto st148;
 	goto st0;
 st229:
 	if ( ++p == pe )
 		goto _test_eof229;
 case 229:
 	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 79: goto st230;
-		case 111: goto st230;
-		case 124: goto st137;
-		case 126: goto st137;
+		case 33: goto st148;
+		case 58: goto tr314;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
 	if ( (*p) < 45 ) {
 		if ( (*p) > 39 ) {
 			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) >= 35 )
-			goto st137;
+			goto st148;
 	} else if ( (*p) > 46 ) {
 		if ( (*p) < 65 ) {
 			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
+				goto st148;
 		} else if ( (*p) > 90 ) {
 			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
+				goto st148;
 		} else
-			goto st137;
+			goto st148;
 	} else
-		goto st137;
+		goto st148;
 	goto st0;
-st230:
-	if ( ++p == pe )
-		goto _test_eof230;
-case 230:
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 68: goto st231;
-		case 100: goto st231;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
-st231:
-	if ( ++p == pe )
-		goto _test_eof231;
-case 231:
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 73: goto st232;
-		case 105: goto st232;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
-st232:
-	if ( ++p == pe )
-		goto _test_eof232;
-case 232:
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 78: goto st233;
-		case 110: goto st233;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
-st233:
-	if ( ++p == pe )
-		goto _test_eof233;
-case 233:
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr182;
-		case 71: goto st234;
-		case 103: goto st234;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
-st234:
-	if ( ++p == pe )
-		goto _test_eof234;
-case 234:
-	switch( (*p) ) {
-		case 33: goto st137;
-		case 58: goto tr308;
-		case 124: goto st137;
-		case 126: goto st137;
-	}
-	if ( (*p) < 45 ) {
-		if ( (*p) > 39 ) {
-			if ( 42 <= (*p) && (*p) <= 43 )
-				goto st137;
-		} else if ( (*p) >= 35 )
-			goto st137;
-	} else if ( (*p) > 46 ) {
-		if ( (*p) < 65 ) {
-			if ( 48 <= (*p) && (*p) <= 57 )
-				goto st137;
-		} else if ( (*p) > 90 ) {
-			if ( 94 <= (*p) && (*p) <= 122 )
-				goto st137;
-		} else
-			goto st137;
-	} else
-		goto st137;
-	goto st0;
-tr308:
+tr314:
 #line 20 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (!headers_finished) {
@@ -5656,27 +5837,196 @@ tr308:
 	{
         marked = false;
     }
+	goto st230;
+st230:
+	if ( ++p == pe )
+		goto _test_eof230;
+case 230:
+#line 5846 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 9: goto st230;
+		case 13: goto tr203;
+		case 32: goto st230;
+		case 98: goto tr317;
+		case 100: goto tr318;
+		case 103: goto tr319;
+		case 105: goto tr320;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto tr315;
+tr315:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st231;
+st231:
+	if ( ++p == pe )
+		goto _test_eof231;
+case 231:
+#line 5871 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 13: goto tr322;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st231;
+tr317:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st232;
+st232:
+	if ( ++p == pe )
+		goto _test_eof232;
+case 232:
+#line 5893 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 13: goto tr322;
+		case 114: goto st233;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st231;
+st233:
+	if ( ++p == pe )
+		goto _test_eof233;
+case 233:
+	switch( (*p) ) {
+		case 9: goto tr324;
+		case 13: goto tr325;
+		case 32: goto tr324;
+		case 44: goto tr326;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st231;
+tr324:
+#line 83 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::BROTLI; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 234; goto _out;}
+            }
+        }
+    }
+	goto st234;
+tr340:
+#line 72 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::DEFLATE; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 234; goto _out;}
+            }
+        }
+    }
+	goto st234;
+tr346:
+#line 61 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::GZIP; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 234; goto _out;}
+            }
+        }
+    }
+	goto st234;
+st234:
+	if ( ++p == pe )
+		goto _test_eof234;
+case 234:
+#line 5962 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 9: goto st234;
+		case 13: goto tr328;
+		case 32: goto st234;
+		case 44: goto st235;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st231;
+tr326:
+#line 83 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::BROTLI; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 235; goto _out;}
+            }
+        }
+    }
+	goto st235;
+tr342:
+#line 72 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::DEFLATE; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 235; goto _out;}
+            }
+        }
+    }
+	goto st235;
+tr348:
+#line 61 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (uncompress_content) {
+            if (message->compressed == compression::IDENTITY) { message->compressed = compression::GZIP; }
+            else {
+                cs = message_parser_error;
+                set_error(errc::unsupported_compression);
+                {p++; cs = 235; goto _out;}
+            }
+        }
+    }
 	goto st235;
 st235:
 	if ( ++p == pe )
 		goto _test_eof235;
 case 235:
-#line 5665 "src/panda/protocol/http/MessageParser.cc"
+#line 6016 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st235;
-		case 13: goto tr185;
+		case 13: goto tr322;
 		case 32: goto st235;
-		case 67: goto tr311;
-		case 99: goto tr311;
-		case 100: goto tr312;
-		case 103: goto tr313;
-		case 105: goto tr314;
+		case 98: goto st232;
+		case 100: goto st236;
+		case 103: goto st243;
+		case 105: goto st247;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto tr309;
-tr309:
+	goto st231;
+tr318:
 #line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
@@ -5687,9 +6037,10 @@ st236:
 	if ( ++p == pe )
 		goto _test_eof236;
 case 236:
-#line 5691 "src/panda/protocol/http/MessageParser.cc"
+#line 6041 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 13: goto tr316;
+		case 13: goto tr322;
+		case 101: goto st237;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -5697,23 +6048,14 @@ case 236:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st236;
-tr311:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st237;
+	goto st231;
 st237:
 	if ( ++p == pe )
 		goto _test_eof237;
 case 237:
-#line 5713 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 72: goto st238;
-		case 104: goto st238;
+		case 13: goto tr322;
+		case 102: goto st238;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -5721,15 +6063,14 @@ case 237:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st236;
+	goto st231;
 st238:
 	if ( ++p == pe )
 		goto _test_eof238;
 case 238:
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 85: goto st239;
-		case 117: goto st239;
+		case 13: goto tr322;
+		case 108: goto st239;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -5737,15 +6078,14 @@ case 238:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st236;
+	goto st231;
 st239:
 	if ( ++p == pe )
 		goto _test_eof239;
 case 239:
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 78: goto st240;
-		case 110: goto st240;
+		case 13: goto tr322;
+		case 97: goto st240;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -5753,15 +6093,14 @@ case 239:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st236;
+	goto st231;
 st240:
 	if ( ++p == pe )
 		goto _test_eof240;
 case 240:
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 75: goto st241;
-		case 107: goto st241;
+		case 13: goto tr322;
+		case 116: goto st241;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -5769,14 +6108,13 @@ case 240:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st236;
+	goto st231;
 st241:
 	if ( ++p == pe )
 		goto _test_eof241;
 case 241:
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 69: goto st242;
+		case 13: goto tr322;
 		case 101: goto st242;
 		case 127: goto st0;
 	}
@@ -5785,69 +6123,36 @@ case 241:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st236;
+	goto st231;
 st242:
 	if ( ++p == pe )
 		goto _test_eof242;
 case 242:
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 68: goto st243;
-		case 100: goto st243;
-		case 127: goto st0;
-	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st236;
-st243:
-	if ( ++p == pe )
-		goto _test_eof243;
-case 243:
-	switch( (*p) ) {
-		case 9: goto tr323;
-		case 13: goto tr324;
-		case 32: goto tr323;
+		case 9: goto tr340;
+		case 13: goto tr341;
+		case 32: goto tr340;
+		case 44: goto tr342;
 		case 127: goto st0;
 	}
 	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto st236;
-tr323:
-#line 89 "src/panda/protocol/http/MessageParser.rl"
-	{message->chunked = true;                     }
-	goto st244;
-st244:
-	if ( ++p == pe )
-		goto _test_eof244;
-case 244:
-#line 5827 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 9: goto st244;
-		case 13: goto tr187;
-		case 32: goto st244;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st236;
-tr312:
+	goto st231;
+tr319:
 #line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
         mark   = p - ps;
         marked = true;
     }
-	goto st245;
-st245:
+	goto st243;
+st243:
 	if ( ++p == pe )
-		goto _test_eof245;
-case 245:
-#line 5848 "src/panda/protocol/http/MessageParser.cc"
+		goto _test_eof243;
+case 243:
+#line 6153 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 101: goto st246;
+		case 13: goto tr322;
+		case 122: goto st244;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -5855,29 +6160,66 @@ case 245:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st236;
+	goto st231;
+st244:
+	if ( ++p == pe )
+		goto _test_eof244;
+case 244:
+	switch( (*p) ) {
+		case 13: goto tr322;
+		case 105: goto st245;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st231;
+st245:
+	if ( ++p == pe )
+		goto _test_eof245;
+case 245:
+	switch( (*p) ) {
+		case 13: goto tr322;
+		case 112: goto st246;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st231;
 st246:
 	if ( ++p == pe )
 		goto _test_eof246;
 case 246:
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 102: goto st247;
+		case 9: goto tr346;
+		case 13: goto tr347;
+		case 32: goto tr346;
+		case 44: goto tr348;
 		case 127: goto st0;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
+	if ( 0 <= (*p) && (*p) <= 31 )
 		goto st0;
-	goto st236;
+	goto st231;
+tr320:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st247;
 st247:
 	if ( ++p == pe )
 		goto _test_eof247;
 case 247:
+#line 6220 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 108: goto st248;
+		case 13: goto tr322;
+		case 100: goto st248;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -5885,14 +6227,14 @@ case 247:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st236;
+	goto st231;
 st248:
 	if ( ++p == pe )
 		goto _test_eof248;
 case 248:
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 97: goto st249;
+		case 13: goto tr322;
+		case 101: goto st249;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -5900,14 +6242,14 @@ case 248:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st236;
+	goto st231;
 st249:
 	if ( ++p == pe )
 		goto _test_eof249;
 case 249:
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 116: goto st250;
+		case 13: goto tr322;
+		case 110: goto st250;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -5915,14 +6257,14 @@ case 249:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st236;
+	goto st231;
 st250:
 	if ( ++p == pe )
 		goto _test_eof250;
 case 250:
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 101: goto st251;
+		case 13: goto tr322;
+		case 116: goto st251;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -5930,91 +6272,14 @@ case 250:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st236;
+	goto st231;
 st251:
 	if ( ++p == pe )
 		goto _test_eof251;
 case 251:
 	switch( (*p) ) {
-		case 9: goto tr332;
-		case 13: goto tr333;
-		case 32: goto tr332;
-		case 44: goto tr334;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st236;
-tr332:
-#line 92 "src/panda/protocol/http/MessageParser.rl"
-	{message->compressed = compression::DEFLATE;  }
-	goto st252;
-tr341:
-#line 91 "src/panda/protocol/http/MessageParser.rl"
-	{message->compressed = compression::GZIP;     }
-	goto st252;
-tr351:
-#line 90 "src/panda/protocol/http/MessageParser.rl"
-	{message->compressed = compression::IDENTITY; }
-	goto st252;
-st252:
-	if ( ++p == pe )
-		goto _test_eof252;
-case 252:
-#line 5965 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 9: goto st252;
-		case 13: goto tr187;
-		case 32: goto st252;
-		case 44: goto st253;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st236;
-tr334:
-#line 92 "src/panda/protocol/http/MessageParser.rl"
-	{message->compressed = compression::DEFLATE;  }
-	goto st253;
-tr343:
-#line 91 "src/panda/protocol/http/MessageParser.rl"
-	{message->compressed = compression::GZIP;     }
-	goto st253;
-tr353:
-#line 90 "src/panda/protocol/http/MessageParser.rl"
-	{message->compressed = compression::IDENTITY; }
-	goto st253;
-st253:
-	if ( ++p == pe )
-		goto _test_eof253;
-case 253:
-#line 5992 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 9: goto st253;
-		case 13: goto tr316;
-		case 32: goto st253;
-		case 67: goto st237;
-		case 99: goto st237;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st236;
-tr313:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st254;
-st254:
-	if ( ++p == pe )
-		goto _test_eof254;
-case 254:
-#line 6015 "src/panda/protocol/http/MessageParser.cc"
-	switch( (*p) ) {
-		case 13: goto tr316;
-		case 122: goto st255;
+		case 13: goto tr322;
+		case 105: goto st252;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -6022,156 +6287,845 @@ case 254:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st236;
+	goto st231;
+st252:
+	if ( ++p == pe )
+		goto _test_eof252;
+case 252:
+	switch( (*p) ) {
+		case 13: goto tr322;
+		case 116: goto st253;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st231;
+st253:
+	if ( ++p == pe )
+		goto _test_eof253;
+case 253:
+	switch( (*p) ) {
+		case 13: goto tr322;
+		case 121: goto st234;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st231;
+st254:
+	if ( ++p == pe )
+		goto _test_eof254;
+case 254:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 69: goto st255;
+		case 101: goto st255;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
 st255:
 	if ( ++p == pe )
 		goto _test_eof255;
 case 255:
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 105: goto st256;
-		case 127: goto st0;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 78: goto st256;
+		case 110: goto st256;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st236;
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
 st256:
 	if ( ++p == pe )
 		goto _test_eof256;
 case 256:
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 112: goto st257;
-		case 127: goto st0;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 71: goto st257;
+		case 103: goto st257;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st236;
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
 st257:
 	if ( ++p == pe )
 		goto _test_eof257;
 case 257:
 	switch( (*p) ) {
-		case 9: goto tr341;
-		case 13: goto tr342;
-		case 32: goto tr341;
-		case 44: goto tr343;
-		case 127: goto st0;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 84: goto st258;
+		case 116: goto st258;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st236;
-tr314:
-#line 7 "src/panda/protocol/http/MessageParser.rl"
-	{
-        mark   = p - ps;
-        marked = true;
-    }
-	goto st258;
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
 st258:
 	if ( ++p == pe )
 		goto _test_eof258;
 case 258:
-#line 6082 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 100: goto st259;
-		case 127: goto st0;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 72: goto st259;
+		case 104: goto st259;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st236;
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
 st259:
 	if ( ++p == pe )
 		goto _test_eof259;
 case 259:
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 101: goto st260;
-		case 127: goto st0;
+		case 33: goto st148;
+		case 58: goto tr360;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st236;
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+tr360:
+#line 20 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (!headers_finished) {
+            string value;
+            SAVE(value);
+            message->headers.add(value, {});
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 12 "src/panda/protocol/http/MessageParser.rl"
+	{
+        marked = false;
+    }
+	goto st260;
 st260:
 	if ( ++p == pe )
 		goto _test_eof260;
 case 260:
+#line 6519 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 110: goto st261;
+		case 9: goto st260;
+		case 13: goto tr203;
+		case 32: goto st260;
 		case 127: goto st0;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
+	if ( (*p) > 31 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto tr362;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st236;
+	goto tr201;
+tr362:
+#line 38 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (has_content_length) {
+            cs = message_parser_error;
+            set_error(errc::multiple_content_length);
+            {p++; cs = 261; goto _out;}
+        }
+        has_content_length = true;
+    }
+#line 142 "src/panda/protocol/http/MessageParser.rl"
+	{ADD_DIGIT(content_length)}
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st261;
+tr363:
+#line 142 "src/panda/protocol/http/MessageParser.rl"
+	{ADD_DIGIT(content_length)}
+	goto st261;
 st261:
 	if ( ++p == pe )
 		goto _test_eof261;
 case 261:
+#line 6558 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 116: goto st262;
+		case 13: goto tr205;
 		case 127: goto st0;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
+	if ( (*p) < 10 ) {
+		if ( 0 <= (*p) && (*p) <= 8 )
 			goto st0;
-	} else if ( (*p) >= 0 )
+	} else if ( (*p) > 31 ) {
+		if ( 48 <= (*p) && (*p) <= 57 )
+			goto tr363;
+	} else
 		goto st0;
-	goto st236;
+	goto st150;
+tr197:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st262;
 st262:
 	if ( ++p == pe )
 		goto _test_eof262;
 case 262:
+#line 6583 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 105: goto st263;
-		case 127: goto st0;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 82: goto st263;
+		case 114: goto st263;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st236;
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
 st263:
 	if ( ++p == pe )
 		goto _test_eof263;
 case 263:
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 116: goto st264;
-		case 127: goto st0;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 65: goto st264;
+		case 97: goto st264;
+		case 124: goto st148;
+		case 126: goto st148;
 	}
-	if ( (*p) > 8 ) {
-		if ( 10 <= (*p) && (*p) <= 31 )
-			goto st0;
-	} else if ( (*p) >= 0 )
-		goto st0;
-	goto st236;
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 66 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
 st264:
 	if ( ++p == pe )
 		goto _test_eof264;
 case 264:
 	switch( (*p) ) {
-		case 13: goto tr316;
-		case 121: goto st265;
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 78: goto st265;
+		case 110: goto st265;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st265:
+	if ( ++p == pe )
+		goto _test_eof265;
+case 265:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 83: goto st266;
+		case 115: goto st266;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st266:
+	if ( ++p == pe )
+		goto _test_eof266;
+case 266:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 70: goto st267;
+		case 102: goto st267;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st267:
+	if ( ++p == pe )
+		goto _test_eof267;
+case 267:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 69: goto st268;
+		case 101: goto st268;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st268:
+	if ( ++p == pe )
+		goto _test_eof268;
+case 268:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 82: goto st269;
+		case 114: goto st269;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st269:
+	if ( ++p == pe )
+		goto _test_eof269;
+case 269:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 45: goto st270;
+		case 46: goto st148;
+		case 58: goto tr200;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 48 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 57 ) {
+		if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else if ( (*p) >= 65 )
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st270:
+	if ( ++p == pe )
+		goto _test_eof270;
+case 270:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 69: goto st271;
+		case 101: goto st271;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st271:
+	if ( ++p == pe )
+		goto _test_eof271;
+case 271:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 78: goto st272;
+		case 110: goto st272;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st272:
+	if ( ++p == pe )
+		goto _test_eof272;
+case 272:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 67: goto st273;
+		case 99: goto st273;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st273:
+	if ( ++p == pe )
+		goto _test_eof273;
+case 273:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 79: goto st274;
+		case 111: goto st274;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st274:
+	if ( ++p == pe )
+		goto _test_eof274;
+case 274:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 68: goto st275;
+		case 100: goto st275;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st275:
+	if ( ++p == pe )
+		goto _test_eof275;
+case 275:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 73: goto st276;
+		case 105: goto st276;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st276:
+	if ( ++p == pe )
+		goto _test_eof276;
+case 276:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 78: goto st277;
+		case 110: goto st277;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st277:
+	if ( ++p == pe )
+		goto _test_eof277;
+case 277:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr200;
+		case 71: goto st278;
+		case 103: goto st278;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+st278:
+	if ( ++p == pe )
+		goto _test_eof278;
+case 278:
+	switch( (*p) ) {
+		case 33: goto st148;
+		case 58: goto tr380;
+		case 124: goto st148;
+		case 126: goto st148;
+	}
+	if ( (*p) < 45 ) {
+		if ( (*p) > 39 ) {
+			if ( 42 <= (*p) && (*p) <= 43 )
+				goto st148;
+		} else if ( (*p) >= 35 )
+			goto st148;
+	} else if ( (*p) > 46 ) {
+		if ( (*p) < 65 ) {
+			if ( 48 <= (*p) && (*p) <= 57 )
+				goto st148;
+		} else if ( (*p) > 90 ) {
+			if ( 94 <= (*p) && (*p) <= 122 )
+				goto st148;
+		} else
+			goto st148;
+	} else
+		goto st148;
+	goto st0;
+tr380:
+#line 20 "src/panda/protocol/http/MessageParser.rl"
+	{
+        if (!headers_finished) {
+            string value;
+            SAVE(value);
+            message->headers.add(value, {});
+        }
+        else {} // trailing header after chunks, currently we just ignore them
+    }
+#line 12 "src/panda/protocol/http/MessageParser.rl"
+	{
+        marked = false;
+    }
+	goto st279;
+st279:
+	if ( ++p == pe )
+		goto _test_eof279;
+case 279:
+#line 7104 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 9: goto st279;
+		case 13: goto tr203;
+		case 32: goto st279;
+		case 67: goto tr383;
+		case 99: goto tr383;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto tr381;
+tr381:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st280;
+st280:
+	if ( ++p == pe )
+		goto _test_eof280;
+case 280:
+#line 7127 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 13: goto tr385;
 		case 127: goto st0;
 	}
 	if ( (*p) > 8 ) {
@@ -6179,232 +7133,190 @@ case 264:
 			goto st0;
 	} else if ( (*p) >= 0 )
 		goto st0;
-	goto st236;
-st265:
-	if ( ++p == pe )
-		goto _test_eof265;
-case 265:
-	switch( (*p) ) {
-		case 9: goto tr351;
-		case 13: goto tr352;
-		case 32: goto tr351;
-		case 44: goto tr353;
-		case 127: goto st0;
-	}
-	if ( 0 <= (*p) && (*p) <= 31 )
-		goto st0;
-	goto st236;
-st266:
-	if ( ++p == pe )
-		goto _test_eof266;
-case 266:
-	if ( (*p) == 13 )
-		goto tr354;
-	goto st0;
-st267:
-	if ( ++p == pe )
-		goto _test_eof267;
-case 267:
-	if ( (*p) == 69 )
-		goto st268;
-	goto st0;
-st268:
-	if ( ++p == pe )
-		goto _test_eof268;
-case 268:
-	if ( (*p) == 76 )
-		goto st269;
-	goto st0;
-st269:
-	if ( ++p == pe )
-		goto _test_eof269;
-case 269:
-	if ( (*p) == 69 )
-		goto st270;
-	goto st0;
-st270:
-	if ( ++p == pe )
-		goto _test_eof270;
-case 270:
-	if ( (*p) == 84 )
-		goto st271;
-	goto st0;
-st271:
-	if ( ++p == pe )
-		goto _test_eof271;
-case 271:
-	if ( (*p) == 69 )
-		goto st272;
-	goto st0;
-st272:
-	if ( ++p == pe )
-		goto _test_eof272;
-case 272:
-	if ( (*p) == 32 )
-		goto tr360;
-	goto st0;
-st273:
-	if ( ++p == pe )
-		goto _test_eof273;
-case 273:
-	if ( (*p) == 69 )
-		goto st274;
-	goto st0;
-st274:
-	if ( ++p == pe )
-		goto _test_eof274;
-case 274:
-	if ( (*p) == 84 )
-		goto st275;
-	goto st0;
-st275:
-	if ( ++p == pe )
-		goto _test_eof275;
-case 275:
-	if ( (*p) == 32 )
-		goto tr363;
-	goto st0;
-st276:
-	if ( ++p == pe )
-		goto _test_eof276;
-case 276:
-	if ( (*p) == 69 )
-		goto st277;
-	goto st0;
-st277:
-	if ( ++p == pe )
-		goto _test_eof277;
-case 277:
-	if ( (*p) == 65 )
-		goto st278;
-	goto st0;
-st278:
-	if ( ++p == pe )
-		goto _test_eof278;
-case 278:
-	if ( (*p) == 68 )
-		goto st279;
-	goto st0;
-st279:
-	if ( ++p == pe )
-		goto _test_eof279;
-case 279:
-	if ( (*p) == 32 )
-		goto tr367;
-	goto st0;
-st280:
-	if ( ++p == pe )
-		goto _test_eof280;
-case 280:
-	if ( (*p) == 80 )
-		goto st281;
-	goto st0;
+	goto st280;
+tr383:
+#line 7 "src/panda/protocol/http/MessageParser.rl"
+	{
+        mark   = p - ps;
+        marked = true;
+    }
+	goto st281;
 st281:
 	if ( ++p == pe )
 		goto _test_eof281;
 case 281:
-	if ( (*p) == 84 )
-		goto st282;
-	goto st0;
+#line 7149 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 13: goto tr385;
+		case 72: goto st282;
+		case 104: goto st282;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st280;
 st282:
 	if ( ++p == pe )
 		goto _test_eof282;
 case 282:
-	if ( (*p) == 73 )
-		goto st283;
-	goto st0;
+	switch( (*p) ) {
+		case 13: goto tr385;
+		case 85: goto st283;
+		case 117: goto st283;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st280;
 st283:
 	if ( ++p == pe )
 		goto _test_eof283;
 case 283:
-	if ( (*p) == 79 )
-		goto st284;
-	goto st0;
+	switch( (*p) ) {
+		case 13: goto tr385;
+		case 78: goto st284;
+		case 110: goto st284;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st280;
 st284:
 	if ( ++p == pe )
 		goto _test_eof284;
 case 284:
-	if ( (*p) == 78 )
-		goto st285;
-	goto st0;
+	switch( (*p) ) {
+		case 13: goto tr385;
+		case 75: goto st285;
+		case 107: goto st285;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st280;
 st285:
 	if ( ++p == pe )
 		goto _test_eof285;
 case 285:
-	if ( (*p) == 83 )
-		goto st286;
-	goto st0;
+	switch( (*p) ) {
+		case 13: goto tr385;
+		case 69: goto st286;
+		case 101: goto st286;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st280;
 st286:
 	if ( ++p == pe )
 		goto _test_eof286;
 case 286:
-	if ( (*p) == 32 )
-		goto tr374;
-	goto st0;
+	switch( (*p) ) {
+		case 13: goto tr385;
+		case 68: goto st287;
+		case 100: goto st287;
+		case 127: goto st0;
+	}
+	if ( (*p) > 8 ) {
+		if ( 10 <= (*p) && (*p) <= 31 )
+			goto st0;
+	} else if ( (*p) >= 0 )
+		goto st0;
+	goto st280;
 st287:
 	if ( ++p == pe )
 		goto _test_eof287;
 case 287:
 	switch( (*p) ) {
-		case 79: goto st288;
-		case 85: goto st291;
+		case 9: goto tr392;
+		case 13: goto tr393;
+		case 32: goto tr392;
+		case 127: goto st0;
 	}
-	goto st0;
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st280;
+tr392:
+#line 143 "src/panda/protocol/http/MessageParser.rl"
+	{message->chunked = true;                     }
+	goto st288;
 st288:
 	if ( ++p == pe )
 		goto _test_eof288;
 case 288:
-	if ( (*p) == 83 )
-		goto st289;
-	goto st0;
+#line 7263 "src/panda/protocol/http/MessageParser.cc"
+	switch( (*p) ) {
+		case 9: goto st288;
+		case 13: goto tr205;
+		case 32: goto st288;
+		case 127: goto st0;
+	}
+	if ( 0 <= (*p) && (*p) <= 31 )
+		goto st0;
+	goto st280;
 st289:
 	if ( ++p == pe )
 		goto _test_eof289;
 case 289:
-	if ( (*p) == 84 )
-		goto st290;
+	if ( (*p) == 13 )
+		goto tr395;
 	goto st0;
 st290:
 	if ( ++p == pe )
 		goto _test_eof290;
 case 290:
-	if ( (*p) == 32 )
-		goto tr379;
+	if ( (*p) == 69 )
+		goto st291;
 	goto st0;
 st291:
 	if ( ++p == pe )
 		goto _test_eof291;
 case 291:
-	if ( (*p) == 84 )
+	if ( (*p) == 76 )
 		goto st292;
 	goto st0;
 st292:
 	if ( ++p == pe )
 		goto _test_eof292;
 case 292:
-	if ( (*p) == 32 )
-		goto tr381;
+	if ( (*p) == 69 )
+		goto st293;
 	goto st0;
 st293:
 	if ( ++p == pe )
 		goto _test_eof293;
 case 293:
-	if ( (*p) == 82 )
+	if ( (*p) == 84 )
 		goto st294;
 	goto st0;
 st294:
 	if ( ++p == pe )
 		goto _test_eof294;
 case 294:
-	if ( (*p) == 65 )
+	if ( (*p) == 69 )
 		goto st295;
 	goto st0;
 st295:
 	if ( ++p == pe )
 		goto _test_eof295;
 case 295:
-	if ( (*p) == 67 )
-		goto st296;
+	if ( (*p) == 32 )
+		goto tr401;
 	goto st0;
 st296:
 	if ( ++p == pe )
@@ -6417,8 +7329,171 @@ st297:
 	if ( ++p == pe )
 		goto _test_eof297;
 case 297:
+	if ( (*p) == 84 )
+		goto st298;
+	goto st0;
+st298:
+	if ( ++p == pe )
+		goto _test_eof298;
+case 298:
 	if ( (*p) == 32 )
-		goto tr386;
+		goto tr404;
+	goto st0;
+st299:
+	if ( ++p == pe )
+		goto _test_eof299;
+case 299:
+	if ( (*p) == 69 )
+		goto st300;
+	goto st0;
+st300:
+	if ( ++p == pe )
+		goto _test_eof300;
+case 300:
+	if ( (*p) == 65 )
+		goto st301;
+	goto st0;
+st301:
+	if ( ++p == pe )
+		goto _test_eof301;
+case 301:
+	if ( (*p) == 68 )
+		goto st302;
+	goto st0;
+st302:
+	if ( ++p == pe )
+		goto _test_eof302;
+case 302:
+	if ( (*p) == 32 )
+		goto tr408;
+	goto st0;
+st303:
+	if ( ++p == pe )
+		goto _test_eof303;
+case 303:
+	if ( (*p) == 80 )
+		goto st304;
+	goto st0;
+st304:
+	if ( ++p == pe )
+		goto _test_eof304;
+case 304:
+	if ( (*p) == 84 )
+		goto st305;
+	goto st0;
+st305:
+	if ( ++p == pe )
+		goto _test_eof305;
+case 305:
+	if ( (*p) == 73 )
+		goto st306;
+	goto st0;
+st306:
+	if ( ++p == pe )
+		goto _test_eof306;
+case 306:
+	if ( (*p) == 79 )
+		goto st307;
+	goto st0;
+st307:
+	if ( ++p == pe )
+		goto _test_eof307;
+case 307:
+	if ( (*p) == 78 )
+		goto st308;
+	goto st0;
+st308:
+	if ( ++p == pe )
+		goto _test_eof308;
+case 308:
+	if ( (*p) == 83 )
+		goto st309;
+	goto st0;
+st309:
+	if ( ++p == pe )
+		goto _test_eof309;
+case 309:
+	if ( (*p) == 32 )
+		goto tr415;
+	goto st0;
+st310:
+	if ( ++p == pe )
+		goto _test_eof310;
+case 310:
+	switch( (*p) ) {
+		case 79: goto st311;
+		case 85: goto st314;
+	}
+	goto st0;
+st311:
+	if ( ++p == pe )
+		goto _test_eof311;
+case 311:
+	if ( (*p) == 83 )
+		goto st312;
+	goto st0;
+st312:
+	if ( ++p == pe )
+		goto _test_eof312;
+case 312:
+	if ( (*p) == 84 )
+		goto st313;
+	goto st0;
+st313:
+	if ( ++p == pe )
+		goto _test_eof313;
+case 313:
+	if ( (*p) == 32 )
+		goto tr420;
+	goto st0;
+st314:
+	if ( ++p == pe )
+		goto _test_eof314;
+case 314:
+	if ( (*p) == 84 )
+		goto st315;
+	goto st0;
+st315:
+	if ( ++p == pe )
+		goto _test_eof315;
+case 315:
+	if ( (*p) == 32 )
+		goto tr422;
+	goto st0;
+st316:
+	if ( ++p == pe )
+		goto _test_eof316;
+case 316:
+	if ( (*p) == 82 )
+		goto st317;
+	goto st0;
+st317:
+	if ( ++p == pe )
+		goto _test_eof317;
+case 317:
+	if ( (*p) == 65 )
+		goto st318;
+	goto st0;
+st318:
+	if ( ++p == pe )
+		goto _test_eof318;
+case 318:
+	if ( (*p) == 67 )
+		goto st319;
+	goto st0;
+st319:
+	if ( ++p == pe )
+		goto _test_eof319;
+case 319:
+	if ( (*p) == 69 )
+		goto st320;
+	goto st0;
+st320:
+	if ( ++p == pe )
+		goto _test_eof320;
+case 320:
+	if ( (*p) == 32 )
+		goto tr427;
 	goto st0;
 	}
 	_test_eof2: cs = 2; goto _test_eof; 
@@ -6438,7 +7513,7 @@ case 297:
 	_test_eof16: cs = 16; goto _test_eof; 
 	_test_eof17: cs = 17; goto _test_eof; 
 	_test_eof18: cs = 18; goto _test_eof; 
-	_test_eof298: cs = 298; goto _test_eof; 
+	_test_eof321: cs = 321; goto _test_eof; 
 	_test_eof19: cs = 19; goto _test_eof; 
 	_test_eof20: cs = 20; goto _test_eof; 
 	_test_eof21: cs = 21; goto _test_eof; 
@@ -6507,9 +7582,9 @@ case 297:
 	_test_eof84: cs = 84; goto _test_eof; 
 	_test_eof85: cs = 85; goto _test_eof; 
 	_test_eof86: cs = 86; goto _test_eof; 
+	_test_eof87: cs = 87; goto _test_eof; 
 	_test_eof88: cs = 88; goto _test_eof; 
 	_test_eof89: cs = 89; goto _test_eof; 
-	_test_eof299: cs = 299; goto _test_eof; 
 	_test_eof90: cs = 90; goto _test_eof; 
 	_test_eof91: cs = 91; goto _test_eof; 
 	_test_eof92: cs = 92; goto _test_eof; 
@@ -6517,36 +7592,36 @@ case 297:
 	_test_eof94: cs = 94; goto _test_eof; 
 	_test_eof95: cs = 95; goto _test_eof; 
 	_test_eof96: cs = 96; goto _test_eof; 
-	_test_eof98: cs = 98; goto _test_eof; 
+	_test_eof97: cs = 97; goto _test_eof; 
 	_test_eof99: cs = 99; goto _test_eof; 
 	_test_eof100: cs = 100; goto _test_eof; 
+	_test_eof322: cs = 322; goto _test_eof; 
 	_test_eof101: cs = 101; goto _test_eof; 
-	_test_eof300: cs = 300; goto _test_eof; 
 	_test_eof102: cs = 102; goto _test_eof; 
 	_test_eof103: cs = 103; goto _test_eof; 
 	_test_eof104: cs = 104; goto _test_eof; 
 	_test_eof105: cs = 105; goto _test_eof; 
 	_test_eof106: cs = 106; goto _test_eof; 
 	_test_eof107: cs = 107; goto _test_eof; 
-	_test_eof108: cs = 108; goto _test_eof; 
 	_test_eof109: cs = 109; goto _test_eof; 
 	_test_eof110: cs = 110; goto _test_eof; 
-	_test_eof301: cs = 301; goto _test_eof; 
 	_test_eof111: cs = 111; goto _test_eof; 
 	_test_eof112: cs = 112; goto _test_eof; 
+	_test_eof323: cs = 323; goto _test_eof; 
 	_test_eof113: cs = 113; goto _test_eof; 
 	_test_eof114: cs = 114; goto _test_eof; 
+	_test_eof115: cs = 115; goto _test_eof; 
 	_test_eof116: cs = 116; goto _test_eof; 
 	_test_eof117: cs = 117; goto _test_eof; 
 	_test_eof118: cs = 118; goto _test_eof; 
 	_test_eof119: cs = 119; goto _test_eof; 
 	_test_eof120: cs = 120; goto _test_eof; 
 	_test_eof121: cs = 121; goto _test_eof; 
+	_test_eof324: cs = 324; goto _test_eof; 
 	_test_eof122: cs = 122; goto _test_eof; 
 	_test_eof123: cs = 123; goto _test_eof; 
 	_test_eof124: cs = 124; goto _test_eof; 
 	_test_eof125: cs = 125; goto _test_eof; 
-	_test_eof126: cs = 126; goto _test_eof; 
 	_test_eof127: cs = 127; goto _test_eof; 
 	_test_eof128: cs = 128; goto _test_eof; 
 	_test_eof129: cs = 129; goto _test_eof; 
@@ -6557,7 +7632,6 @@ case 297:
 	_test_eof134: cs = 134; goto _test_eof; 
 	_test_eof135: cs = 135; goto _test_eof; 
 	_test_eof136: cs = 136; goto _test_eof; 
-	_test_eof302: cs = 302; goto _test_eof; 
 	_test_eof137: cs = 137; goto _test_eof; 
 	_test_eof138: cs = 138; goto _test_eof; 
 	_test_eof139: cs = 139; goto _test_eof; 
@@ -6569,6 +7643,7 @@ case 297:
 	_test_eof145: cs = 145; goto _test_eof; 
 	_test_eof146: cs = 146; goto _test_eof; 
 	_test_eof147: cs = 147; goto _test_eof; 
+	_test_eof325: cs = 325; goto _test_eof; 
 	_test_eof148: cs = 148; goto _test_eof; 
 	_test_eof149: cs = 149; goto _test_eof; 
 	_test_eof150: cs = 150; goto _test_eof; 
@@ -6719,12 +7794,35 @@ case 297:
 	_test_eof295: cs = 295; goto _test_eof; 
 	_test_eof296: cs = 296; goto _test_eof; 
 	_test_eof297: cs = 297; goto _test_eof; 
+	_test_eof298: cs = 298; goto _test_eof; 
+	_test_eof299: cs = 299; goto _test_eof; 
+	_test_eof300: cs = 300; goto _test_eof; 
+	_test_eof301: cs = 301; goto _test_eof; 
+	_test_eof302: cs = 302; goto _test_eof; 
+	_test_eof303: cs = 303; goto _test_eof; 
+	_test_eof304: cs = 304; goto _test_eof; 
+	_test_eof305: cs = 305; goto _test_eof; 
+	_test_eof306: cs = 306; goto _test_eof; 
+	_test_eof307: cs = 307; goto _test_eof; 
+	_test_eof308: cs = 308; goto _test_eof; 
+	_test_eof309: cs = 309; goto _test_eof; 
+	_test_eof310: cs = 310; goto _test_eof; 
+	_test_eof311: cs = 311; goto _test_eof; 
+	_test_eof312: cs = 312; goto _test_eof; 
+	_test_eof313: cs = 313; goto _test_eof; 
+	_test_eof314: cs = 314; goto _test_eof; 
+	_test_eof315: cs = 315; goto _test_eof; 
+	_test_eof316: cs = 316; goto _test_eof; 
+	_test_eof317: cs = 317; goto _test_eof; 
+	_test_eof318: cs = 318; goto _test_eof; 
+	_test_eof319: cs = 319; goto _test_eof; 
+	_test_eof320: cs = 320; goto _test_eof; 
 
 	_test_eof: {}
 	_out: {}
 	}
 
-#line 162 "src/panda/protocol/http/MessageParser.rl"
+#line 219 "src/panda/protocol/http/MessageParser.rl"
     return p - ps;
 }
 

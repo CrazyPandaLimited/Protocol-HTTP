@@ -2,53 +2,15 @@
 #include "Body.h"
 #include "Error.h"
 #include "Headers.h"
+#include "compression/Compression.h"
+#include "compression/Compressor.h"
+#include "compression/BodyGuard.h"
 #include <array>
 #include <panda/refcnt.h>
 
 namespace panda { namespace protocol { namespace http {
 
 enum class State {headers, body, chunk, chunk_body, chunk_trailer, done, error};
-
-namespace compression {
-
-enum Compression: std::uint8_t {
-    IDENTITY = 1 << 0,
-    GZIP     = 1 << 1,
-    DEFLATE  = 1 << 2,
-    LAST     = DEFLATE,
-};
-using storage_t = std::uint64_t;
-constexpr std::uint64_t ITEM_MASK = 0b11111111ull;
-constexpr std::uint64_t ITEM_VALUE_MASK = 0b00111111ull;
-constexpr std::uint64_t FILLED_MASK = 0b11111111ull << (7 * 8);
-
-template<typename F>
-void for_each(storage_t ordered_prefs, F&& fn) noexcept {
-    for(int i = sizeof (storage_t) - 1; i >= 0; --i) {
-        auto mask = ITEM_MASK << (i * 8);
-        auto item_shifted = (ordered_prefs & mask);
-        if (!item_shifted) { continue; }
-        auto item = item_shifted >> (i * 8);
-        bool negation = false;
-        if (item > LAST) {
-            item = ~item & ITEM_VALUE_MASK;
-            negation = true;
-        }
-        fn(item, negation);
-    }
-}
-
-bool inline pack(storage_t& ordered_prefs, std::uint32_t value) {
-    if (!(ordered_prefs & FILLED_MASK)) {
-        if (value != IDENTITY) {
-            ordered_prefs = (ordered_prefs << 8) | (value & ITEM_MASK);
-        }
-        return true;
-    }
-    return false;
-}
-
-} // namespace compression
 
 struct Message : virtual Refcnt {
     template <class, class> struct Builder;
@@ -58,7 +20,10 @@ struct Message : virtual Refcnt {
     bool    chunked      = false;
     int     http_version = 0;
 
+    using wrapped_chunk = std::array<string, 3>;
+    compression::CompressorPtr compressor;
     compression::Compression compressed = compression::IDENTITY;
+    compression::Level level = compression::Level::min;
 
     Message () {}
 
@@ -69,14 +34,47 @@ struct Message : virtual Refcnt {
     bool keep_alive () const;
     void keep_alive (bool val) { val ? headers.connection("keep-alive") : headers.connection("close"); }
 
-    std::array<string, 3> make_chunk (const string& s) {
+
+     wrapped_chunk wrap_into_chunk (const string& s) {
         if (!s) return {"", "", ""};
         return {string::from_number(s.length(), 16) + "\r\n", s, "\r\n"};
     }
 
-    string final_chunk () { return "0\r\n\r\n"; }
+    wrapped_chunk make_chunk (const string& s) {
+        if (!s) return {"", "", ""};
+        if(compressor) {
+            return wrap_into_chunk(compressor->compress(s));
+        } else {
+            return wrap_into_chunk(s);
+        }
+    }
+
+    wrapped_chunk final_chunk () {
+        if (compressor) {
+            auto chunk = wrap_into_chunk(compressor->flush());
+            chunk[2] += "0\r\n\r\n";
+            return chunk;
+        } else {
+            return {"", "","0\r\n\r\n"};
+        }
+    }
+
 
 protected:
+    static string to_string(const std::vector<string>& pieces);
+
+    inline void _content_encoding(compression::Compression applied_compression) {
+        using namespace compression;
+        if (!headers.has("Content-Encoding") && compressor) {
+            switch (applied_compression) {
+            case GZIP:    headers.add("Content-Encoding", "gzip");    break;
+            case DEFLATE: headers.add("Content-Encoding", "deflate"); break;
+            case BROTLI:  headers.add("Content-Encoding", "br");      break;
+            case IDENTITY: break;
+            }
+        }
+    }
+
     inline void _compile_prepare () {
         if (chunked) {
             http_version = 11;
@@ -87,7 +85,9 @@ protected:
     }
 
     template <class T>
-    inline std::vector<string> _to_vector (const T& f) {
+    inline std::vector<string> _to_vector (compression::Compression applied_compression, const T& f) {
+        _prepare_compressor(applied_compression, level);
+        auto body_holder = maybe_compress();
         _compile_prepare();
         auto hdr = f();
         if (!body.length()) return {hdr};
@@ -97,12 +97,8 @@ protected:
         if (chunked) {
             result.reserve(1 + sz * 3 + 1);
             result.emplace_back(hdr);
-            for (auto& part : body.parts) {
-                if (!part) continue;
-                auto ss = make_chunk(part);
-                for (auto& s : ss) result.emplace_back(s);
-            }
-            result.emplace_back(final_chunk());
+            auto append_piecewise = [&](auto& piece) { result.emplace_back(piece); };
+            _serialize_body(append_piecewise);
         } else {
             result.reserve(1 + sz);
             result.emplace_back(hdr);
@@ -112,27 +108,35 @@ protected:
         return result;
     }
 
-    template <class T>
-    inline string _to_string (const T& f) {
-        _compile_prepare();
-        auto blen = body.length();
-        if (chunked && blen) blen += body.parts.size() * 8 + 5;
-        auto ret = f(blen);
-        if (!blen) return ret;
+private:
+    compression::BodyGuard maybe_compress();
 
-        if (chunked) {
-            for (auto& part : body.parts) {
-                auto ss = make_chunk(part);
-                for (auto& s : ss) ret += s;
-            }
-            ret += final_chunk();
-        }
-        else for (auto& part : body.parts) ret += part;
-
-        return ret;
+    template<typename Fn>
+    inline void _append_chunk(wrapped_chunk chunk, Fn&& fn) {
+        for (auto& piece : chunk) if (piece) { fn(piece); }
     }
 
-private:
+    template<typename Fn>
+    inline void _serialize_body(Fn&& fn) {
+        for (auto& part : body.parts) {
+            _append_chunk(make_chunk(part), fn);
+        }
+        _append_chunk(final_chunk(), fn);
+    }
+
+    inline void _prepare_compressor(compression::Compression applied_compression, compression::Level level) {
+        switch (applied_compression) {
+        case compression::IDENTITY: /* NOOP */ break;
+        default: {
+            auto it(compression::instantiate(applied_compression));
+            if (it) {
+                it->prepare_compress(level);
+                compressor = std::move(it);
+            }
+        }
+        }
+    }
+
     //friend struct Parser; friend struct RequestParser; friend struct ResponseParser;
 };
 using MessageSP = iptr<Message>;
@@ -172,6 +176,12 @@ struct Message::Builder {
         return self();
     }
 
+    T& compress(compression::Compression method, compression::Level level = compression::Level::min) {
+        _message->compressed = method;
+        _message->level = level;
+        return self();
+    }
+
     MP build () { return _message; }
 
 protected:
@@ -181,5 +191,6 @@ protected:
 
     T& self () { return static_cast<T&>(*this); }
 };
+
 
 }}}

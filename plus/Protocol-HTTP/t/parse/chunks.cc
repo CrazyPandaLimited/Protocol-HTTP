@@ -122,3 +122,28 @@ TEST("fragmented chunks") {
     CHECK(req->body.to_string() == "Wikipedia in\r\n\r\nchunks.");
 }
 
+TEST("unsupported TE") {
+    RequestParser p;
+    string raw =
+        "POST /upload HTTP/1.1\r\n"
+        "Transfer-Encoding: XXX\r\n"
+        ;
+
+    auto result = p.parse(raw);
+    auto req = result.request;
+    CHECK(result.state == State::error);
+    CHECK(result.error == errc::unsupported_transfer_encoding);
+}
+
+TEST("unsupported TE (2)") {
+    RequestParser p;
+    string raw =
+        "POST /upload HTTP/1.1\r\n"
+        "Transfer-Encoding: chunked, XXX\r\n"
+        ;
+
+    auto result = p.parse(raw);
+    auto req = result.request;
+    CHECK(result.state == State::error);
+    CHECK(result.error == errc::unsupported_transfer_encoding);
+}

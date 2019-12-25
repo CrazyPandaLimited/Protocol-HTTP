@@ -2,8 +2,23 @@
 
 namespace panda { namespace protocol { namespace http {
 
-string Request::http_header (size_t reserve) {
-    auto meth = method_str(method);
+static inline string _method_str (Request::Method rm) {
+    using Method = Request::Method;
+    switch (rm) {
+        case Method::OPTIONS : return "OPTIONS";
+        case Method::GET     : return "GET";
+        case Method::HEAD    : return "HEAD";
+        case Method::POST    : return "POST";
+        case Method::PUT     : return "PUT";
+        case Method::DELETE  : return "DELETE";
+        case Method::TRACE   : return "TRACE";
+        case Method::CONNECT : return "CONNECT";
+        default: return "[UNKNOWN]";
+    }
+}
+
+string Request::http_header (compression::Compression applied_compression) {
+    auto meth = _method_str(method);
     auto reluri  = uri ? uri->relative() : string("/");
     if (!http_version) http_version = 11;
 
@@ -65,7 +80,9 @@ string Request::http_header (size_t reserve) {
         headers.add("Cookie", coo);
     }
 
-    string s(meth.length() + 1 + reluri.length() + 6 + 5 + headers.length() + 2 + reserve);
+    _content_encoding(applied_compression);
+
+    string s(meth.length() + 1 + reluri.length() + 6 + 5 + headers.length() + 2);
 
     s += meth;
     s += ' ';
@@ -79,15 +96,17 @@ string Request::http_header (size_t reserve) {
     return s;
 }
 
-std::vector<string> Request::to_vector () { return _to_vector([this]{ return http_header(0); }); }
-string              Request::to_string () { return _to_string([this](size_t r){ return http_header(r); }); }
+std::vector<string> Request::to_vector () {
+    auto applied_compression = compressed;
+    return _to_vector(applied_compression, [this, applied_compression]{ return http_header(applied_compression); });
+}
 
 bool Request::expects_continue () const {
     for (auto& val : headers.get_multi("Expect")) if (val == "100-continue") return true;
     return false;
 }
 
-std::uint8_t Request::compression_mask(bool inverse) noexcept {
+std::uint8_t Request::compression_mask(bool inverse) const noexcept {
     std::uint8_t result = 0;
     compression::for_each(compression_prefs, [&](auto value, bool negation){
         if (inverse == negation) {
