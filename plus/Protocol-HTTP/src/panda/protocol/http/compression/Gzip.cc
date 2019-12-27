@@ -53,7 +53,7 @@ void Gzip::prepare_compress(Level level) noexcept {
     stream.zfree = Z_NULL;
     stream.opaque = Z_NULL;
 
-    int z_level;
+    int z_level = Z_BEST_SPEED;
     switch (level) {
     case Level::min:     z_level = Z_BEST_SPEED;          break;
     case Level::max:     z_level = Z_BEST_COMPRESSION;    break;
