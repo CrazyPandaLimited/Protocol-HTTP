@@ -9,11 +9,11 @@ static bool check_zlib(){
     string compiled_verison{ZLIB_VERSION};
     string loaded_version{zlibVersion()};
 
-     if (compiled_verison != loaded_version) {
-         std::cerr << "zlib version mismatch, loaded: "  << loaded_version << ", compiled" << compiled_verison << "\n";
-         std::abort();
-     }
-     return true;
+    if (compiled_verison != loaded_version) {
+        std::cerr << "zlib version mismatch, loaded: "  << loaded_version << ", compiled" << compiled_verison << "\n";
+        std::abort();
+    }
+    return true;
 }
 
 static bool initialized = check_zlib();

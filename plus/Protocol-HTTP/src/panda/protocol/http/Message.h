@@ -35,7 +35,7 @@ struct Message : virtual Refcnt {
     void keep_alive (bool val) { val ? headers.connection("keep-alive") : headers.connection("close"); }
 
 
-     wrapped_chunk wrap_into_chunk (const string& s) {
+    wrapped_chunk wrap_into_chunk (const string& s) {
         if (!s) return {"", "", ""};
         return {string::from_number(s.length(), 16) + "\r\n", s, "\r\n"};
     }
