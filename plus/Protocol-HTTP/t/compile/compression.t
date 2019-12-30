@@ -1,4 +1,7 @@
 use 5.012;
+# prevent loading brotly plugin
+BEGIN { $INC{'Protocol/HTTP/Compression/Brotli.pm'}=1; }
+
 use lib 't/lib';
 use MyTest;
 use Test::More;
