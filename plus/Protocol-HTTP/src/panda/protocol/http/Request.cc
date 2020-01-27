@@ -43,9 +43,10 @@ string Request::http_header (compression::Compression applied_compression) {
             const char* val = nullptr;
             switch (value) {
             using namespace compression;
-            case IDENTITY: /* skip */ return ; break;
-            case GZIP:     val = "gzip"; break;
+            case IDENTITY: /* skip */ return;
+            case GZIP:     val = "gzip";    break;
             case DEFLATE:  val = "deflate"; break;
+            case BROTLI:   val = "br";      break;
             }
             if (negation) {
                 if (index_neg) { comp_neg += ", "; }

@@ -83,4 +83,18 @@ subtest 'allow compression method' => sub {
     is $req->compressed, Protocol::HTTP::Compression::gzip;
 };
 
+subtest 'SRV-1748 bugfix (invalid compression params)' => sub {
+    my $req = Protocol::HTTP::Request->new({
+        method       => METHOD_GET,
+        uri          => "http://crazypanda.ru/",
+    });
+    $req->allow_compression([0..10]);
+    is $req->to_string,
+        "GET / HTTP/1.1\r\n".
+        "Host: crazypanda.ru\r\n".
+        "Accept-Encoding: gzip, deflate, br\r\n".
+        "\r\n"
+        ;
+};
+
 done_testing;

@@ -205,3 +205,14 @@ TEST("brotli is ignored if there is no plugin for it") {
     auto data = res->to_string(req);
     CHECK(data == "HTTP/1.1 200 OK\r\nContent-Length: 7\r\n\r\nmy body");
 }
+
+TEST("is_valid_compression") {
+    CHECK(compression::is_valid_compression(1) == true);
+    CHECK(compression::is_valid_compression(2) == true);
+    CHECK(compression::is_valid_compression(4) == true);
+    CHECK(compression::is_valid_compression(8) == true);
+    CHECK(compression::is_valid_compression(0) == false);
+    CHECK(compression::is_valid_compression(3) == false);
+    CHECK(compression::is_valid_compression(5) == false);
+    CHECK(compression::is_valid_compression(6) == false);
+}

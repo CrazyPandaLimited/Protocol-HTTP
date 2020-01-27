@@ -113,7 +113,7 @@
 
     action push_compression {
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }

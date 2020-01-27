@@ -3642,7 +3642,7 @@ tr229:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }
@@ -3666,7 +3666,7 @@ tr243:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }
@@ -3690,7 +3690,7 @@ tr251:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }
@@ -3712,7 +3712,7 @@ tr262:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }
@@ -3736,7 +3736,7 @@ tr282:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }
@@ -3760,7 +3760,7 @@ tr289:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }
@@ -4443,7 +4443,7 @@ tr228:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }
@@ -4454,7 +4454,7 @@ tr242:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }
@@ -4463,7 +4463,7 @@ tr274:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }
@@ -4474,7 +4474,7 @@ tr281:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }
@@ -4485,7 +4485,7 @@ tr288:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }
@@ -4512,7 +4512,7 @@ tr230:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }
@@ -4523,7 +4523,7 @@ tr244:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }
@@ -4534,7 +4534,7 @@ tr252:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }
@@ -4543,7 +4543,7 @@ tr263:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }
@@ -4554,7 +4554,7 @@ tr283:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }
@@ -4565,7 +4565,7 @@ tr290:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }
@@ -4711,7 +4711,7 @@ tr250:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }
@@ -4720,7 +4720,7 @@ tr261:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(compr);
+            request->allow_compression(static_cast<compression::Compression>(compr));
             compr = 0;
         }
     }

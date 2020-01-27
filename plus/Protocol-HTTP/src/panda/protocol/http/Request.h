@@ -58,7 +58,7 @@ struct Request : Message, AllocatedObject<Request> {
 
 protected:
     template<typename... PrefN>
-    void _allow_compression(std::uint32_t p, PrefN... prefn) {
+    void _allow_compression(compression::Compression p, PrefN... prefn) {
         bool ok = compression::pack(this->compression_prefs, p);
         if (ok) {
             return _allow_compression(prefn...);
