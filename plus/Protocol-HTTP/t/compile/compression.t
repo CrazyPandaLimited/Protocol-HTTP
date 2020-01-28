@@ -92,7 +92,7 @@ subtest 'SRV-1748 bugfix (invalid compression params)' => sub {
     is $req->to_string,
         "GET / HTTP/1.1\r\n".
         "Host: crazypanda.ru\r\n".
-        "Accept-Encoding: gzip, deflate, br\r\n".
+        "Accept-Encoding: gzip, br\r\n".
         "\r\n"
         ;
 };

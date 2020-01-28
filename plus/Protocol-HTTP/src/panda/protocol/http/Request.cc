@@ -36,7 +36,7 @@ string Request::http_header (compression::Compression applied_compression) {
         headers.add("Host", host);
     }
 
-    if (compression_prefs && compression_prefs != static_cast<compression::storage_t>(compression::IDENTITY)) {
+    if (compression_prefs && compression_prefs != static_cast<compression::storage_t>(compression::IDENTITY) && !headers.has("Accept-Encoding")) {
         string comp_pos, comp_neg;
         int index_pos = 0, index_neg = 0;
         compression::for_each(compression_prefs, [&](auto value, bool negation){
@@ -44,8 +44,8 @@ string Request::http_header (compression::Compression applied_compression) {
             switch (value) {
             using namespace compression;
             case IDENTITY: /* skip */ return;
+            case DEFLATE:  /* skip */ return;
             case GZIP:     val = "gzip";    break;
-            case DEFLATE:  val = "deflate"; break;
             case BROTLI:   val = "br";      break;
             }
             if (negation) {
