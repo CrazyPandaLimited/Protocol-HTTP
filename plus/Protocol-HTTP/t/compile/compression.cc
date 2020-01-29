@@ -213,3 +213,19 @@ TEST("is_valid_compression") {
     CHECK(compression::is_valid_compression(5) == false);
     CHECK(compression::is_valid_compression(6) == false);
 }
+
+TEST("[SRV-1757] allow_compression accumulates identity") {
+    auto req = Request::Builder()
+        .method(Method::GET)
+        .allow_compression(compression::IDENTITY)
+        .uri("/")
+        .build();
+    CHECK(req->compression_prefs != compression::IDENTITY);
+    int count = 0;
+    compression::for_each(req->compression_prefs, [&](auto val, bool neg){
+       if (val == static_cast<int>(compression::IDENTITY) && !neg) {
+           ++count;
+       }
+    });
+    CHECK(count == 2);
+}

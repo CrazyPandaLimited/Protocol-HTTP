@@ -36,9 +36,7 @@ void for_each(storage_t ordered_prefs, F&& fn) noexcept {
 
 bool inline pack(storage_t& ordered_prefs, Compression value) {
     if (!(ordered_prefs & FILLED_MASK)) {
-        if (value != IDENTITY) {
-            ordered_prefs = (ordered_prefs << 8) | (value & ITEM_MASK);
-        }
+        ordered_prefs = (ordered_prefs << 8) | (value & ITEM_MASK);
         return true;
     }
     return false;
