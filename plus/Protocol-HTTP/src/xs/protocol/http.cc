@@ -25,8 +25,10 @@ void fill (Request* req, const Hash& h) {
     Array av;
     if ((av = h.fetch("allow_compression"))) {
         for(auto value: av) {
-            auto val = static_cast<compression::Compression>(value.as_number<uint8_t>());
-            req->allow_compression(val);
+            auto val = value.as_number<uint8_t>();
+            if (compression::is_valid_compression(val)) {
+                req->allow_compression(static_cast<compression::Compression>(val));
+            }
         }
     }
 }

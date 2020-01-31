@@ -95,6 +95,12 @@ subtest 'SRV-1748 bugfix (invalid compression params)' => sub {
         "Accept-Encoding: gzip, br\r\n".
         "\r\n"
         ;
+    my $req2 = Protocol::HTTP::Request->new({
+        method            => METHOD_GET,
+        uri               => "http://crazypanda.ru/",
+        allow_compression => [0..10],
+    });
+    is $req->to_string, $req2->to_string;
 };
 
 done_testing;
