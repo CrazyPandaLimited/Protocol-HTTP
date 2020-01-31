@@ -53,7 +53,8 @@ template <class TYPE>
 struct Typemap<panda::protocol::http::RequestSP, panda::iptr<TYPE>> : Typemap<TYPE*> {
     using Super = Typemap<TYPE*>;
     static panda::iptr<TYPE> in (Sv arg) {
-        if (!arg.is_hash_ref()) return Super::in(arg);
+        if (arg.is_object_ref()) return Super::in(arg);
+        else if (!arg.defined()) return {};
         panda::iptr<TYPE> ret = make_backref<TYPE>();
         xs::protocol::http::fill(ret.get(), arg);
         return ret;
@@ -69,7 +70,8 @@ template <class TYPE>
 struct Typemap<panda::protocol::http::ResponseSP, panda::iptr<TYPE>> : Typemap<TYPE*> {
     using Super = Typemap<TYPE*>;
     static panda::iptr<TYPE> in (Sv arg) {
-        if (!arg.is_hash_ref()) return Super::in(arg);
+        if (arg.is_object_ref()) return Super::in(arg);
+        else if (!arg.defined()) return {};
         panda::iptr<TYPE> ret = make_backref<TYPE>();
         xs::protocol::http::fill(ret.get(), arg);
         return ret;
