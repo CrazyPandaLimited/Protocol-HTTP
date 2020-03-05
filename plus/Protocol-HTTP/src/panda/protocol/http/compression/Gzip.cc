@@ -1,6 +1,6 @@
 #include "Gzip.h"
 #include <iostream>
-#include "../Error.h"
+#include "../error.h"
 
 namespace panda { namespace protocol { namespace http { namespace compression {
 
