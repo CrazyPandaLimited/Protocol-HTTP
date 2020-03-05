@@ -83,6 +83,18 @@ subtest 'allow compression method' => sub {
     is $req->compressed, Protocol::HTTP::Compression::gzip;
 };
 
+subtest 'max compression ' => sub {
+    my $req = Protocol::HTTP::Request->new({
+        method       => METHOD_POST,
+        uri          => "http://crazypanda.ru/",
+        body         => "lorem ipsum dolor sit amet",
+    });
+    $req->compress(Protocol::HTTP::Compression::gzip, Protocol::HTTP::Compression::LEVEL_MAX);
+    like $req->to_string, qr/Content-Length: 46/;
+    like $req->to_string, qr/Content-Encoding: gzip/;
+    is $req->compressed, Protocol::HTTP::Compression::gzip;
+};
+
 subtest 'SRV-1748 bugfix (invalid compression params)' => sub {
     my $req = Protocol::HTTP::Request->new({
         method       => METHOD_GET,

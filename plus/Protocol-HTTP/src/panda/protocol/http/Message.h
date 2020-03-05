@@ -59,6 +59,10 @@ struct Message : virtual Refcnt {
         }
     }
 
+    void compress(compression::Compression method, compression::Level level = compression::Level::min) {
+        this->compressed = method;
+        this->level = level;
+    }
 
 protected:
     static string to_string(const std::vector<string>& pieces);
@@ -177,8 +181,7 @@ struct Message::Builder {
     }
 
     T& compress(compression::Compression method, compression::Level level = compression::Level::min) {
-        _message->compressed = method;
-        _message->level = level;
+        _message->compress(method, level);
         return self();
     }
 
