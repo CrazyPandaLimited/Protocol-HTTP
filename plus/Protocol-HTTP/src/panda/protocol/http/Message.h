@@ -1,6 +1,6 @@
 #pragma once
 #include "Body.h"
-#include "Error.h"
+#include "error.h"
 #include "Headers.h"
 #include "compression/Compression.h"
 #include "compression/Compressor.h"
