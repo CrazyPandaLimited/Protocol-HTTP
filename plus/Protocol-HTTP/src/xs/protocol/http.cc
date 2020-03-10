@@ -83,4 +83,18 @@ Cookie Typemap<Cookie>::in (const Hash& h) {
     return c;
 }
 
+Sv Typemap<Cookie>::out (const Cookie& c, const Sv& ) {
+    Hash h = Hash::create();
+    h["value"]     = xs::out(c.value());
+    h["secure"]    = xs::out(c.secure());
+    h["http_only"] = xs::out(c.http_only());
+    h["same_site"] = xs::out((int)c.same_site());
+
+    if (c.domain())  { h["domain"]  = xs::out(c.domain());  }
+    if (c.path())    { h["path"]    = xs::out(c.path());    }
+    if (c.expires()) { h["expires"] = xs::out(c.expires()); }
+    if (c.max_age()) { h["max_age"] = xs::out(c.max_age()); }
+    return Ref::create(h);
+}
+
 }

@@ -60,24 +60,40 @@ subtest 'response cookies' => sub {
             "\r\n";
     };
     subtest 'cookies()' => sub {
-        my $req = new Protocol::HTTP::Request;
-        $req->cookies({junk => 1}); # should be overwritten
-        my $hash = {a => 1};
-        $req->cookies($hash);
-        is $req->to_string,
-            "GET / HTTP/1.1\r\n".
-            "Cookie: a=1\r\n".
+        my $res = new Protocol::HTTP::Response;
+        $res->cookies({Lorem => {value => 'Ipsum'}}); # should be overwritten
+        my $hash = {Sit => {
+            value => 'amen',
+            domain    => "epta.ru",
+            path      => "/",
+            secure    => 1,
+            http_only => 1,
+            expires  => Date->new("2032-11-28 21:43:59+00"),
+            same_site => COOKIE_SAMESITE_NONE,
+        }};
+        $res->cookies($hash);
+        is $res->to_string,
+            "HTTP/1.1 200 OK\r\n".
+            "Content-Length: 0\r\n".
+            "Set-Cookie: Sit=amen; Domain=epta.ru; Path=/; Expires=Sun, 28 Nov 2032 21:43:59 GMT; Secure; HttpOnly; SameSite=None\r\n".
             "\r\n";
-        is_deeply $req->cookies, $hash;
+        is_deeply $res->cookies, $hash;
     };
+
     subtest 'cookie()' => sub {
-        my $req = new Protocol::HTTP::Request;
-        is $req->cookie("session"), undef;
-        $req->cookie("session", "abc");
-        is $req->cookie("session"), "abc";
-        is $req->to_string,
-            "GET / HTTP/1.1\r\n".
-            "Cookie: session=abc\r\n".
+        my $res = new Protocol::HTTP::Response;
+        is $res->cookie("session"), undef;
+        $res->cookie("session", {value => 'abc'});
+        is_deeply $res->cookie("session"), {
+            value     => 'abc',
+            http_only => 0,
+            secure    => 0,
+            same_site => Protocol::HTTP::Response::COOKIE_SAMESITE_DISABLED,
+        };
+        is $res->to_string,
+            "HTTP/1.1 200 OK\r\n".
+            "Content-Length: 0\r\n".
+            "Set-Cookie: session=abc\r\n".
             "\r\n";
     };
 };
