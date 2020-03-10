@@ -4,82 +4,60 @@ use MyTest;
 use Test::More;
 use Test::Catch;
 use Protocol::HTTP::Response;
+use Protocol::HTTP::Request;
+use Protocol::HTTP::Message;
 
 catch_run('[parse-cookies]');
 
-#subtest 'request cookies' => sub {
-#    subtest '"cookies" in ctor' => sub {
-#        my $req = new Protocol::HTTP::Request({
-#            cookies => {a => 1},
-#        });
-#        is $req->to_string,
-#            "GET / HTTP/1.1\r\n".
-#            "Cookie: a=1\r\n".
-#            "\r\n";
-#    };
-#    subtest 'cookies()' => sub {
-#        my $req = new Protocol::HTTP::Request;
-#        $req->cookies({junk => 1}); # should be overwritten
-#        my $hash = {a => 1};
-#        $req->cookies($hash);
-#        is $req->to_string,
-#            "GET / HTTP/1.1\r\n".
-#            "Cookie: a=1\r\n".
-#            "\r\n";
-#        is_deeply $req->cookies, $hash;
-#    };
-#    subtest 'cookie()' => sub {
-#        my $req = new Protocol::HTTP::Request;
-#        is $req->cookie("session"), undef;
-#        $req->cookie("session", "abc");
-#        is $req->cookie("session"), "abc";
-#        is $req->to_string,
-#            "GET / HTTP/1.1\r\n".
-#            "Cookie: session=abc\r\n".
-#            "\r\n";
-#    };
-#};
-#
-#subtest 'response cookies' => sub {
-#    subtest '"cookies" in ctor' => sub {
-#        my $res = new Protocol::HTTP::Response({
-#            cookies => {session => {
-#                value     => "123",
-#                domain    => "epta.ru",
-#                path      => "/",
-#                max_age   => 1000,
-#                secure    => 1,
-#                http_only => 1,
-#                same_site => COOKIE_SAMESITE_NONE,
-#            }},
-#        });
-#        is $res->to_string,
-#            "HTTP/1.1 200 OK\r\n".
-#            "Content-Length: 0\r\n".
-#            "Set-Cookie: session=123; Domain=epta.ru; Path=/; Max-Age=1000; Secure; HttpOnly; SameSite=None\r\n".
-#            "\r\n";
-#    };
-#    subtest 'cookies()' => sub {
-#        my $req = new Protocol::HTTP::Request;
-#        $req->cookies({junk => 1}); # should be overwritten
-#        my $hash = {a => 1};
-#        $req->cookies($hash);
-#        is $req->to_string,
-#            "GET / HTTP/1.1\r\n".
-#            "Cookie: a=1\r\n".
-#            "\r\n";
-#        is_deeply $req->cookies, $hash;
-#    };
-#    subtest 'cookie()' => sub {
-#        my $req = new Protocol::HTTP::Request;
-#        is $req->cookie("session"), undef;
-#        $req->cookie("session", "abc");
-#        is $req->cookie("session"), "abc";
-#        is $req->to_string,
-#            "GET / HTTP/1.1\r\n".
-#            "Cookie: session=abc\r\n".
-#            "\r\n";
-#    };
-#};
+subtest 'request cookies' => sub {
+    my $p = Protocol::HTTP::RequestParser->new;
+
+    my ($req, $state, $pos, $err) = $p->parse(
+        "GET / HTTP/1.0\r\n".
+        "Cookie: key1=v1\r\n".
+        "Cookie: key2=v2\r\n".
+        "Cookie: key3=v3; key4=v4\r\n".
+        "\r\n"
+    );
+    is $state, Protocol::HTTP::Message::STATE_DONE;
+    ok !$err;
+    is_deeply $req->cookies, {
+        key1 => 'v1', key2 => 'v2', key3 => 'v3', key4 => 'v4'
+    };
+};
+
+subtest 'response cookies' => sub {
+    my $p = Protocol::HTTP::ResponseParser->new;
+    $p->set_context_request(new Protocol::HTTP::Request({method => METHOD_GET}));
+    my $raw =
+        "HTTP/1.0 200 OK\r\n".
+        "Set-Cookie: k1=v1; Domain=.crazypanda.ru; Path=/; Max-Age=999; Secure; HttpOnly; SameSite=None\r\n".
+        "Set-Cookie: k2=v2; Domain=epta.ru; Expires=Sun, 28 Nov 2032 21:43:59 GMT; SameSite\r\n".
+        "\r\n";
+
+    my ($res, $state, $pos, $err) = $p->parse($raw);
+
+    ok $state != STATE_DONE;
+    ok !$err;
+    is_deeply $res->cookies, {
+        k1 => {
+            value     => 'v1',
+            domain    => '.crazypanda.ru',
+            path      => '/',
+            max_age   => 999,
+            secure    => 1,
+            http_only => 1,
+            same_site => COOKIE_SAMESITE_NONE
+        },
+        k2 => {
+            value     => 'v2',
+            domain    => 'epta.ru',
+            expires   => Date->new("2032-11-28 21:43:59+00"),
+            same_site => COOKIE_SAMESITE_STRICT,
+            secure    => 0,
+            http_only => 0,
+        },
+    };
+};
 
 done_testing();
