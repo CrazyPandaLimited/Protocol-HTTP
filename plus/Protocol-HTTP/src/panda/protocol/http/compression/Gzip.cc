@@ -44,7 +44,7 @@ void Gzip::prepare_uncompress(size_t& max_body_size_) noexcept {
     mode = Mode::uncompress;
 }
 
-void Gzip::prepare_compress(Level level) noexcept {
+void Gzip::prepare_compress(Compression::Level level) noexcept {
     stream.total_out = 0;
     stream.total_in = 0;
     stream.avail_in = 0;
@@ -55,9 +55,9 @@ void Gzip::prepare_compress(Level level) noexcept {
 
     int z_level = Z_BEST_SPEED;
     switch (level) {
-    case Level::min:     z_level = Z_BEST_SPEED;          break;
-    case Level::max:     z_level = Z_BEST_COMPRESSION;    break;
-    case Level::optimal: z_level = Z_DEFAULT_COMPRESSION; break;
+        case Compression::Level::min:     z_level = Z_BEST_SPEED;          break;
+        case Compression::Level::max:     z_level = Z_BEST_COMPRESSION;    break;
+        case Compression::Level::optimal: z_level = Z_DEFAULT_COMPRESSION; break;
     }
 
     int err = deflateInit2(&stream, z_level, Z_DEFLATED, 16 + MAX_WBITS, 9 /* max speed */, Z_DEFAULT_STRATEGY);

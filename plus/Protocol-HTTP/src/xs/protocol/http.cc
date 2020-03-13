@@ -12,7 +12,17 @@ static inline void msgfill (Message* m, const Hash& h) {
     if ((sv = h.fetch("body")))         m->body         = xs::in<string>(sv);
     if ((sv = h.fetch("http_version"))) m->http_version = Simple(sv);
     if ((sv = h.fetch("chunked")))      m->chunked      = sv.is_true();
-    if ((sv = h.fetch("compressed")))   m->compressed   = static_cast<compression::Compression>(xs::in<int>(sv));
+
+    if ((sv = h.fetch("compress"))) {
+        if (sv.is_array_ref()) {
+            Array a(sv);
+            switch (a.size()) {
+                case 2: m->compression.level = (Compression::Level)SvIV(a[1]);
+                case 1: m->compression.type  = (Compression::Type)SvIV(a[0]);
+            }
+        }
+        else m->compression.type = (Compression::Type)SvIV(sv);
+    }
 }
 
 void fill (Request* req, const Hash& h) {
@@ -22,13 +32,17 @@ void fill (Request* req, const Hash& h) {
     if ((sv = h.fetch("uri")))                    req->uri = xs::in<URISP>(sv);
     if ((sv = h.fetch("cookies")))                set_request_cookies(req, sv);
 
-    Array av;
-    if ((av = h.fetch("allow_compression"))) {
-        for(auto value: av) {
-            auto val = value.as_number<uint8_t>();
-            if (compression::is_valid_compression(val)) {
-                req->allow_compression(static_cast<compression::Compression>(val));
+    if ((sv = h.fetch("allow_compression"))) {
+        if (sv.is_array_ref()) {
+            Array av(sv);
+            for (auto value : av) {
+                auto val = value.as_number<uint8_t>();
+                if (is_valid_compression(val)) req->allow_compression((Compression::Type)val);
             }
+        }
+        else {
+            uint8_t val = SvIV(sv);
+            if (is_valid_compression(val)) req->allow_compression((Compression::Type)val);
         }
     }
 }

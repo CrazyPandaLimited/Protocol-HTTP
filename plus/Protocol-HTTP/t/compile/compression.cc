@@ -4,66 +4,66 @@
 
 TEST("Accept-Encoding") {
     SECTION("identity") {
-        auto req = Request::Builder().allow_compression(compression::IDENTITY).build();
+        auto req = Request::Builder().allow_compression(Compression::IDENTITY).build();
         CHECK(req->to_string() == "GET / HTTP/1.1\r\n\r\n");
-        CHECK(req->compression_mask() == compression::IDENTITY);
+        CHECK(req->allowed_compression() == Compression::IDENTITY);
     }
 
     SECTION("identity, identity") {
         auto req = Request::Builder()
-                .allow_compression(compression::IDENTITY)
-                .allow_compression(compression::IDENTITY)
+                .allow_compression(Compression::IDENTITY)
+                .allow_compression(Compression::IDENTITY)
             .build();
         CHECK(req->to_string() == "GET / HTTP/1.1\r\n\r\n");
-        CHECK(req->compression_mask() == compression::IDENTITY);
+        CHECK(req->allowed_compression() == Compression::IDENTITY);
     }
 
     SECTION("(empty aka default)") {
         auto req = Request::Builder().build();
         CHECK(req->to_string() == "GET / HTTP/1.1\r\n\r\n");
-        CHECK((req->compression_mask() & compression::IDENTITY));
+        CHECK((req->allowed_compression() & Compression::IDENTITY));
     }
 
     SECTION("gzip") {
-        auto req = Request::Builder().allow_compression(compression::GZIP).build();
+        auto req = Request::Builder().allow_compression(Compression::GZIP).build();
         CHECK(req->to_string() == "GET / HTTP/1.1\r\n"
             "Accept-Encoding: gzip\r\n"
         "\r\n");
-        CHECK((req->compression_mask() & compression::GZIP));
-        CHECK((req->compression_mask() & compression::IDENTITY));
+        CHECK((req->allowed_compression() & Compression::GZIP));
+        CHECK((req->allowed_compression() & Compression::IDENTITY));
     }
 
     SECTION("deflate (ignored) ") {
-        auto req = Request::Builder().allow_compression(compression::DEFLATE).build();
+        auto req = Request::Builder().allow_compression(Compression::DEFLATE).build();
         CHECK(req->to_string() == "GET / HTTP/1.1\r\n"
         "\r\n");
-        CHECK((req->compression_mask() & compression::IDENTITY));
+        CHECK((req->allowed_compression() & Compression::IDENTITY));
     }
 
     SECTION("deflate (ingnored), gzip") {
         auto req = Request::Builder()
-                .allow_compression(compression::DEFLATE)
-                .allow_compression(compression::GZIP)
+                .allow_compression(Compression::DEFLATE)
+                .allow_compression(Compression::GZIP)
             .build();
         CHECK(req->to_string() == "GET / HTTP/1.1\r\n"
             "Accept-Encoding: gzip\r\n"
         "\r\n");
-        CHECK((req->compression_mask() & compression::GZIP));
-        CHECK((req->compression_mask() & compression::IDENTITY));
+        CHECK((req->allowed_compression() & Compression::GZIP));
+        CHECK((req->allowed_compression() & Compression::IDENTITY));
     }
 
     SECTION("deflate, gzip, gzip, gzip, gzip, gzip, gzip, gzip, gzip, identity") {
         auto req = Request::Builder()
-                .allow_compression(compression::GZIP)
-                .allow_compression(compression::GZIP)
-                .allow_compression(compression::GZIP)
-                .allow_compression(compression::GZIP)
-                .allow_compression(compression::GZIP)
-                .allow_compression(compression::GZIP)
-                .allow_compression(compression::GZIP)
-                .allow_compression(compression::GZIP)
-                .allow_compression(compression::GZIP)
-                .allow_compression(compression::IDENTITY)
+                .allow_compression(Compression::GZIP)
+                .allow_compression(Compression::GZIP)
+                .allow_compression(Compression::GZIP)
+                .allow_compression(Compression::GZIP)
+                .allow_compression(Compression::GZIP)
+                .allow_compression(Compression::GZIP)
+                .allow_compression(Compression::GZIP)
+                .allow_compression(Compression::GZIP)
+                .allow_compression(Compression::GZIP)
+                .allow_compression(Compression::IDENTITY)
             .build();
         CHECK(req->to_string() == "GET / HTTP/1.1\r\n"
             "Accept-Encoding: gzip, gzip, gzip, gzip, gzip, gzip, gzip\r\n"
@@ -77,7 +77,7 @@ TEST("gzip compression") {
             .method(Method::POST)
             .uri("http://crazypanda.ru/hello/world")
             .body("my body")
-            .compress(compression::GZIP)
+            .compress(Compression::GZIP)
             .build();
 
         auto data = req->to_string();
@@ -101,7 +101,7 @@ TEST("gzip compression") {
         auto result = p.parse(data);
         CHECK(result.state == State::done);
         CHECK(result.error.value() == 0);
-        CHECK(req->compressed == compression::GZIP);
+        CHECK(req->compression.type == Compression::GZIP);
         REQUIRE(req->body.to_string() == "my body");
     }
 
@@ -122,7 +122,7 @@ Nullam quis tempus lectus. Quisque purus est, venenatis at auctor a, laoreet in 
             .method(Method::POST)
             .uri("http://crazypanda.ru/hello/world")
             .body(body_sample)
-            .compress(compression::GZIP, compression::Level::optimal)
+            .compress(Compression::GZIP, Compression::Level::optimal)
             .build();
 
         auto data = req->to_string();
@@ -138,7 +138,7 @@ Nullam quis tempus lectus. Quisque purus est, venenatis at auctor a, laoreet in 
         auto result = p.parse(data);
         CHECK(result.state == State::done);
         CHECK(result.error.value() == 0);
-        CHECK(req->compressed == compression::GZIP);
+        CHECK(req->compression.type == Compression::GZIP);
         REQUIRE(req->body.to_string() == body_sample);
     }
 
@@ -153,7 +153,7 @@ Nullam quis tempus lectus. Quisque purus est, venenatis at auctor a, laoreet in 
         Body body;
         string body_concat;
         for(auto& it : body_raw) { body.parts.push_back(string(it)); body_concat += string(it); }
-        auto req = Request::Builder().method(Method::POST).body(std::move(body)).chunked().compress(compression::GZIP).build();
+        auto req = Request::Builder().method(Method::POST).body(std::move(body)).chunked().compress(Compression::GZIP).build();
         auto data = req->to_string();
         REQUIRE_THAT(data, StartsWith(
             "POST / HTTP/1.1\r\n"
@@ -165,7 +165,7 @@ Nullam quis tempus lectus. Quisque purus est, venenatis at auctor a, laoreet in 
         auto result = p.parse(data);
         CHECK(result.state == State::done);
         CHECK(result.error.value() == 0);
-        CHECK(req->compressed == compression::GZIP);
+        CHECK(req->compression.type == Compression::GZIP);
         REQUIRE(req->body.to_string() == body_concat);
     }
 }
@@ -173,13 +173,13 @@ Nullam quis tempus lectus. Quisque purus est, venenatis at auctor a, laoreet in 
 TEST("ignore compression in response if request didn't support it") {
     auto req = Request::Builder()
         .method(Method::GET)
-        .allow_compression(compression::IDENTITY)
+        .allow_compression(Compression::IDENTITY)
         .uri("/")
         .build();
 
     auto res = Response::Builder().code(200)
             .body("my body")
-            .compress(compression::GZIP)
+            .compress(Compression::GZIP)
             .build();
 
     auto data = res->to_string(req);
@@ -189,14 +189,14 @@ TEST("ignore compression in response if request didn't support it") {
 TEST("brotli is ignored if there is no plugin for it") {
     auto req = Request::Builder()
         .method(Method::GET)
-        .allow_compression(compression::IDENTITY)
-        .allow_compression(compression::BROTLI)
+        .allow_compression(Compression::IDENTITY)
+        .allow_compression(Compression::BROTLI)
         .uri("/")
         .build();
 
     auto res = Response::Builder().code(200)
             .body("my body")
-            .compress(compression::BROTLI)
+            .compress(Compression::BROTLI)
             .build();
 
     auto data = res->to_string(req);
@@ -204,26 +204,26 @@ TEST("brotli is ignored if there is no plugin for it") {
 }
 
 TEST("is_valid_compression") {
-    CHECK(compression::is_valid_compression(1) == true);
-    CHECK(compression::is_valid_compression(2) == true);
-    CHECK(compression::is_valid_compression(4) == true);
-    CHECK(compression::is_valid_compression(8) == true);
-    CHECK(compression::is_valid_compression(0) == false);
-    CHECK(compression::is_valid_compression(3) == false);
-    CHECK(compression::is_valid_compression(5) == false);
-    CHECK(compression::is_valid_compression(6) == false);
+    CHECK(is_valid_compression(1) == true);
+    CHECK(is_valid_compression(2) == true);
+    CHECK(is_valid_compression(4) == true);
+    CHECK(is_valid_compression(8) == true);
+    CHECK(is_valid_compression(0) == false);
+    CHECK(is_valid_compression(3) == false);
+    CHECK(is_valid_compression(5) == false);
+    CHECK(is_valid_compression(6) == false);
 }
 
 TEST("[SRV-1757] allow_compression accumulates identity") {
     auto req = Request::Builder()
         .method(Method::GET)
-        .allow_compression(compression::IDENTITY)
+        .allow_compression(Compression::IDENTITY)
         .uri("/")
         .build();
-    CHECK(req->compression_prefs != compression::IDENTITY);
+    CHECK(req->compression_prefs != Compression::IDENTITY);
     int count = 0;
     compression::for_each(req->compression_prefs, [&](auto val, bool neg){
-       if (val == static_cast<int>(compression::IDENTITY) && !neg) {
+       if (val == static_cast<int>(Compression::IDENTITY) && !neg) {
            ++count;
        }
     });

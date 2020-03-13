@@ -9,11 +9,9 @@ bool Message::keep_alive () const {
     else                    return !iequals(conn, "close");
 }
 
-compression::BodyGuard Message::maybe_compress() {
-    if (!compressor || body.parts.empty()) {
-        return compression::BodyGuard{};
-    }
-    compression::BodyGuard body_holder(&body);
+BodyGuard Message::maybe_compress () {
+    if (!compressor || body.parts.empty()) return {};
+    BodyGuard body_holder(&body);
 
     /* if it is chunked, it will be compressed a bit later */
     if (!chunked)  {
@@ -30,9 +28,9 @@ compression::BodyGuard Message::maybe_compress() {
     return body_holder;
 }
 
-string Message::to_string(const std::vector<string>& pieces) {
+string Message::to_string (const std::vector<string>& pieces) {
     string r;
-    for(auto piece: pieces) { r += piece; }
+    for (auto piece: pieces) { r += piece; }
     return r;
 }
 

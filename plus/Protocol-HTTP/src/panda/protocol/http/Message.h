@@ -2,9 +2,8 @@
 #include "Body.h"
 #include "error.h"
 #include "Headers.h"
-#include "compression/Compression.h"
+#include "BodyGuard.h"
 #include "compression/Compressor.h"
-#include "compression/BodyGuard.h"
 #include <array>
 #include <panda/refcnt.h>
 
@@ -12,18 +11,24 @@ namespace panda { namespace protocol { namespace http {
 
 enum class State {headers, body, chunk, chunk_body, chunk_trailer, done, error};
 
+using compression::Compression;
+using compression::is_valid_compression;
+
 struct Message : virtual Refcnt {
     template <class, class> struct Builder;
+    using wrapped_chunk = std::array<string, 3>;
 
     Headers headers;
     Body    body;
     bool    chunked      = false;
     int     http_version = 0;
 
-    using wrapped_chunk = std::array<string, 3>;
+    struct CompressionParams {
+        Compression::Type  type  = Compression::IDENTITY;
+        Compression::Level level = Compression::Level::min;
+    } compression;
+
     compression::CompressorPtr compressor;
-    compression::Compression compressed = compression::IDENTITY;
-    compression::Level level = compression::Level::min;
 
     Message () {}
 
@@ -59,23 +64,20 @@ struct Message : virtual Refcnt {
         }
     }
 
-    void compress(compression::Compression method, compression::Level level = compression::Level::min) {
-        this->compressed = method;
-        this->level = level;
+    void compress (Compression::Type type, Compression::Level level = Compression::Level::min) {
+        compression = CompressionParams{type, level};
     }
 
 protected:
-    static string to_string(const std::vector<string>& pieces);
+    static string to_string (const std::vector<string>& pieces);
 
-    inline void _content_encoding(compression::Compression applied_compression) {
-        using namespace compression;
-        if (!headers.has("Content-Encoding") && compressor) {
-            switch (applied_compression) {
-            case GZIP:    headers.add("Content-Encoding", "gzip");    break;
-            case DEFLATE: headers.add("Content-Encoding", "deflate"); break;
-            case BROTLI:  headers.add("Content-Encoding", "br");      break;
-            case IDENTITY: break;
-            }
+    inline void _content_encoding (Compression::Type applied_compression) {
+        if (headers.has("Content-Encoding") || !compressor) return;
+        switch (applied_compression) {
+            case Compression::GZIP    : headers.add("Content-Encoding", "gzip");    break;
+            case Compression::DEFLATE : headers.add("Content-Encoding", "deflate"); break;
+            case Compression::BROTLI  : headers.add("Content-Encoding", "br");      break;
+            default: break;
         }
     }
 
@@ -89,8 +91,8 @@ protected:
     }
 
     template <class T>
-    inline std::vector<string> _to_vector (compression::Compression applied_compression, const T& f) {
-        _prepare_compressor(applied_compression, level);
+    inline std::vector<string> _to_vector (Compression::Type applied_compression, const T& f) {
+        _prepare_compressor(applied_compression, compression.level);
         auto body_holder = maybe_compress();
         _compile_prepare();
         auto hdr = f();
@@ -113,31 +115,27 @@ protected:
     }
 
 private:
-    compression::BodyGuard maybe_compress();
+    BodyGuard maybe_compress();
 
     template<typename Fn>
-    inline void _append_chunk(wrapped_chunk chunk, Fn&& fn) {
+    inline void _append_chunk (wrapped_chunk chunk, Fn&& fn) {
         for (auto& piece : chunk) if (piece) { fn(piece); }
     }
 
     template<typename Fn>
-    inline void _serialize_body(Fn&& fn) {
+    inline void _serialize_body (Fn&& fn) {
         for (auto& part : body.parts) {
             _append_chunk(make_chunk(part), fn);
         }
         _append_chunk(final_chunk(), fn);
     }
 
-    inline void _prepare_compressor(compression::Compression applied_compression, compression::Level level) {
-        switch (applied_compression) {
-        case compression::IDENTITY: /* NOOP */ break;
-        default: {
-            auto it(compression::instantiate(applied_compression));
-            if (it) {
-                it->prepare_compress(level);
-                compressor = std::move(it);
-            }
-        }
+    inline void _prepare_compressor (Compression::Type applied_compression, Compression::Level level) {
+        if (applied_compression == Compression::IDENTITY) return;
+        auto it(compression::instantiate(applied_compression));
+        if (it) {
+            it->prepare_compress(level);
+            compressor = std::move(it);
         }
     }
 
@@ -180,7 +178,7 @@ struct Message::Builder {
         return self();
     }
 
-    T& compress(compression::Compression method, compression::Level level = compression::Level::min) {
+    T& compress (Compression::Type method, Compression::Level level = Compression::Level::min) {
         _message->compress(method, level);
         return self();
     }

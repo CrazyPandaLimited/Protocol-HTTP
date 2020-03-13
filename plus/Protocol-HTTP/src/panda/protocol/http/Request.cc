@@ -17,7 +17,7 @@ static inline string _method_str (Request::Method rm) {
     }
 }
 
-string Request::http_header (compression::Compression applied_compression) {
+string Request::http_header (Compression::Type applied_compression) {
     auto meth = _method_str(method);
     auto reluri  = uri ? uri->relative() : string("/");
     if (!http_version) http_version = 11;
@@ -36,17 +36,15 @@ string Request::http_header (compression::Compression applied_compression) {
         headers.add("Host", host);
     }
 
-    if (compression_prefs && compression_prefs != static_cast<compression::storage_t>(compression::IDENTITY) && !headers.has("Accept-Encoding")) {
+    if (compression_prefs && compression_prefs != static_cast<compression::storage_t>(Compression::IDENTITY) && !headers.has("Accept-Encoding")) {
         string comp_pos, comp_neg;
         int index_pos = 0, index_neg = 0;
         compression::for_each(compression_prefs, [&](auto value, bool negation){
             const char* val = nullptr;
             switch (value) {
-            using namespace compression;
-            case IDENTITY: /* skip */ return;
-            case DEFLATE:  /* skip */ return;
-            case GZIP:     val = "gzip";    break;
-            case BROTLI:   val = "br";      break;
+                case Compression::GZIP   : val = "gzip"; break;
+                case Compression::BROTLI : val = "br";   break;
+                default: return;
             }
             if (negation) {
                 if (index_neg) { comp_neg += ", "; }
@@ -98,8 +96,7 @@ string Request::http_header (compression::Compression applied_compression) {
 }
 
 std::vector<string> Request::to_vector () {
-    auto applied_compression = compressed;
-    return _to_vector(applied_compression, [this, applied_compression]{ return http_header(applied_compression); });
+    return _to_vector(compression.type, [this]{ return http_header(compression.type); });
 }
 
 bool Request::expects_continue () const {
@@ -107,7 +104,7 @@ bool Request::expects_continue () const {
     return false;
 }
 
-std::uint8_t Request::compression_mask(bool inverse) const noexcept {
+std::uint8_t Request::allowed_compression (bool inverse) const noexcept {
     std::uint8_t result = 0;
     compression::for_each(compression_prefs, [&](auto value, bool negation){
         if (inverse == negation) {
@@ -116,6 +113,5 @@ std::uint8_t Request::compression_mask(bool inverse) const noexcept {
     });
     return result;
 }
-
 
 }}}

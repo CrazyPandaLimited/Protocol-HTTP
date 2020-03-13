@@ -1,8 +1,7 @@
 #pragma once
+#include "Body.h"
 
-#include "../Body.h"
-
-namespace panda { namespace protocol { namespace http { namespace compression {
+namespace panda { namespace protocol { namespace http {
 
 struct BodyGuard {
     const static constexpr std::size_t body_size = sizeof (Body);
@@ -18,4 +17,4 @@ struct BodyGuard {
 };
 
 
-}}}}
+}}}

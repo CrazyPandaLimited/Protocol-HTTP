@@ -8,7 +8,6 @@ const char* ErrorCategory::name () const noexcept { return "protocol-http"; }
 
 std::string ErrorCategory::message (int condition) const noexcept {
     switch ((errc)condition) {
-        case errc::semantic_error                : return "http parsing semantic error";
         case errc::lexical_error                 : return "http parsing lexical error";
         case errc::multiple_content_length       : return "multiple content-length header in message is not allowed";
         case errc::headers_too_large             : return "headers is bigger than max_headers_size";

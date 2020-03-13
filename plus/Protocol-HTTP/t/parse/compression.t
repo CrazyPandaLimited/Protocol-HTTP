@@ -22,9 +22,9 @@ subtest "Accept-Encoding: gzip" => sub {
     is $req->method, Protocol::HTTP::Request::METHOD_GET;
     is $req->http_version, 10;
     is $req->uri, "/";
-    ok $req->allow_compression & Protocol::HTTP::Compression::gzip;
-    ok $req->allow_compression & Protocol::HTTP::Compression::identity;
-    is $req->compressed, Protocol::HTTP::Compression::identity;
+    ok $req->allowed_compression & Protocol::HTTP::Compression::gzip;
+    ok $req->allowed_compression & Protocol::HTTP::Compression::identity;
+    is $req->compression, Protocol::HTTP::Compression::identity;
 };
 
 subtest "missing Accept-Encoding" => sub {
@@ -38,8 +38,8 @@ subtest "missing Accept-Encoding" => sub {
 
     is $state, Protocol::HTTP::Message::STATE_DONE;
     ok !$err;
-    ok $req->allow_compression & Protocol::HTTP::Compression::identity;
-    is $req->compressed, Protocol::HTTP::Compression::identity;
+    ok $req->allowed_compression & Protocol::HTTP::Compression::identity;
+    is $req->compression, Protocol::HTTP::Compression::identity;
 };
 
 
@@ -77,7 +77,7 @@ subtest "gzip encoded" => sub {
 
     is $state, Protocol::HTTP::Message::STATE_DONE;
     ok !$err;
-    is $req->compressed, Protocol::HTTP::Compression::gzip;
+    is $req->compression, Protocol::HTTP::Compression::gzip;
 };
 
 done_testing;

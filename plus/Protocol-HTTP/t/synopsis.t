@@ -4,6 +4,8 @@ use warnings;
 use Test::More;
 use Test::Warnings;
 
+plan skip_all => "set TEST_FULL=1 to enable synopsises tests" unless $ENV{TEST_FULL};
+
 plan skip_all => 'Test::Synopsis::Expectation and File::Find::Rule required to test synopsises' unless eval {
     require Test::Synopsis::Expectation;
     Test::Synopsis::Expectation->import();

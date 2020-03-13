@@ -12,8 +12,8 @@ TEST("Accept-Encoding: gzip") {
     auto req = result.request;
     CHECK(result.state == State::done);
     CHECK(req->headers.get("Accept-Encoding") == "gzip");
-    CHECK((req->compression_mask() & compression::GZIP));
-    CHECK((req->compression_mask() & compression::IDENTITY));
+    CHECK((req->allowed_compression() & Compression::GZIP));
+    CHECK((req->allowed_compression() & Compression::IDENTITY));
 }
 
 TEST("Accept-Encoding: gzip;q=1.0") {
@@ -24,8 +24,8 @@ TEST("Accept-Encoding: gzip;q=1.0") {
     auto result = p.parse(raw);
     auto req = result.request;
     CHECK(result.state == State::done);
-    CHECK((req->compression_mask() & compression::GZIP));
-    CHECK((req->compression_mask() & compression::IDENTITY));
+    CHECK((req->allowed_compression() & Compression::GZIP));
+    CHECK((req->allowed_compression() & Compression::IDENTITY));
 }
 
 TEST("Accept-Encoding: gzip;q=0.002") {
@@ -36,8 +36,8 @@ TEST("Accept-Encoding: gzip;q=0.002") {
     auto result = p.parse(raw);
     auto req = result.request;
     CHECK(result.state == State::done);
-    CHECK((req->compression_mask() & compression::GZIP));
-    CHECK((req->compression_mask() & compression::IDENTITY));
+    CHECK((req->allowed_compression() & Compression::GZIP));
+    CHECK((req->allowed_compression() & Compression::IDENTITY));
 }
 
 TEST("Accept-Encoding: gzip;q=0.0") {
@@ -48,8 +48,8 @@ TEST("Accept-Encoding: gzip;q=0.0") {
     auto result = p.parse(raw);
     auto req = result.request;
     CHECK(result.state == State::done);
-    CHECK(!(req->compression_mask() & compression::GZIP));
-    CHECK((req->compression_mask() & compression::IDENTITY));
+    CHECK(!(req->allowed_compression() & Compression::GZIP));
+    CHECK((req->allowed_compression() & Compression::IDENTITY));
 }
 
 TEST("Accept-Encoding: gzip;q=0.000") {
@@ -60,8 +60,8 @@ TEST("Accept-Encoding: gzip;q=0.000") {
     auto result = p.parse(raw);
     auto req = result.request;
     CHECK(result.state == State::done);
-    CHECK(!(req->compression_mask() & compression::GZIP));
-    CHECK((req->compression_mask() & compression::IDENTITY));
+    CHECK(!(req->allowed_compression() & Compression::GZIP));
+    CHECK((req->allowed_compression() & Compression::IDENTITY));
 }
 
 TEST("Accept-Encoding: (empty)") {
@@ -72,7 +72,7 @@ TEST("Accept-Encoding: (empty)") {
     auto result = p.parse(raw);
     auto req = result.request;
     CHECK(result.state == State::done);
-    CHECK((req->compression_mask() == compression::IDENTITY));
+    CHECK((req->allowed_compression() == Compression::IDENTITY));
 }
 
 TEST("Accept-Encoding: gzip, deflate, br, *;q=0") {
@@ -83,9 +83,9 @@ TEST("Accept-Encoding: gzip, deflate, br, *;q=0") {
     auto result = p.parse(raw);
     auto req = result.request;
     CHECK(result.state == State::done);
-    CHECK((req->compression_mask() & compression::GZIP));
-    CHECK((req->compression_mask() & compression::DEFLATE));
-    CHECK((req->compression_mask() & compression::IDENTITY));
+    CHECK((req->allowed_compression() & Compression::GZIP));
+    CHECK((req->allowed_compression() & Compression::DEFLATE));
+    CHECK((req->allowed_compression() & Compression::IDENTITY));
 }
 
 
@@ -97,9 +97,9 @@ TEST("Accept-Encoding: gzip;q=1.0, deflate;q=0") {
     auto result = p.parse(raw);
     auto req = result.request;
     CHECK(result.state == State::done);
-    CHECK((req->compression_mask() & compression::GZIP));
-    CHECK(!(req->compression_mask() & compression::DEFLATE));
-    CHECK((req->compression_mask() & compression::IDENTITY));
+    CHECK((req->allowed_compression() & Compression::GZIP));
+    CHECK(!(req->allowed_compression() & Compression::DEFLATE));
+    CHECK((req->allowed_compression() & Compression::IDENTITY));
 }
 
 
@@ -111,9 +111,9 @@ TEST("Accept-Encoding: gzip;q=0.123, deflate;q=0.120") {
     auto result = p.parse(raw);
     auto req = result.request;
     CHECK(result.state == State::done);
-    CHECK((req->compression_mask() & compression::GZIP));
-    CHECK((req->compression_mask() & compression::DEFLATE));
-    CHECK((req->compression_mask() & compression::IDENTITY));
+    CHECK((req->allowed_compression() & Compression::GZIP));
+    CHECK((req->allowed_compression() & Compression::DEFLATE));
+    CHECK((req->allowed_compression() & Compression::IDENTITY));
 }
 
 /* CONTENT-ENCODING */
@@ -127,7 +127,7 @@ TEST("Content-Encoding: empty") {
     auto result = p.parse(raw);
     auto req = result.request;
     CHECK(result.state == State::done);
-    CHECK(req->compressed == compression::IDENTITY);
+    CHECK(req->compression.type == Compression::IDENTITY);
 }
 
 TEST("Content-Encoding: identity") {
@@ -140,7 +140,7 @@ TEST("Content-Encoding: identity") {
     auto result = p.parse(raw);
     auto req = result.request;
     CHECK(result.state == State::done);
-    CHECK(req->compressed == compression::IDENTITY);
+    CHECK(req->compression.type == Compression::IDENTITY);
 }
 
 TEST("Content-Encoding: gzip") {
@@ -153,7 +153,7 @@ TEST("Content-Encoding: gzip") {
     auto result = p.parse(raw);
     auto req = result.request;
     CHECK(result.state == State::done);
-    CHECK(req->compressed == compression::GZIP);
+    CHECK(req->compression.type == Compression::GZIP);
 }
 
 TEST("Content-Encoding: deflate") {
@@ -166,7 +166,7 @@ TEST("Content-Encoding: deflate") {
     auto result = p.parse(raw);
     auto req = result.request;
     CHECK(result.state == State::done);
-    CHECK(req->compressed == compression::DEFLATE);
+    CHECK(req->compression.type == Compression::DEFLATE);
 }
 
 TEST("Content-Encoding: rar") {
@@ -193,7 +193,7 @@ TEST("Content-Encoding: rar (disabled uncompression)") {
     auto result = p.parse(raw);
     auto req = result.request;
     CHECK(result.state == State::done);
-    CHECK(req->compressed == compression::IDENTITY);
+    CHECK(req->compression.type == Compression::IDENTITY);
 }
 
 TEST("Content-Encoding: gzip, identity") {
@@ -206,7 +206,7 @@ TEST("Content-Encoding: gzip, identity") {
     auto result = p.parse(raw);
     auto req = result.request;
     CHECK(result.state == State::done);
-    CHECK(req->compressed == compression::GZIP);
+    CHECK(req->compression.type == Compression::GZIP);
 }
 
 TEST("Content-Encoding: gzip, gzip") {
@@ -274,7 +274,7 @@ Content-Type: application/x-www-form-urlencoded
     auto req = result.request;
     CHECK(result.state == State::done);
     CHECK(result.error.value() == 0);
-    CHECK(req->compressed == compression::GZIP);
+    CHECK(req->compression.type == Compression::GZIP);
     REQUIRE(req->body.parts.size() == 1);
     CHECK(req->body.parts[0] == "Lorem ipsum dolor\n");
 
@@ -283,7 +283,7 @@ Content-Type: application/x-www-form-urlencoded
         auto req = result.request;
         CHECK(result.state == State::done);
         CHECK(result.error.value() == 0);
-        CHECK(req->compressed == compression::GZIP);
+        CHECK(req->compression.type == Compression::GZIP);
         REQUIRE(req->body.parts.size() == 1);
         CHECK(req->body.parts[0] == "Lorem ipsum dolor\n");
     }
@@ -324,7 +324,7 @@ TEST("request with corrupted gzip payload") {
     auto result = p.parse(raw);
     auto req = result.request;
     CHECK(result.state == State::error);
-    CHECK(req->compressed == compression::GZIP);
+    CHECK(req->compression.type == Compression::GZIP);
     CHECK(result.error == errc::uncompression_failure);
 }
 
@@ -363,7 +363,7 @@ TEST("request with redundant gzip payload") {
     auto result = p.parse(raw);
     auto req = result.request;
     CHECK(result.state == State::error);
-    CHECK(req->compressed == compression::GZIP);
+    CHECK(req->compression.type == Compression::GZIP);
     CHECK(result.error == errc::uncompression_failure);
 }
 
@@ -379,7 +379,7 @@ TEST("request with gzip payload (byte-by-byte consumption)") {
     auto req = result.request;
     CHECK(result.state == State::done);
     CHECK(result.error.value() == 0);
-    CHECK(req->compressed == compression::GZIP);
+    CHECK(req->compression.type == Compression::GZIP);
 
     string joined;
     for(auto& it: req->body.parts) { joined += it; }
@@ -420,7 +420,7 @@ TEST("request with gzip payload, no content-length") {
     auto result = p.parse(raw);
     auto res = result.response;
     CHECK(result.state == State::body);
-    CHECK(res->compressed == compression::GZIP);
+    CHECK(res->compression.type == Compression::GZIP);
     REQUIRE(res->body.parts.size() == 1);
     CHECK(res->body.parts[0] == "Lorem ipsum dolor\n");
     CHECK(p.eof().state == State::done);
@@ -459,7 +459,7 @@ TEST("request with gzip payload (max body size)") {
     auto result = p.parse(raw);
     auto req = result.request;
     CHECK(result.state == State::error);
-    CHECK(req->compressed == compression::GZIP);
+    CHECK(req->compression.type == Compression::GZIP);
     CHECK(result.error == errc::body_too_large);
 }
 
@@ -511,7 +511,7 @@ TEST("response with gzipped chunked response") {
     auto result = p.parse(raw);
     auto res = result.response;
     CHECK(result.state == State::done);
-    CHECK(res->compressed == compression::GZIP);
+    CHECK(res->compression.type == Compression::GZIP);
     REQUIRE(res->body.parts.size() == 1);
     CHECK(res->body.to_string() == "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
 }
@@ -564,6 +564,6 @@ TEST("response with corrupted gzipped chunked response") {
     auto result = p.parse(raw);
     auto res = result.response;
     CHECK(result.state == State::error);
-    CHECK(res->compressed == compression::GZIP);
+    CHECK(res->compression.type == Compression::GZIP);
     CHECK(result.error == errc::uncompression_failure);
 }

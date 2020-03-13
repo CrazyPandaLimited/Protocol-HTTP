@@ -274,8 +274,8 @@ tr56:
     }
 #line 94 "src/panda/protocol/http/MessageParser.rl"
 	{
-        if (message->compressed != compression::IDENTITY) {
-            auto it  = compression::instantiate(message->compressed);
+        if (message->compression.type != Compression::IDENTITY) {
+            auto it = compression::instantiate(message->compression.type);
             if (it) {
                 it->prepare_uncompress(max_body_size);
                 compressor = std::move(it);
@@ -304,7 +304,7 @@ tr59:
 #line 83 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::BROTLI; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::BROTLI; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -314,8 +314,8 @@ tr59:
     }
 #line 94 "src/panda/protocol/http/MessageParser.rl"
 	{
-        if (message->compressed != compression::IDENTITY) {
-            auto it  = compression::instantiate(message->compressed);
+        if (message->compression.type != Compression::IDENTITY) {
+            auto it = compression::instantiate(message->compression.type);
             if (it) {
                 it->prepare_uncompress(max_body_size);
                 compressor = std::move(it);
@@ -343,8 +343,8 @@ tr59:
 tr62:
 #line 94 "src/panda/protocol/http/MessageParser.rl"
 	{
-        if (message->compressed != compression::IDENTITY) {
-            auto it  = compression::instantiate(message->compressed);
+        if (message->compression.type != Compression::IDENTITY) {
+            auto it = compression::instantiate(message->compression.type);
             if (it) {
                 it->prepare_uncompress(max_body_size);
                 compressor = std::move(it);
@@ -373,7 +373,7 @@ tr75:
 #line 72 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::DEFLATE; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::DEFLATE; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -383,8 +383,8 @@ tr75:
     }
 #line 94 "src/panda/protocol/http/MessageParser.rl"
 	{
-        if (message->compressed != compression::IDENTITY) {
-            auto it  = compression::instantiate(message->compressed);
+        if (message->compression.type != Compression::IDENTITY) {
+            auto it = compression::instantiate(message->compression.type);
             if (it) {
                 it->prepare_uncompress(max_body_size);
                 compressor = std::move(it);
@@ -413,7 +413,7 @@ tr81:
 #line 61 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::GZIP; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::GZIP; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -423,8 +423,8 @@ tr81:
     }
 #line 94 "src/panda/protocol/http/MessageParser.rl"
 	{
-        if (message->compressed != compression::IDENTITY) {
-            auto it  = compression::instantiate(message->compressed);
+        if (message->compression.type != Compression::IDENTITY) {
+            auto it = compression::instantiate(message->compression.type);
             if (it) {
                 it->prepare_uncompress(max_body_size);
                 compressor = std::move(it);
@@ -1214,7 +1214,7 @@ tr58:
 #line 83 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::BROTLI; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::BROTLI; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -1227,7 +1227,7 @@ tr74:
 #line 72 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::DEFLATE; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::DEFLATE; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -1240,7 +1240,7 @@ tr80:
 #line 61 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::GZIP; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::GZIP; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -1268,7 +1268,7 @@ tr60:
 #line 83 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::BROTLI; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::BROTLI; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -1281,7 +1281,7 @@ tr76:
 #line 72 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::DEFLATE; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::DEFLATE; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -1294,7 +1294,7 @@ tr82:
 #line 61 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::GZIP; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::GZIP; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -3419,8 +3419,8 @@ tr322:
     }
 #line 94 "src/panda/protocol/http/MessageParser.rl"
 	{
-        if (message->compressed != compression::IDENTITY) {
-            auto it  = compression::instantiate(message->compressed);
+        if (message->compression.type != Compression::IDENTITY) {
+            auto it = compression::instantiate(message->compression.type);
             if (it) {
                 it->prepare_uncompress(max_body_size);
                 compressor = std::move(it);
@@ -3449,7 +3449,7 @@ tr325:
 #line 83 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::BROTLI; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::BROTLI; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -3459,8 +3459,8 @@ tr325:
     }
 #line 94 "src/panda/protocol/http/MessageParser.rl"
 	{
-        if (message->compressed != compression::IDENTITY) {
-            auto it  = compression::instantiate(message->compressed);
+        if (message->compression.type != Compression::IDENTITY) {
+            auto it = compression::instantiate(message->compression.type);
             if (it) {
                 it->prepare_uncompress(max_body_size);
                 compressor = std::move(it);
@@ -3488,8 +3488,8 @@ tr325:
 tr328:
 #line 94 "src/panda/protocol/http/MessageParser.rl"
 	{
-        if (message->compressed != compression::IDENTITY) {
-            auto it  = compression::instantiate(message->compressed);
+        if (message->compression.type != Compression::IDENTITY) {
+            auto it = compression::instantiate(message->compression.type);
             if (it) {
                 it->prepare_uncompress(max_body_size);
                 compressor = std::move(it);
@@ -3518,7 +3518,7 @@ tr341:
 #line 72 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::DEFLATE; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::DEFLATE; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -3528,8 +3528,8 @@ tr341:
     }
 #line 94 "src/panda/protocol/http/MessageParser.rl"
 	{
-        if (message->compressed != compression::IDENTITY) {
-            auto it  = compression::instantiate(message->compressed);
+        if (message->compression.type != Compression::IDENTITY) {
+            auto it = compression::instantiate(message->compression.type);
             if (it) {
                 it->prepare_uncompress(max_body_size);
                 compressor = std::move(it);
@@ -3558,7 +3558,7 @@ tr347:
 #line 61 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::GZIP; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::GZIP; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -3568,8 +3568,8 @@ tr347:
     }
 #line 94 "src/panda/protocol/http/MessageParser.rl"
 	{
-        if (message->compressed != compression::IDENTITY) {
-            auto it  = compression::instantiate(message->compressed);
+        if (message->compression.type != Compression::IDENTITY) {
+            auto it = compression::instantiate(message->compression.type);
             if (it) {
                 it->prepare_uncompress(max_body_size);
                 compressor = std::move(it);
@@ -3638,11 +3638,11 @@ tr395:
 	goto st145;
 tr229:
 #line 129 "src/panda/protocol/http/MessageParser.rl"
-	{compr = compression::GZIP | compression::DEFLATE; }
+	{compr = Compression::GZIP | Compression::DEFLATE; }
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
@@ -3662,11 +3662,11 @@ tr229:
 	goto st145;
 tr243:
 #line 126 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = compression::BROTLI;  }
+	{ compr = Compression::BROTLI;  }
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
@@ -3690,7 +3690,7 @@ tr251:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
@@ -3712,7 +3712,7 @@ tr262:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
@@ -3732,11 +3732,11 @@ tr262:
 	goto st145;
 tr282:
 #line 125 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = compression::DEFLATE;  }
+	{ compr = Compression::DEFLATE;  }
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
@@ -3756,11 +3756,11 @@ tr282:
 	goto st145;
 tr289:
 #line 124 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = compression::GZIP;     }
+	{ compr = Compression::GZIP;     }
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
@@ -4439,22 +4439,22 @@ case 167:
 	goto st150;
 tr228:
 #line 129 "src/panda/protocol/http/MessageParser.rl"
-	{compr = compression::GZIP | compression::DEFLATE; }
+	{compr = Compression::GZIP | Compression::DEFLATE; }
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
 	goto st168;
 tr242:
 #line 126 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = compression::BROTLI;  }
+	{ compr = Compression::BROTLI;  }
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
@@ -4463,29 +4463,29 @@ tr274:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
 	goto st168;
 tr281:
 #line 125 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = compression::DEFLATE;  }
+	{ compr = Compression::DEFLATE;  }
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
 	goto st168;
 tr288:
 #line 124 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = compression::GZIP;     }
+	{ compr = Compression::GZIP;     }
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
@@ -4508,22 +4508,22 @@ case 168:
 	goto st150;
 tr230:
 #line 129 "src/panda/protocol/http/MessageParser.rl"
-	{compr = compression::GZIP | compression::DEFLATE; }
+	{compr = Compression::GZIP | Compression::DEFLATE; }
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
 	goto st169;
 tr244:
 #line 126 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = compression::BROTLI;  }
+	{ compr = Compression::BROTLI;  }
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
@@ -4534,7 +4534,7 @@ tr252:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
@@ -4543,29 +4543,29 @@ tr263:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
 	goto st169;
 tr283:
 #line 125 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = compression::DEFLATE;  }
+	{ compr = Compression::DEFLATE;  }
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
 	goto st169;
 tr290:
 #line 124 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = compression::GZIP;     }
+	{ compr = Compression::GZIP;     }
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
@@ -4630,19 +4630,19 @@ case 171:
 	goto st150;
 tr231:
 #line 129 "src/panda/protocol/http/MessageParser.rl"
-	{compr = compression::GZIP | compression::DEFLATE; }
+	{compr = Compression::GZIP | Compression::DEFLATE; }
 	goto st172;
 tr245:
 #line 126 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = compression::BROTLI;  }
+	{ compr = Compression::BROTLI;  }
 	goto st172;
 tr284:
 #line 125 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = compression::DEFLATE;  }
+	{ compr = Compression::DEFLATE;  }
 	goto st172;
 tr291:
 #line 124 "src/panda/protocol/http/MessageParser.rl"
-	{ compr = compression::GZIP;     }
+	{ compr = Compression::GZIP;     }
 	goto st172;
 st172:
 	if ( ++p == pe )
@@ -4711,7 +4711,7 @@ tr250:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
@@ -4720,7 +4720,7 @@ tr261:
 #line 114 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
@@ -5919,7 +5919,7 @@ tr324:
 #line 83 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::BROTLI; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::BROTLI; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -5932,7 +5932,7 @@ tr340:
 #line 72 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::DEFLATE; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::DEFLATE; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -5945,7 +5945,7 @@ tr346:
 #line 61 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::GZIP; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::GZIP; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -5973,7 +5973,7 @@ tr326:
 #line 83 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::BROTLI; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::BROTLI; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -5986,7 +5986,7 @@ tr342:
 #line 72 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::DEFLATE; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::DEFLATE; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -5999,7 +5999,7 @@ tr348:
 #line 61 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::GZIP; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::GZIP; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);

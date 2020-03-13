@@ -5,11 +5,9 @@
 #include "panda/string.h"
 #include "../Body.h"
 
-
 namespace panda { namespace protocol { namespace http { namespace compression {
 
 enum class Mode { none = 0, compress, uncompress };
-enum class Level { min = 0, optimal, max };
 
 struct Compressor {
     static const constexpr std::size_t RX_BUFF_SCALE = 10;
@@ -20,7 +18,7 @@ struct Compressor {
     Compressor(Compressor&& ) = delete;
 
     virtual void prepare_uncompress(size_t& max_body_size) noexcept = 0;
-    virtual void prepare_compress(Level level) noexcept = 0;
+    virtual void prepare_compress(Compression::Level level) noexcept = 0;
     virtual void reset() noexcept = 0;
 
     virtual std::error_code uncompress(const string& piece, Body& body) noexcept = 0;
@@ -40,8 +38,8 @@ protected:
 using CompressorFactory = Compressor*(*)();
 using CompressorPtr = std::unique_ptr<Compressor>;
 
-bool register_factory(Compression compression, const CompressorFactory& factory);
-CompressorPtr instantiate(Compression compression) noexcept;
+bool register_factory(Compression::Type compression, const CompressorFactory& factory);
+CompressorPtr instantiate(Compression::Type compression) noexcept;
 
 
 }}}};

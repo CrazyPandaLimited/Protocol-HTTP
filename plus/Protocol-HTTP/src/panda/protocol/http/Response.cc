@@ -57,7 +57,7 @@ string Response::Cookie::to_string (const string& name, const Request* req) cons
     return str;
 }
 
-string Response::_http_header (const Request* req, compression::Compression applied_compression) {
+string Response::_http_header (const Request* req, Compression::Type applied_compression) {
     if (!code) code = 200;
 
     if (req) {
@@ -100,10 +100,10 @@ string Response::_http_header (const Request* req, compression::Compression appl
 
 std::vector<string> Response::to_vector (const Request* req) {
     /* if client didn't announce Accept-Encoding or we do not support it, just pass data as it is */
-    compression::Compression applied_compression
-            = req && (compressed != compression::IDENTITY) && (req->compression_mask() & static_cast<std::uint8_t>(compressed))
-            ? compressed
-            : compression::IDENTITY;
+    auto applied_compression
+            = req && (compression.type != Compression::IDENTITY) && (req->allowed_compression() & (uint8_t)compression.type)
+            ? compression.type
+            : Compression::IDENTITY;
 
     return _to_vector(applied_compression, [&]{ return _http_header(req,  applied_compression); });
 }

@@ -1,6 +1,6 @@
 #include "BodyGuard.h"
 
-namespace panda { namespace protocol { namespace http { namespace compression {
+namespace panda { namespace protocol { namespace http {
 
 BodyGuard::BodyGuard(Body *source):original{source} {
     new(body_copy)Body(*source);
@@ -27,4 +27,4 @@ BodyGuard::~BodyGuard() {
     }
 }
 
-}}}}
+}}}

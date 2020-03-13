@@ -33,7 +33,7 @@ struct Request : Message, AllocatedObject<Request> {
     URISP   uri;
     Cookies cookies;
 
-    compression::storage_t compression_prefs = compression::IDENTITY;
+    compression::storage_t compression_prefs = Compression::IDENTITY;
 
     Request () {}
 
@@ -46,36 +46,31 @@ struct Request : Message, AllocatedObject<Request> {
 
     std::vector<string> to_vector ();
     string              to_string () { return Message::to_string(to_vector()); }
-    std::uint8_t        compression_mask(bool inverse = false) const noexcept;
 
     virtual ResponseSP new_response () const { return make_iptr<Response>(); }
 
 
-    template<typename... PrefN>
-    void allow_compression(PrefN... prefn) {
+    template <typename...PrefN>
+    void allow_compression (PrefN... prefn) {
         return _allow_compression(prefn...);
     }
 
+    std::uint8_t allowed_compression (bool inverse = false) const noexcept;
+
 protected:
     template<typename... PrefN>
-    void _allow_compression(compression::Compression p, PrefN... prefn) {
-        bool ok = compression::pack(this->compression_prefs, p);
-        if (ok) {
-            return _allow_compression(prefn...);
-        } else {
-            // NOOP: just ignore
-        }
+    void _allow_compression (Compression::Type p, PrefN... prefn) {
+        compression::pack(this->compression_prefs, p);
+        return _allow_compression(prefn...);
     }
-    void _allow_compression() {  }
+    void _allow_compression () {}
 
-
-protected:
     ~Request () {} // restrict stack allocation
 
 private:
     friend struct RequestParser;
 
-    string http_header (compression::Compression applied_compression);
+    string http_header (Compression::Type applied_compression);
 };
 using RequestSP = iptr<Request>;
 

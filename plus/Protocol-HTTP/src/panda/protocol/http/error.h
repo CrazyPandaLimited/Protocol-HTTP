@@ -5,8 +5,7 @@
 namespace panda { namespace protocol { namespace http {
 
 enum class errc {
-    semantic_error = 1,
-    lexical_error,
+    lexical_error = 1,
     multiple_content_length,
     headers_too_large,
     body_too_large,

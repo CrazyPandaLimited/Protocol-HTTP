@@ -60,7 +60,7 @@
 
     action content_gziped {
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::GZIP; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::GZIP; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -71,7 +71,7 @@
 
     action content_deflated {
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::DEFLATE; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::DEFLATE; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -82,7 +82,7 @@
 
     action content_brotlied {
         if (uncompress_content) {
-            if (message->compressed == compression::IDENTITY) { message->compressed = compression::BROTLI; }
+            if (message->compression.type == Compression::IDENTITY) { message->compression.type = Compression::BROTLI; }
             else {
                 cs = message_parser_error;
                 set_error(errc::unsupported_compression);
@@ -92,8 +92,8 @@
     }
 
     action attach_compressor {
-        if (message->compressed != compression::IDENTITY) {
-            auto it  = compression::instantiate(message->compressed);
+        if (message->compression.type != Compression::IDENTITY) {
+            auto it = compression::instantiate(message->compression.type);
             if (it) {
                 it->prepare_uncompress(max_body_size);
                 compressor = std::move(it);
@@ -113,7 +113,7 @@
 
     action push_compression {
         if (compr) {
-            request->allow_compression(static_cast<compression::Compression>(compr));
+            request->allow_compression(static_cast<Compression::Type>(compr));
             compr = 0;
         }
     }
@@ -121,12 +121,12 @@
     http_version  = "HTTP/1." (("0" %{message->http_version = 10;}) | ("1" %{message->http_version = 11;}));
     
     ################################## ACCEPT-ENCODING ################################
-    encoding_gzip     = /gzip/     %{ compr = compression::GZIP;     };
-    encoding_deflate  = /deflate/  %{ compr = compression::DEFLATE;  };
-    encoding_br       = /br/       %{ compr = compression::BROTLI;  };
+    encoding_gzip     = /gzip/     %{ compr = Compression::GZIP;     };
+    encoding_deflate  = /deflate/  %{ compr = Compression::DEFLATE;  };
+    encoding_br       = /br/       %{ compr = Compression::BROTLI;  };
     encoding_identity = /identity/;
     encoding_compress = /compress/;
-    encoding_any      = "*" %{compr = compression::GZIP | compression::DEFLATE; };
+    encoding_any      = "*" %{compr = Compression::GZIP | Compression::DEFLATE; };
     some_enconding    = encoding_identity | encoding_deflate | encoding_gzip | encoding_compress | encoding_br | encoding_any;
     q_not             = "0" ("." ("0"){,3})? %{ compr = 0; };
     q_any             = ("1" ("." ("0"){,3})?) | ("0" ("." digit{1,3})? );
