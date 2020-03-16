@@ -102,7 +102,7 @@ string Request::http_header (Compression::Type applied_compression) const {
     if (sz_host) {
         s += "Host: " ;
         s += uri->host();
-        if (sz_host_port) s += panda::to_string(uri->port());
+        if (sz_host_port) { s+= ":";  s += panda::to_string(uri->port()); }
         s += "\r\n";
     };
 

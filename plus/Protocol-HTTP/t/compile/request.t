@@ -10,7 +10,7 @@ catch_run('[compile-request]');
 subtest 'basic' => sub {
     my $req = Protocol::HTTP::Request->new({
         method       => METHOD_GET,
-        uri          => "http://crazypanda.ru/hello/world",
+        uri          => "http://crazypanda.ru:12345/hello/world",
         http_version => 10,
         headers      => {MyHeader => "my value"},
         body         => "my body",
@@ -18,7 +18,7 @@ subtest 'basic' => sub {
     
     is $req->to_string,
         "GET /hello/world HTTP/1.0\r\n".
-        "Host: crazypanda.ru\r\n".
+        "Host: crazypanda.ru:12345\r\n".
         "Content-Length: 7\r\n".
         "MyHeader: my value\r\n".
         "\r\n".
