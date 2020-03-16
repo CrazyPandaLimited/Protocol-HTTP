@@ -75,16 +75,14 @@ TEST("gzip compression") {
     SECTION("small body") {
         auto req = Request::Builder()
             .method(Method::POST)
-            .uri("http://crazypanda.ru/hello/world")
             .body("my body")
             .compress(Compression::GZIP)
             .build();
 
         auto data = req->to_string();
         REQUIRE_THAT(data, StartsWith(
-            "POST /hello/world HTTP/1.1\r\n"
+            "POST / HTTP/1.1\r\n"
             "Content-Length: 27\r\n"
-            "Host: crazypanda.ru\r\n"
             "Content-Encoding: gzip\r\n"
             "\r\n"
         ));
@@ -120,16 +118,14 @@ Nullam quis tempus lectus. Quisque purus est, venenatis at auctor a, laoreet in 
         string body_sample(body_raw);
         auto req = Request::Builder()
             .method(Method::POST)
-            .uri("http://crazypanda.ru/hello/world")
             .body(body_sample)
             .compress(Compression::GZIP, Compression::Level::optimal)
             .build();
 
         auto data = req->to_string();
         REQUIRE_THAT(data, StartsWith(
-            "POST /hello/world HTTP/1.1\r\n"
+            "POST / HTTP/1.1\r\n"
             "Content-Length: 1483\r\n"
-            "Host: crazypanda.ru\r\n"
             "Content-Encoding: gzip\r\n"
             "\r\n"
         ));
@@ -157,8 +153,8 @@ Nullam quis tempus lectus. Quisque purus est, venenatis at auctor a, laoreet in 
         auto data = req->to_string();
         REQUIRE_THAT(data, StartsWith(
             "POST / HTTP/1.1\r\n"
-            "Transfer-Encoding: chunked\r\n"
             "Content-Encoding: gzip\r\n"
+            "Transfer-Encoding: chunked\r\n"
             "\r\n"
         ));
         RequestParser p;

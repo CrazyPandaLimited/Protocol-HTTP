@@ -238,3 +238,58 @@ void bench_res_heavy_headers () {
         p.eof();
     }
 }
+
+
+void bench_serialize_req_mid() {
+    string s;
+    URISP uri = new URI("http://alx3apps.appspot.com");
+    for (size_t i = 0; i < 1000; ++i) {
+        auto req = Request::Builder()
+                .uri(uri)
+                .headers(Headers()
+                    .add("MyHeader", "my value")
+                    .add("User-Agent", "Mozilla/5.0(Windows;U;WindowsNT6.1;en-GB;rv:1.9.2.13)Gecko/20101203Firefox/3.6.13")
+                    .add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n")
+                    .add("Accept-Language", "my value"))
+               .allow_compression(Compression::GZIP)
+               .body("zzz")
+               .build();
+        s += req->to_string();
+        s.length(0);
+    }
+}
+
+void bench_serialize_res_mid() {
+    string s;
+    auto req = Request::Builder().build();
+
+    Response::Cookie coo1("v1");
+    Response::Cookie coo2("v1");
+
+    for (size_t i = 0; i < 1000; ++i) {
+        auto res = Response::Builder()
+                .headers(Headers()
+                    .connection("keep-alive")
+                    .add("MyHeader", "my value")
+                    .add("MyHeader1", "my value1")
+                    .add("MyHeader2", "my value2")
+                )
+                .cookie("c1", Response::Cookie("abcdef").domain("crazypanda.ru").max_age(1000).path("/").http_only(true))
+                .cookie("c2", Response::Cookie("defjgl").domain("crazypanda.ru").max_age(1000).path("/").http_only(true).secure(true))
+                .body("hello")
+                .build();
+        auto req = Request::Builder()
+                .headers(Headers()
+                    .add("MyHeader", "my value")
+                    .add("User-Agent", "Mozilla/5.0(Windows;U;WindowsNT6.1;en-GB;rv:1.9.2.13)Gecko/20101203Firefox/3.6.13")
+                    .add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n")
+                    .add("Accept-Language", "my value"))
+               .allow_compression(Compression::GZIP)
+               .body("zzz")
+               .build();
+        s += res->to_string(req);
+        s.length(0);
+    }
+}
+
+

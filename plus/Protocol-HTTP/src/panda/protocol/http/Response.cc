@@ -20,81 +20,117 @@ optional<date::Date> Response::Cookie::expires_any () const {
 
 string Response::Cookie::to_string (const string& name, const Request* req) const {
     string str(200); // should be enough for average set-cookie header
-    str += name;
-    str += '=';
-    str += _value;
-
-    const string& domain = !_domain && req ? req->headers.get("Host") : _domain;
-    if (domain) {
-        str += "; Domain=";
-        str += domain;
-    }
-
-    if (_path) {
-        str += "; Path=";
-        str += _path;
-    }
-
-    if (_max_age) {
-        str += "; Max-Age=";
-        str += panda::to_string(_max_age);
-    }
-    else if (_expires) {
-        str += "; Expires=";
-        str += _expires;
-    }
-
-    if (_secure)    str += "; Secure";
-    if (_http_only) str += "; HttpOnly";
-
-    switch (_same_site) {
-        case SameSite::None   : str += "; SameSite=None"; break;
-        case SameSite::Lax    : str += "; SameSite=Lax";  break;
-        case SameSite::Strict : str += "; SameSite";      break;
-        default               : {}
-    }
-
+    serialize_to(str, name, req);
     return str;
 }
 
-string Response::_http_header (const Request* req, Compression::Type applied_compression) {
-    if (!code) code = 200;
+void Response::Cookie::serialize_to (string& acc, const string& name, const Request* req) const {
+    acc += name;
+    acc += '=';
+    acc += _value;
 
+    const string& domain = !_domain && req ? req->headers.get("Host") : _domain;
+    if (domain) {
+        acc += "; Domain=";
+        acc += domain;
+    }
+
+    if (_path) {
+        acc += "; Path=";
+        acc += _path;
+    }
+
+    if (_max_age) {
+        acc += "; Max-Age=";
+        acc += panda::to_string(_max_age);
+    }
+    else if (_expires) {
+        acc += "; Expires=";
+        acc += _expires;
+    }
+
+    if (_secure)    acc += "; Secure";
+    if (_http_only) acc += "; HttpOnly";
+
+    switch (_same_site) {
+        case SameSite::None   : acc += "; SameSite=None"; break;
+        case SameSite::Lax    : acc += "; SameSite=Lax";  break;
+        case SameSite::Strict : acc += "; SameSite";      break;
+        default               : {}
+    }
+}
+
+string Response::_http_header (const Request* req, Compression::Type applied_compression) const {
+    //part 1: precalc pieces
+    auto tmp_http_ver = this->http_version;
+    auto tmp_code = code ? code : 200;
+
+    auto out_connection = headers.get("Connection");
     if (req) {
-        if (!http_version) http_version = req->http_version;
+        if (!tmp_http_ver) tmp_http_ver = req->http_version;
 
         if (req->keep_alive()) { // user can change connection to 'close'
-            if (http_version == 10 && !headers.has("Connection")) headers.add("Connection", "keep-alive");
+            if (tmp_http_ver == 10 && !out_connection) out_connection = "keep-alive";
         }
         else { // user can not change connection to 'keep-alive'
-            if (http_version == 10) headers.remove("Connection");
-            else                    headers.set("Connection", "close");
+            if (tmp_http_ver == 10) out_connection = "";
+            else                    out_connection = "close";
         }
     }
 
-    if (!message) message = message_for_code(code);
+    auto out_mesasge = message ? message : message_for_code(tmp_code);
 
-    if (!chunked && !headers.has("Content-Length")) headers.add("Content-Length", panda::to_string(body.length()));
-    _content_encoding(applied_compression);
+    string out_content_length;
+    if (!chunked && !headers.has("Content-Length")) {
+        out_content_length = panda::to_string(body.length());
+    }
 
-    for (const auto& item : cookies.fields) headers.add("Set-Cookie", item.value.to_string(item.name, req));
+    auto out_content_encoding = _content_encoding(applied_compression);
 
-    string s(5 + 4 + 4 + message.length() + 2 + headers.length() + 2);
+    // part 2: summarize pieces size
+    size_t reserved = 5 + 4 + 4 + out_mesasge.length() + 2 + headers.length() + 2;
+    if (out_connection)       reserved += 10 + 2 + out_connection.length()       + 2;
+    if (out_content_length)   reserved += 14 + 2 + out_content_length.length()   + 2;
+    if (out_content_encoding) reserved += 16 + 2 + out_content_encoding.length() + 2;
 
+    for (auto& h: headers) {
+        if (h.name == "Connection") continue; // already handled
+        reserved += h.name.length() + 2 + h.value.length() + 2;
+    };
+    reserved += (200 + 14) * cookies.fields.size(); // should be enough for average set-cookie header
+    reserved += 2;
+
+    // part 3: write out pieces
+    string s(reserved);
     s += "HTTP/";
-    switch (http_version) {
+    switch (tmp_http_ver) {
         case 0:
         case 11: s += "1.1 "; break;
         case 10: s += "1.0 "; break;
         default: assert(false && "invalid http version");
     }
-    s += panda::to_string(code);
+    s += panda::to_string(tmp_code);
     s += ' ';
-    s += message;
-    s += "\r\n";
-    headers.write(s);
+    s += out_mesasge;
     s += "\r\n";
 
+    if (out_connection)       { s += "Connection: "      ; s += out_connection      ; s += "\r\n" ;};
+    if (out_content_length)   { s += "Content-Length: "  ; s += out_content_length  ; s += "\r\n" ;};
+    if (out_content_encoding) { s += "Content-Encoding: "; s += out_content_encoding; s += "\r\n" ;};
+
+    for (auto& h: headers)  {
+        if (h.name == "Connection") continue; // already handled
+        s += h.name; s += ": "; s += h.value; s+= "\r\n";
+    };
+    for (auto& c: cookies.fields) {
+        s += "Set-Cookie: ";
+        c.value.serialize_to(s, c.name, req);
+        s += "\r\n";
+    }
+
+    s += "\r\n";
+
+    //assert(reserved >= s.length());
     return s;
 }
 

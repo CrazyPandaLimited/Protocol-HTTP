@@ -17,9 +17,9 @@ subtest 'basic' => sub {
     
     is $res->to_string,
         "HTTP/1.1 500 epta\r\n".
+        "Content-Length: 5\r\n".
         "a: 1\r\n".
         "b: 2\r\n".
-        "Content-Length: 5\r\n".
         "\r\n".
         "hello"
     ;

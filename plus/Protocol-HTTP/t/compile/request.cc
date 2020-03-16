@@ -69,9 +69,9 @@ TEST("example") {
 
     CHECK(req->to_string() ==
         "POST /hello/world HTTP/1.0\r\n"
-        "MyHeader: my value\r\n"
-        "Content-Length: 7\r\n"
         "Host: crazypanda.ru\r\n"
+        "Content-Length: 7\r\n"
+        "MyHeader: my value\r\n"
         "\r\n"
         "my body"
     );

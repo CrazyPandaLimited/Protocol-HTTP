@@ -71,14 +71,17 @@ struct Message : virtual Refcnt {
 protected:
     static string to_string (const std::vector<string>& pieces);
 
-    inline void _content_encoding (Compression::Type applied_compression) {
-        if (headers.has("Content-Encoding") || !compressor) return;
-        switch (applied_compression) {
-            case Compression::GZIP    : headers.add("Content-Encoding", "gzip");    break;
-            case Compression::DEFLATE : headers.add("Content-Encoding", "deflate"); break;
-            case Compression::BROTLI  : headers.add("Content-Encoding", "br");      break;
-            default: break;
+    inline string _content_encoding(Compression::Type applied_compression) const noexcept {
+        string out_compression;
+        if (!headers.has("Content-Encoding") && compressor) {
+            switch (applied_compression) {
+            case Compression::GZIP:    out_compression = "gzip";    break;
+            case Compression::DEFLATE: out_compression = "deflate"; break;
+            case Compression::BROTLI:  out_compression = "br";      break;
+            case Compression::IDENTITY: break;
+            }
         }
+        return out_compression;
     }
 
     inline void _compile_prepare () {
@@ -89,6 +92,7 @@ protected:
         }
         // content-length logic is in request/response because it slightly differs
     }
+
 
     template <class T>
     inline std::vector<string> _to_vector (Compression::Type applied_compression, const T& f) {

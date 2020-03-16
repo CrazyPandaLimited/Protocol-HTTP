@@ -18,9 +18,9 @@ subtest 'basic' => sub {
     
     is $req->to_string,
         "GET /hello/world HTTP/1.0\r\n".
-        "MyHeader: my value\r\n".
-        "Content-Length: 7\r\n".
         "Host: crazypanda.ru\r\n".
+        "Content-Length: 7\r\n".
+        "MyHeader: my value\r\n".
         "\r\n".
         "my body"
     ;
@@ -49,5 +49,22 @@ subtest "method string" => sub {
     });
     is $req->method_str, 'GET';
 };
+
+subtest "bugfix: MEIACORE-1000, no double cookeis on output " => sub {
+
+    my $req = Protocol::HTTP::Request->new({
+        method  => METHOD_GET,
+        cookies => { foo => '123' },
+    });
+    my $expected =
+        "GET / HTTP/1.1\r\n".
+        "Cookie: foo=123\r\n".
+        "\r\n"
+        ;
+    is $req->to_string, $expected;
+    is $req->to_string, $expected;
+};
+
+
 
 done_testing();

@@ -40,15 +40,6 @@ struct Headers : Fields<string, false, 15> {
     Headers&& chunked         () &&                       { return std::move(*this).add("Transfer-Encoding", "chunked"); }
     Headers&  expect_continue () &                        { return add("Expect", "100-continue"); }
     Headers&& expect_continue () &&                       { return std::move(*this).add("Expect", "100-continue"); }
-
-    void write (string& s) {
-        for (auto& field : fields) {
-            s += field.name;
-            s += ": ";
-            s += field.value;
-            s += "\r\n";
-        }
-    }
 };
 
 }}}
