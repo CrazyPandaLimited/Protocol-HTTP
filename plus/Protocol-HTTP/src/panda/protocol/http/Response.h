@@ -29,6 +29,7 @@ struct Response : Message, AllocatedObject<Response> {
         optional<Date> expires     () const { if (!_expires) return {}; return Date(_expires); }
         bool           secure      () const { return _secure; }
         bool           http_only   () const { return _http_only; }
+        bool           session     () const { return !(_max_age || _expires);  }
         SameSite       same_site   () const { return _same_site; }
         int64_t        max_age_any () const;
         optional<Date> expires_any () const;
