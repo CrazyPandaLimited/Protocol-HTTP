@@ -17,11 +17,12 @@ TEST("add cookie") {
     coo.domain("crazypanda.ru");
     coo.path("/p");
 
-    SECTION("no domain -> ignored") {
+    SECTION("no domain -> get it from origin") {
         coo.domain("");
         coo.path("/p");
         jar.add("k", coo, origin);
-        CHECK(dc.size() == 0);
+        CHECK(dc.size() == 1);
+        CHECK(dc[".www.perl.org"][0].host_only() == true);
     }
 
     SECTION("session cookie is added") {
@@ -247,5 +248,60 @@ TEST("find/match cookie") {
         }
     }
 
-    // check session cookies
+    SECTION("session cookies") {
+        CookieJar jar("");
+        Response::Cookie coo1("v1");
+        coo1.domain("crazypanda.ru");
+        coo1.path("/p1");
+        jar.add("k1", coo1, origin);
+        auto cookies = jar.find(URISP{new URI("https://games.crazypanda.ru/")});
+        REQUIRE(cookies.size() == 1);
+    }
+
+    SECTION("host-only cookies (missing domain)") {
+        CookieJar jar("");
+        auto origin = URISP{new URI("https://ya.ru/")};
+        Response::Cookie coo1("v1");
+        jar.add("k1", coo1, origin);
+        auto cookies = jar.find(origin);
+        REQUIRE(cookies.size() == 1);
+
+        cookies = jar.find(URISP{new URI("https://www.ya.ru/")});
+        REQUIRE(cookies.size() == 0);
+    }
+}
+
+TEST("request collection") {
+    CookieJar jar("");
+
+    auto req = Request::Builder().uri("http://games.crazypanda.ru/hello/world").build();
+    auto res = Response::Builder()
+            .cookie("c1", Response::Cookie("v1"))
+            .cookie("c2", Response::Cookie("v2").domain("crazypanda.ru").path("/hi"))
+            .cookie("c3", Response::Cookie("v3").domain("google.com"))
+            .build();
+
+
+    SECTION("same origin -> 2 cookies") {
+        jar.collect(*res, *req);
+        auto cookies = jar.find(URISP{new URI("http://games.crazypanda.ru")});
+        REQUIRE(cookies.size() == 2);
+        CHECK(cookies[0].name() == "c1");
+        CHECK(cookies[1].name() == "c2");
+    }
+
+    SECTION("differnt subdomain -> 1 cookie") {
+        jar.collect(*res, *req);
+        auto cookies = jar.find(URISP{new URI("http://ww.games.crazypanda.ru")});
+        REQUIRE(cookies.size() == 1);
+        CHECK(cookies[0].name() == "c2");
+    }
+
+    SECTION("ignore predicate ") {
+        jar.set_ignore([](auto&){ return true; });
+        jar.collect(*res, *req);
+        auto cookies = jar.find(URISP{new URI("http://games.crazypanda.ru")});
+        REQUIRE(cookies.size() == 0);
+    }
+
 }

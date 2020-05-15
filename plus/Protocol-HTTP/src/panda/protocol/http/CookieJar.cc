@@ -32,6 +32,21 @@ CookieJar::Cookie::Cookie(const string& name, const Response::Cookie& original, 
     */
     if (!path()) { path(origin->path()); }
 
+    /* rfc6265
+     If the server omits the Domain attribute, the user
+     agent will return the cookie only to the origin server.
+
+      WARNING: Some existing user agents treat an absent Domain
+      attribute as if the Domain attribute were present and contained
+      the current host name.  For example, if example.com returns a Set-
+      Cookie header without a Domain attribute, these user agents will
+      erroneously send the cookie to www.example.com as well.
+    */
+    if (!domain()) {
+        domain(origin->host());
+        _host_only = true;
+    }
+
     auto ss = same_site();
     if (ss == SameSite::None || ss == SameSite::disabled) {
         _origin.reset(); // no need to store origin, discard it early
@@ -54,12 +69,9 @@ CookieJar::CookieJar(const string& data) {
 
 void CookieJar::add(const string& name, const Response::Cookie& cookie, const URISP& origin, const Date& now) noexcept {
     auto domain = cookie.domain();
-    if (!domain) return;
+    if (!domain) domain = origin->host();
 
-    string idomain(domain.length() + 1);
-    idomain[0] = '.';
-    std::transform(domain.begin(), domain.end(), idomain.begin() + 1,[](auto c){ return std::tolower(c); });
-    idomain.length(domain.length() + 1);
+    string idomain = canonize(domain);
 
     auto remove_same = [&](bool cleanup) {
         auto& cookies = domain_cookies[idomain];
@@ -101,6 +113,20 @@ CookieJar::Cookies CookieJar::find(const URISP& uri, const Date& now, bool lax_c
     Cookies result;
     match(uri, [&](auto& coo){ result.emplace_back(coo); }, now, lax_context );
     return result;
+}
+
+void CookieJar::collect(const Response &res, const Request &req, const Date& now) noexcept {
+    string req_domain = canonize(req.uri->host());
+    for(auto& wrapped_coo: res.cookies) {
+        auto& coo = wrapped_coo.value;
+
+        bool ignore = (coo.domain() && !sub_match(canonize(coo.domain()), req_domain))
+                   || (ignore_predicate && ignore_predicate(coo));
+
+        if (ignore) continue;
+
+        add(wrapped_coo.name, coo, req.uri, now);
+    }
 }
 
 
