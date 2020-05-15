@@ -10,21 +10,16 @@ auto future  = now + 3600;
 TEST("add cookie") {
     CookieJar jar("");
     auto& dc = jar.domain_cookies;
-    URISP origin(new URI("https://www.perl.org/"));
+    URISP origin(new URI("https://www.perl.org/my-path"));
 
 
     Response::Cookie coo("v");
     coo.domain("crazypanda.ru");
     coo.path("/p");
 
-    SECTION("no domain, no path -> ignored") {
+    SECTION("no domain -> ignored") {
         coo.domain("");
         coo.path("/p");
-        jar.add("k", coo, origin);
-        CHECK(dc.size() == 0);
-
-        coo.domain("example.org");
-        coo.path("");
         jar.add("k", coo, origin);
         CHECK(dc.size() == 0);
     }
@@ -79,6 +74,15 @@ TEST("add cookie") {
         coo.expires(past);
         jar.add("k", coo, origin, now);
         CHECK(dc.size() == 0);
+    }
+
+    SECTION("remove cookie") {
+        coo.path("");
+        jar.add("k", coo, origin);
+        jar.add("k", coo, origin, past);
+        REQUIRE(dc.size() == 1);
+        auto& cookies = dc[".crazypanda.ru"];
+        CHECK(cookies.at(0).path() == "/my-path");
     }
 }
 

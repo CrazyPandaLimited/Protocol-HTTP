@@ -1,27 +1,14 @@
 #include "CookieJar.h"
 
-// 2. If an explicitly specified value does not start with a dot, the user agent supplies a leading dot.
-
-/* 3
-If the server omits the Path attribute, the user
-   agent will use the "directory" of the request-uri's path component as
-   the default value.  (See Section 5.1.4 for more details.)
-*/
-
-/* 3.
-.   If the cookie-attribute-list contains an attribute with an
-     attribute-name of "Path", set the cookie's path to attribute-
-     value of the last attribute in the cookie-attribute-list with an
-     attribute-name of "Path".  Otherwise, set the cookie's path to
-     the default-path of the request-uri.
-*/
-
-/* 5:
+/* I don't think it is needed:
 
 NOTE: For security reasons, many user agents are configured to reject
    Domain attributes that correspond to "public suffixes".  For example,
    some user agents will reject Domain attributes of "com" or "co.uk".
    (See Section 5.3 for more information.)
+
+https://publicsuffix.org/list/
+
 */
 
 namespace panda { namespace protocol { namespace http {
@@ -38,6 +25,13 @@ CookieJar::Cookie::Cookie(const string& name, const Response::Cookie& original, 
         expires(Date(deadline));
         max_age(0);
     }
+    /* rfc6265
+       If the server omits the Path attribute, the user
+       agent will use the "directory" of the request-uri's path component as
+       the default value.  (See Section 5.1.4 for more details.)
+    */
+    if (!path()) { path(origin->path()); }
+
     auto ss = same_site();
     if (ss == SameSite::None || ss == SameSite::disabled) {
         _origin.reset(); // no need to store origin, discard it early
@@ -81,7 +75,6 @@ void CookieJar::add(const string& name, const Response::Cookie& cookie, const UR
         cookies.emplace_back(Cookie(name, coo, origin, now));
     };
 
-    if (!cookie.path())   { return; }
     if (cookie.session()) { add(cookie); return; }
     if (cookie.expires()) {
         if (*cookie.expires() > now) add(cookie);
