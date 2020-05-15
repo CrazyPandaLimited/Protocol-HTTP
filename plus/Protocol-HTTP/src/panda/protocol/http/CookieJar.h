@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <boost/container/small_vector.hpp>
-
+//#include <iostream>
 #include "Request.h"
 #include "Response.h"
 
@@ -22,6 +22,8 @@ struct CookieJar {
         void origin(const URISP& origin) noexcept { _origin = origin; }
         void name(const string& name)    noexcept { _name = name;     }
 
+        bool allowed_by_same_site(const URISP& request, bool lax_context) const noexcept;
+
     private:
         string _name;
         URISP _origin;
@@ -34,7 +36,7 @@ struct CookieJar {
     CookieJar(const string& data = "");
 
     void add(const string& name, const Response::Cookie& cookie, const URISP& origin, const Date& now = Date::now()) noexcept;
-    Cookies find(const URISP& uri, const Date& now = Date::now()) noexcept;
+    Cookies find(const URISP& uri, const Date& now = Date::now(), bool lax_context = false) noexcept;
     void clear() noexcept { domain_cookies.clear(); }
 
     void collect(const Response& response) noexcept;
@@ -43,12 +45,13 @@ struct CookieJar {
     string to_string(bool include_session = false) const noexcept;
 
     DomainCookies domain_cookies;
+
 private:
-    template<typename Fn> void match(const URISP& uri, Fn&& fn, const Date& now) const noexcept;
+    template<typename Fn> void match(const URISP& uri, Fn&& fn, const Date& now, bool lax_context) const noexcept;
 };
 
 template<typename Fn>
-void CookieJar::match(const URISP& uri, Fn&& fn, const Date& now) const noexcept {
+void CookieJar::match(const URISP& uri, Fn&& fn, const Date& now, bool lax_context) const noexcept {
     Cookies result;
     auto& host = uri->host();
     auto& path = uri->path();
@@ -59,12 +62,13 @@ void CookieJar::match(const URISP& uri, Fn&& fn, const Date& now) const noexcept
 
     for(auto& pair: domain_cookies) {
         auto& domain = pair.first;
+
         // xxx.yyy.com [idomain] (from URI) should pull-in cookies for
         //     yyy.com [domain]
         // do backward search than
         auto match_r = std::mismatch(domain.rbegin(), domain.rend(), idomain.rbegin());
+        // std::cout << "d: " << idomain << " matches " << domain << " :: " << (match_r.first == domain.rend()) << "\n";
         if (match_r.first != domain.rend()) continue;
-        //if (std::search())
 
         for(auto& coo: pair.second) {
             auto& p = coo.path();
@@ -75,6 +79,8 @@ void CookieJar::match(const URISP& uri, Fn&& fn, const Date& now) const noexcept
 
             auto exipres = coo.expires();
             if (exipres && exipres.value() < now) continue;
+
+            if (!coo.allowed_by_same_site(uri, lax_context)) continue;
 
             result.emplace_back(coo);
         }

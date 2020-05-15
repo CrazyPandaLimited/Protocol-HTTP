@@ -16,6 +16,10 @@
 
 namespace panda { namespace protocol { namespace http {
 
+static bool is_same(const string& original_host, const string& request_host) noexcept {
+    return original_host == request_host;
+}
+
 CookieJar::Cookie::Cookie(const string& name, const Response::Cookie& original, const URISP& origin, const Date& now) noexcept
     : Response::Cookie{original}, _name{name}, _origin{origin}
 {
@@ -29,6 +33,16 @@ CookieJar::Cookie::Cookie(const string& name, const Response::Cookie& original, 
         _origin.reset(); // no need to store origin, discard it early
     }
 }
+
+bool CookieJar::Cookie::allowed_by_same_site(const URISP& request, bool lax_context) const noexcept {
+    switch (same_site()) {
+    case SameSite::Strict: return is_same(origin()->host(), request->host());
+    case SameSite::Lax:    return lax_context || is_same(origin()->host(), request->host());
+    case SameSite::disabled:  /* fall thought */
+    case SameSite::None:      return true;
+    }
+}
+
 
 CookieJar::CookieJar(const string& data) {
 
@@ -68,11 +82,12 @@ void CookieJar::add(const string& name, const Response::Cookie& cookie, const UR
     add(cookie);
 }
 
-CookieJar::Cookies CookieJar::find(const URISP& uri, const Date& now) noexcept {
+CookieJar::Cookies CookieJar::find(const URISP& uri, const Date& now, bool lax_context) noexcept {
     Cookies result;
-    match(uri, [&](auto& coo){ result.emplace_back(coo); }, now );
+    match(uri, [&](auto& coo){ result.emplace_back(coo); }, now, lax_context );
     return result;
 }
+
 
 
 }}}

@@ -194,5 +194,54 @@ TEST("find/match cookie") {
         CHECK(cookies[1].name() == "k3");
     }
 
+    SECTION("same-site policy") {
+        CookieJar jar("");
+        REQUIRE(jar.domain_cookies.size() == 0);
+
+        URISP origin(new URI("https://auth.crazypanda.ru/"));
+
+        Response::Cookie coo1("v1");
+        coo1.domain("crazypanda.ru");
+        coo1.path("/p1");
+        coo1.expires(future);
+
+        Response::Cookie coo4("v4");
+        coo4.domain("crazypanda.ru");
+        coo4.path("/cpp");
+        coo4.expires(future);
+        coo4.same_site(Response::Cookie::SameSite::Strict);
+
+        Response::Cookie coo5("v5");
+        coo5.domain("crazypanda.ru");
+        coo5.path("/cpp");
+        coo5.expires(future);
+        coo5.same_site(Response::Cookie::SameSite::Lax);
+
+        jar.add("k1", coo1, origin, ancient);
+        jar.add("k4", coo4, origin, ancient);
+        jar.add("k5", coo5, origin, ancient);
+
+        auto& dc = jar.domain_cookies;
+        REQUIRE(dc.at(".crazypanda.ru").size() == 3);
+
+        SECTION("request matches origin") {
+            auto cookies = jar.find(origin, now);
+            REQUIRE(cookies.size() == 3);
+        }
+
+        SECTION("different site") {
+            auto cookies = jar.find(URISP{new URI("https://public.crazypanda.ru/")}, past);
+            REQUIRE(cookies.size() == 1);
+            CHECK(cookies[0].name() == "k1");
+        }
+
+        SECTION("different site, lax context") {
+            auto cookies = jar.find(URISP{new URI("https://public.crazypanda.ru/")}, past, true);
+            REQUIRE(cookies.size() == 2);
+            CHECK(cookies[0].name() == "k5");
+            CHECK(cookies[1].name() == "k1");
+        }
+    }
+
     // check session cookies
 }
