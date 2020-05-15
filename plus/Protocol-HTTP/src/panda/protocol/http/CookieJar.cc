@@ -16,11 +16,25 @@
 
 namespace panda { namespace protocol { namespace http {
 
+CookieJar::Cookie::Cookie(const string& name, const Response::Cookie& original, const URISP& origin, const Date& now) noexcept
+    : Response::Cookie{original}, _name{name}, _origin{origin}
+{
+    if (max_age()) {
+        auto deadline = now.epoch() + max_age();
+        expires(Date(deadline));
+        max_age(0);
+    }
+    auto ss = same_site();
+    if (ss == SameSite::None || ss == SameSite::disabled) {
+        _origin.reset(); // no need to store origin, discard it early
+    }
+}
+
 CookieJar::CookieJar(const string& data) {
 
 }
 
-void CookieJar::add(const string& name, const Cookie& cookie, const Date& now) noexcept {
+void CookieJar::add(const string& name, const Response::Cookie& cookie, const URISP& origin, const Date& now) noexcept {
     auto domain = cookie.domain();
     if (!domain) return;
 
@@ -31,18 +45,16 @@ void CookieJar::add(const string& name, const Cookie& cookie, const Date& now) n
 
     auto remove_same = [&](bool cleanup) {
         auto& cookies = domain_cookies[idomain];
-        auto& fields = cookies.fields;
-        for (auto it = fields.cbegin(); it != fields.cend();) {
-            if (it->name == name && it->value.path() == cookie.path()) it = fields.erase(it);
-            else                                                       ++it;
+        for (auto it = cookies.cbegin(); it != cookies.cend();) {
+            if (it->name() == name && it->path() == cookie.path()) it = cookies.erase(it);
+            else                                                 ++it;
         }
         if (cleanup && cookies.empty()) domain_cookies.erase(idomain);
     };
     auto add = [&](auto& coo) {
         remove_same(false);
         auto& cookies = domain_cookies[idomain];
-        cookies.add(name, coo);
-        return cookies.fields.back();
+        cookies.emplace_back(Cookie(name, coo, origin, now));
     };
 
     if (!cookie.path())   { return; }
@@ -53,25 +65,14 @@ void CookieJar::add(const string& name, const Cookie& cookie, const Date& now) n
         return;
     }
 
-    auto expires = now.epoch() + cookie.max_age();
-    auto coo = Cookie (
-        cookie.value(),
-        cookie.domain(),
-        cookie.path(),
-        0,
-        cookie.secure(),
-        cookie.http_only(),
-        cookie.same_site()
-    );
-    add(coo).value.expires(Date(expires));
+    add(cookie);
 }
 
 CookieJar::Cookies CookieJar::find(const URISP& uri, const Date& now) noexcept {
     Cookies result;
-    match(uri, [&](auto& coo){ result.add(coo.name, coo.value); }, now );
+    match(uri, [&](auto& coo){ result.emplace_back(coo); }, now );
     return result;
 }
-
 
 
 }}}

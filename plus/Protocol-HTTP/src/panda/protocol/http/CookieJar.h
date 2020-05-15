@@ -3,21 +3,37 @@
 #include <panda/string.h>
 #include <unordered_map>
 #include <algorithm>
+#include <boost/container/small_vector.hpp>
+
 #include "Request.h"
 #include "Response.h"
 
 namespace panda { namespace protocol { namespace http {
 
 struct CookieJar {
-    using Cookie = Response::Cookie;
-    using Cookies = Response::Cookies;
+    using Date = Response::Date;
+
+    struct Cookie : Response::Cookie {
+        Cookie(const string& name, const Response::Cookie& original, const URISP& origin, const Date& now) noexcept;
+
+        const URISP& origin() const noexcept { return _origin; }
+        const string& name()  const noexcept { return _name;   }
+
+        void origin(const URISP& origin) noexcept { _origin = origin; }
+        void name(const string& name)    noexcept { _name = name;     }
+
+    private:
+        string _name;
+        URISP _origin;
+    };
+
+    using Cookies = boost::container::small_vector<Cookie, 15>;
     using DomainCookies = std::unordered_map<std::string, Cookies>;
 
-    using Date = Response::Date;
 
     CookieJar(const string& data = "");
 
-    void add(const string& name, const Cookie& cookie, const Date& now = Date::now()) noexcept;
+    void add(const string& name, const Response::Cookie& cookie, const URISP& origin, const Date& now = Date::now()) noexcept;
     Cookies find(const URISP& uri, const Date& now = Date::now()) noexcept;
     void clear() noexcept { domain_cookies.clear(); }
 
@@ -51,22 +67,20 @@ void CookieJar::match(const URISP& uri, Fn&& fn, const Date& now) const noexcept
         //if (std::search())
 
         for(auto& coo: pair.second) {
-            auto& value = coo.value;
-            auto& p = value.path();
-            bool ignore =  (value.secure() && !uri->secure())
+            auto& p = coo.path();
+            bool ignore =  (coo.secure() && !uri->secure())
                         || (std::mismatch(p.begin(), p.end(), path.begin()).second != path.end())
-                        || (value.http_only() && uri->scheme() != "http");
-//                        || (!std::includes(p.begin(), p.end(), path.cbegin(), path.cend()))
+                        || (coo.http_only() && uri->scheme() != "http");
             if (ignore) continue;
 
-            auto exipres = value.expires();
+            auto exipres = coo.expires();
             if (exipres && exipres.value() < now) continue;
 
-            result.add(coo.name, value);
+            result.emplace_back(coo);
         }
     }
     std::stable_sort(result.begin(), result.end(), [](auto& a, auto& b) {
-        return b.value.path().length() < a.value.path().length();
+        return b.path().length() < a.path().length();
     });
     for(auto& it: result) fn(it);
 }
