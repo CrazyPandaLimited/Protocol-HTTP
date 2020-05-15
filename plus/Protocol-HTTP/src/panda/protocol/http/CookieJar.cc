@@ -1,10 +1,12 @@
 #include "CookieJar.h"
 
-// 1. If a CGI script wishes to delete a cookie, it can do so by returning a cookie with the same name, and an expires time which is in the past.
-// The path and name must match exactly in order for the expiring cookie to replace the valid cookie.
-// This requirement makes it difficult for anyone but the originator of a cookie to delete a cookie.
-
 // 2. If an explicitly specified value does not start with a dot, the user agent supplies a leading dot.
+
+/* 3
+If the server omits the Path attribute, the user
+   agent will use the "directory" of the request-uri's path component as
+   the default value.  (See Section 5.1.4 for more details.)
+*/
 
 /* 3.
 .   If the cookie-attribute-list contains an attribute with an
@@ -12,6 +14,14 @@
      value of the last attribute in the cookie-attribute-list with an
      attribute-name of "Path".  Otherwise, set the cookie's path to
      the default-path of the request-uri.
+*/
+
+/* 5:
+
+NOTE: For security reasons, many user agents are configured to reject
+   Domain attributes that correspond to "public suffixes".  For example,
+   some user agents will reject Domain attributes of "com" or "co.uk".
+   (See Section 5.3 for more information.)
 */
 
 namespace panda { namespace protocol { namespace http {
@@ -35,14 +45,14 @@ CookieJar::Cookie::Cookie(const string& name, const Response::Cookie& original, 
 }
 
 bool CookieJar::Cookie::allowed_by_same_site(const URISP& request, bool lax_context) const noexcept {
+    bool r = true;
     switch (same_site()) {
-    case SameSite::Strict: return is_same(origin()->host(), request->host());
-    case SameSite::Lax:    return lax_context || is_same(origin()->host(), request->host());
-    case SameSite::disabled:  /* fall thought */
-    case SameSite::None:      return true;
+    case SameSite::Strict: r = is_same(origin()->host(), request->host()); break;
+    case SameSite::Lax:    r = lax_context || is_same(origin()->host(), request->host()); break;
+    default:               break;
     }
+    return r;
 }
-
 
 CookieJar::CookieJar(const string& data) {
 
@@ -81,6 +91,18 @@ void CookieJar::add(const string& name, const Response::Cookie& cookie, const UR
 
     add(cookie);
 }
+
+bool CookieJar::sub_match(const string& cookie_domain, const string& request_domain) noexcept {
+    assert(cookie_domain[0] == '.');
+    assert(request_domain[0] == '.');
+    // xxx.yyy.com [idomain] (from URI) should pull-in cookies for
+    //     yyy.com [domain]
+    // do backward search than
+    auto r = std::mismatch(cookie_domain.rbegin(), cookie_domain.rend(), request_domain.rbegin());
+    if (r.first != cookie_domain.rend()) return false;
+    return true;
+}
+
 
 CookieJar::Cookies CookieJar::find(const URISP& uri, const Date& now, bool lax_context) noexcept {
     Cookies result;

@@ -82,6 +82,14 @@ TEST("add cookie") {
     }
 }
 
+TEST("domain submatch") {
+    CHECK(CookieJar::sub_match(".perl.org", ".perl.org"));
+    CHECK(CookieJar::sub_match(".perl.org", ".news.perl.org"));
+    CHECK(!CookieJar::sub_match(".perl.org", ".php.net"));
+    CHECK(!CookieJar::sub_match(".perl.org", ".pppperl.org"));
+    CHECK(!CookieJar::sub_match(".perl.org", ".perl.org.fake.com"));
+}
+
 TEST("find/match cookie") {
     CookieJar jar("");
 
@@ -184,14 +192,6 @@ TEST("find/match cookie") {
         REQUIRE(cookies.size() == 2);
         CHECK(cookies[0].name() == "k2");
         CHECK(cookies[1].name() == "k1");
-    }
-
-    SECTION("3 of 3 match, 1 filtered by http-only") {
-        jar.domain_cookies[".crazypanda.ru"].front().http_only(true);
-        auto cookies = jar.find(URISP{new URI("https://perl.crazypanda.ru/")}, past);
-        REQUIRE(cookies.size() == 2);
-        CHECK(cookies[0].name() == "k2");
-        CHECK(cookies[1].name() == "k3");
     }
 
     SECTION("same-site policy") {

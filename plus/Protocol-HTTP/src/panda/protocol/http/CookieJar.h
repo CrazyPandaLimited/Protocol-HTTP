@@ -30,7 +30,7 @@ struct CookieJar {
     };
 
     using Cookies = boost::container::small_vector<Cookie, 15>;
-    using DomainCookies = std::unordered_map<std::string, Cookies>;
+    using DomainCookies = std::unordered_map<string, Cookies>;
 
 
     CookieJar(const string& data = "");
@@ -38,6 +38,8 @@ struct CookieJar {
     void add(const string& name, const Response::Cookie& cookie, const URISP& origin, const Date& now = Date::now()) noexcept;
     Cookies find(const URISP& uri, const Date& now = Date::now(), bool lax_context = false) noexcept;
     void clear() noexcept { domain_cookies.clear(); }
+
+    static bool sub_match(const string& cookie_domain, const string& request_domain) noexcept;
 
     void collect(const Response& response) noexcept;
     void populate(Request& request) noexcept;
@@ -55,26 +57,20 @@ void CookieJar::match(const URISP& uri, Fn&& fn, const Date& now, bool lax_conte
     Cookies result;
     auto& host = uri->host();
     auto& path = uri->path();
-    string idomain(host.size() + 1);
-    idomain[0] = '.';
-    std::transform(host.begin(), host.end(), idomain.begin() + 1,[](auto c){ return std::tolower(c); });
-    idomain.length(host.size() + 1);
+    string request_domain(host.size() + 1);
+    request_domain[0] = '.';
+    std::transform(host.begin(), host.end(), request_domain.begin() + 1,[](auto c){ return std::tolower(c); });
+    request_domain.length(host.size() + 1);
 
     for(auto& pair: domain_cookies) {
         auto& domain = pair.first;
-
-        // xxx.yyy.com [idomain] (from URI) should pull-in cookies for
-        //     yyy.com [domain]
-        // do backward search than
-        auto match_r = std::mismatch(domain.rbegin(), domain.rend(), idomain.rbegin());
-        // std::cout << "d: " << idomain << " matches " << domain << " :: " << (match_r.first == domain.rend()) << "\n";
-        if (match_r.first != domain.rend()) continue;
+        if (!sub_match(domain, request_domain)) continue;
 
         for(auto& coo: pair.second) {
             auto& p = coo.path();
             bool ignore =  (coo.secure() && !uri->secure())
-                        || (std::mismatch(p.begin(), p.end(), path.begin()).second != path.end())
-                        || (coo.http_only() && uri->scheme() != "http");
+                        || (std::mismatch(p.begin(), p.end(), path.begin()).second != path.end());
+            // we ignore http-only flag, i.e. provide API-access to that cookie
             if (ignore) continue;
 
             auto exipres = coo.expires();
