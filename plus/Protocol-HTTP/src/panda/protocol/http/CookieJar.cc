@@ -63,6 +63,16 @@ bool CookieJar::Cookie::allowed_by_same_site(const URISP& request, bool lax_cont
     return r;
 }
 
+string CookieJar::Cookie::to_string () const {
+    string r(300);
+    r += "Set-Cookie-Jar: ";
+    if (_origin)     r += "origin=" +  _origin->to_string() + " ; ";
+    if (host_only()) r += "HostOnly; ";
+    Response::Cookie::serialize_to(r, _name, nullptr);
+    return r;
+}
+
+
 CookieJar::CookieJar(const string& data) {
 
 }
@@ -132,5 +142,18 @@ void CookieJar::collect(const Response &res, const Request &req, const Date& now
 void CookieJar::populate(Request& request, const Date& now, bool lax_context) noexcept {
     match(request.uri, [&](auto& coo) { request.cookies.add(coo.name(), coo.value()); }, now, lax_context);
 }
+
+string CookieJar::to_string(bool include_session, const Date& now) const noexcept {
+    string r;
+    for(auto& pair: domain_cookies) {
+        for(auto& coo: pair.second) {
+            bool session = coo.session();
+            bool add = session ? include_session : (coo.expires().value() > now);
+            if (add) r += coo.to_string() + "\r\n";
+        }
+    }
+    return r;
+}
+
 
 }}}

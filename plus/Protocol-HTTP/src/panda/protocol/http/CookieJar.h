@@ -26,6 +26,7 @@ struct CookieJar {
 
         bool allowed_by_same_site(const URISP& request, bool lax_context) const noexcept;
 
+        string to_string () const;
     private:
         string _name;
         URISP _origin;
@@ -57,12 +58,14 @@ struct CookieJar {
 
 private:
     inline static string canonize(const string& host) {
-        string r(host.size() + 1);
-        r[0] = '.';
-        std::transform(host.begin(), host.end(), r.begin() + 1,[](auto c){ return std::tolower(c); });
-        r.length(host.size() + 1);
+        int add_dot = (host[0] == '.') ? 0 : 1;
+        string r(host.size() + add_dot);
+        if (add_dot) r[0] = '.';
+        std::transform(host.begin(), host.end(), r.begin() + add_dot,[](auto c){ return std::tolower(c); });
+        r.length(host.size() + add_dot);
         return r;
     }
+
     template<typename Fn> void match(const URISP& uri, Fn&& fn, const Date& now, bool lax_context) const noexcept;
 };
 

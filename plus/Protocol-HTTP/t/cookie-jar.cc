@@ -30,7 +30,8 @@ TEST("add cookie") {
         CHECK(dc.size() == 1);
         CHECK(dc.count(".crazypanda.ru") == 1);
         CHECK(dc[".crazypanda.ru"][0].name() == "k");
-        CHECK(dc[".crazypanda.ru"][0].to_string("k") == coo.to_string("k"));
+        Response::Cookie &coo = dc[".crazypanda.ru"][0]; /* downcast */
+        CHECK(coo.to_string("k") == coo.to_string("k"));
     }
 
     SECTION("non-expired cookie is added") {
@@ -317,4 +318,59 @@ TEST("cookies population to thr response") {
     jar.populate(*req);
     REQUIRE(req->cookies.size() == 1);
     CHECK(req->cookies.get("k1") == "v1");
+}
+
+
+TEST("(de)serialization") {
+    CookieJar jar("");
+    URISP origin(new URI("https://www.tut.by"));
+
+    SECTION("single cookie serialization") {
+        auto& dc = jar.domain_cookies;
+        Response::Cookie coo("v");
+        coo.domain("tut.by");
+        coo.path("/news");
+        jar.add("k", coo, origin);
+
+        REQUIRE(dc.size() == 1);
+        REQUIRE(dc.count(".tut.by") == 1);
+        CHECK(dc[".tut.by"][0].name() == "k");
+
+        auto &jcoo = dc[".tut.by"][0];
+        REQUIRE(jcoo.to_string() == "Set-Cookie-Jar: k=v; Domain=tut.by; Path=/news");
+
+        CHECK(jar.to_string(true) == "Set-Cookie-Jar: k=v; Domain=tut.by; Path=/news\r\n");
+        CHECK(jar.to_string(false) == "");
+    }
+
+    SECTION("by date filtration") {
+        panda::date::Date expires(2020, 05, 18, 5);
+        auto past = expires - 3600;
+        auto future = expires + 3600;
+
+        Response::Cookie coo("v");
+        coo.domain("tut.by");
+        coo.path("/news");
+        coo.expires(expires);
+        jar.add("k", coo, origin, past);
+
+        CHECK(jar.to_string(false, past) == "Set-Cookie-Jar: k=v; Domain=tut.by; Path=/news; Expires=Mon, 18 May 2020 02:00:00 GMT\r\n");
+        CHECK(jar.to_string(false, future) == "");
+
+    }
+
+    SECTION("samesite & origin") {
+        Response::Cookie coo("v");
+        coo.domain("tut.by");
+        coo.same_site(Response::Cookie::SameSite::Strict);
+        jar.add("k", coo, origin);
+        CHECK(jar.to_string(true) == "Set-Cookie-Jar: origin=https://www.tut.by ; k=v; Domain=tut.by; SameSite\r\n");
+    }
+
+    SECTION("samesite & origin") {
+        Response::Cookie coo("v");
+        jar.add("k", coo, origin);
+        CHECK(jar.to_string(true) == "Set-Cookie-Jar: HostOnly; k=v; Domain=www.tut.by\r\n");
+    }
+
 }

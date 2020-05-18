@@ -54,7 +54,7 @@ TEST("response single cookie") {
     REQUIRE(res->cookies.get("key"));
     auto coo = res->cookies.get("key").value();
     CHECK(coo.value() == "value");
-    CHECK(coo.domain() == ".crazypanda.ru");
+    CHECK(coo.domain() == "crazypanda.ru");
     CHECK(coo.path() == "/");
     CHECK(coo.max_age() == 999);
     REQUIRE(coo.expires());
