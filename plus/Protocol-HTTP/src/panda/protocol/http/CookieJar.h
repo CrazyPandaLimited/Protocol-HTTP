@@ -48,9 +48,9 @@ struct CookieJar {
     static bool sub_match(const string& cookie_domain, const string& request_domain) noexcept;
 
     void collect(const Response& res, const Request& req, const Date& now = Date::now()) noexcept;
-    void populate(Request& request) noexcept;
+    void populate(Request& request, const Date& now = Date::now(), bool lax_context = false) noexcept;
 
-    string to_string(bool include_session = false) const noexcept;
+    string to_string(bool include_session = false, const Date& now = Date::now()) const noexcept;
 
     DomainCookies domain_cookies;
     IgnorePredicate ignore_predicate;

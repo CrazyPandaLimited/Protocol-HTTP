@@ -271,7 +271,7 @@ TEST("find/match cookie") {
     }
 }
 
-TEST("request collection") {
+TEST("cookies collection from the request") {
     CookieJar jar("");
 
     auto req = Request::Builder().uri("http://games.crazypanda.ru/hello/world").build();
@@ -297,11 +297,24 @@ TEST("request collection") {
         CHECK(cookies[0].name() == "c2");
     }
 
-    SECTION("ignore predicate ") {
+    SECTION("ignore predicate") {
         jar.set_ignore([](auto&){ return true; });
         jar.collect(*res, *req);
         auto cookies = jar.find(URISP{new URI("http://games.crazypanda.ru")});
         REQUIRE(cookies.size() == 0);
     }
 
+}
+
+TEST("cookies population to thr response") {
+    CookieJar jar("");
+    URISP uri(new URI("https://crazypanda.ru/"));
+    Response::Cookie coo1("v1");
+    jar.add("k1", coo1, uri);
+
+    auto req = Request::Builder().uri(uri).build();
+    REQUIRE(req->cookies.size() == 0);
+    jar.populate(*req);
+    REQUIRE(req->cookies.size() == 1);
+    CHECK(req->cookies.get("k1") == "v1");
 }

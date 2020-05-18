@@ -129,6 +129,8 @@ void CookieJar::collect(const Response &res, const Request &req, const Date& now
     }
 }
 
-
+void CookieJar::populate(Request& request, const Date& now, bool lax_context) noexcept {
+    match(request.uri, [&](auto& coo) { request.cookies.add(coo.name(), coo.value()); }, now, lax_context);
+}
 
 }}}
