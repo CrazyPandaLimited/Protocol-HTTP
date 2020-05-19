@@ -30,7 +30,11 @@ CookieJar::Cookie::Cookie(const string& name, const Response::Cookie& original, 
        agent will use the "directory" of the request-uri's path component as
        the default value.  (See Section 5.1.4 for more details.)
     */
-    if (!path()) { path(origin->path()); }
+    if (!path()) {
+            auto p = origin->path();
+            if (!p) p = "/";
+            path(p);
+    }
 
     /* rfc6265
      If the server omits the Domain attribute, the user
@@ -65,16 +69,44 @@ bool CookieJar::Cookie::allowed_by_same_site(const URISP& request, bool lax_cont
 
 string CookieJar::Cookie::to_string () const {
     string r(300);
-    r += "Set-Cookie-Jar: ";
-    if (_origin)     r += "origin=" +  _origin->to_string() + " ; ";
-    if (host_only()) r += "HostOnly; ";
-    Response::Cookie::serialize_to(r, _name, nullptr);
+    size_t i = 0;
+    auto push_json = [&](const auto& k, const auto& v) {
+        assert(v);
+        if (i) r += ", ";
+        r += "\"";
+        r += k;
+        r += "\":\"";
+        r += v;
+        r += "\"";
+        ++i;
+    };
+    r += "{";
+        push_json("key", name());
+        push_json("value", value());
+        push_json("domain", domain());
+        push_json("path", path());
+        if (expires())   push_json("expires", panda::to_string(expires().value().epoch()));
+        if (secure())    push_json("secure", "1");
+        if (http_only()) push_json("http_only", "1");
+
+        const char* same_site_value = nullptr;
+        switch (same_site()) {
+        case SameSite::Lax:     same_site_value = "L"; break;
+        case SameSite::Strict:  same_site_value = "S"; break;
+        case SameSite::None:    same_site_value = "N"; break;
+        case SameSite::disabled:                       break;
+        }
+        if (same_site_value) push_json("same_site", same_site_value);
+        if (_origin)     push_json("origin", _origin->to_string());
+        if (host_only()) push_json("host_only", "1");
+    r += "}";
     return r;
 }
 
 
 CookieJar::CookieJar(const string& data) {
-
+    auto result = parse_cookies(data, domain_cookies);
+    if (result) throw result.message();
 }
 
 void CookieJar::add(const string& name, const Response::Cookie& cookie, const URISP& origin, const Date& now) noexcept {
@@ -145,13 +177,19 @@ void CookieJar::populate(Request& request, const Date& now, bool lax_context) no
 
 string CookieJar::to_string(bool include_session, const Date& now) const noexcept {
     string r;
+    r += "[\n";
+    int i = 0;
     for(auto& pair: domain_cookies) {
         for(auto& coo: pair.second) {
             bool session = coo.session();
             bool add = session ? include_session : (coo.expires().value() > now);
-            if (add) r += coo.to_string() + "\r\n";
+            if (add) {
+                if (i++) r+= ",\n";
+                r += coo.to_string();
+            }
         }
     }
+    r += "]";
     return r;
 }
 

@@ -320,10 +320,9 @@ TEST("cookies population to thr response") {
     CHECK(req->cookies.get("k1") == "v1");
 }
 
-
 TEST("(de)serialization") {
-    CookieJar jar("");
     URISP origin(new URI("https://www.tut.by"));
+    CookieJar jar("");
 
     SECTION("single cookie serialization") {
         auto& dc = jar.domain_cookies;
@@ -337,10 +336,15 @@ TEST("(de)serialization") {
         CHECK(dc[".tut.by"][0].name() == "k");
 
         auto &jcoo = dc[".tut.by"][0];
-        REQUIRE(jcoo.to_string() == "Set-Cookie-Jar: k=v; Domain=tut.by; Path=/news");
+        REQUIRE(jcoo.to_string() == "{\"key\":\"k\", \"value\":\"v\", \"domain\":\"tut.by\", \"path\":\"/news\"}");
 
-        CHECK(jar.to_string(true) == "Set-Cookie-Jar: k=v; Domain=tut.by; Path=/news\r\n");
-        CHECK(jar.to_string(false) == "");
+        CHECK(jar.to_string(true) == "[\n{\"key\":\"k\", \"value\":\"v\", \"domain\":\"tut.by\", \"path\":\"/news\"}]");
+        CHECK(jar.to_string(false) == "[\n]");
+
+        CookieJar::DomainCookies dc2;
+        REQUIRE(CookieJar::parse_cookies(jar.to_string(true), dc2) == std::error_code());
+        REQUIRE(dc2[".tut.by"].size() == 1);
+        CHECK(dc2[".tut.by"][0].to_string() == jcoo.to_string());
     }
 
     SECTION("by date filtration") {
@@ -354,9 +358,8 @@ TEST("(de)serialization") {
         coo.expires(expires);
         jar.add("k", coo, origin, past);
 
-        CHECK(jar.to_string(false, past) == "Set-Cookie-Jar: k=v; Domain=tut.by; Path=/news; Expires=Mon, 18 May 2020 02:00:00 GMT\r\n");
-        CHECK(jar.to_string(false, future) == "");
-
+        CHECK(jar.to_string(false, past) == "[\n{\"key\":\"k\", \"value\":\"v\", \"domain\":\"tut.by\", \"path\":\"/news\", \"expires\":\"1589767200\"}]");
+        CHECK(jar.to_string(false, future) == "[\n]");
     }
 
     SECTION("samesite & origin") {
@@ -364,13 +367,36 @@ TEST("(de)serialization") {
         coo.domain("tut.by");
         coo.same_site(Response::Cookie::SameSite::Strict);
         jar.add("k", coo, origin);
-        CHECK(jar.to_string(true) == "Set-Cookie-Jar: origin=https://www.tut.by ; k=v; Domain=tut.by; SameSite\r\n");
+        CHECK(jar.to_string(true) == "[\n{\"key\":\"k\", \"value\":\"v\", \"domain\":\"tut.by\", \"path\":\"/\", \"same_site\":\"S\", \"origin\":\"https://www.tut.by\"}]");
     }
 
     SECTION("samesite & origin") {
         Response::Cookie coo("v");
         jar.add("k", coo, origin);
-        CHECK(jar.to_string(true) == "Set-Cookie-Jar: HostOnly; k=v; Domain=www.tut.by\r\n");
+        CHECK(jar.to_string(true) == "[\n{\"key\":\"k\", \"value\":\"v\", \"domain\":\"www.tut.by\", \"path\":\"/\", \"host_only\":\"1\"}]");
+    }
+
+    SECTION("parsing") {
+        string data = R"DATA([
+{"key":"k1", "value":"v1", "domain":"tut.by", "path":"/", "same_site":"S", "origin":"https://www.tut.by", "same_site":"S"},
+{"key":"k2", "value":"v2", "domain":"ya.ru", "path":"/", "host_only":"1"}])DATA";
+        CookieJar jar(data);
+        auto& dc = jar.domain_cookies;
+
+        REQUIRE(dc[".tut.by"].size() == 1);
+        auto& c1 = dc[".tut.by"][0];
+        CHECK(c1.name() == "k1");
+        CHECK(c1.value() == "v1");
+        CHECK(c1.domain() == "tut.by");
+        CHECK(c1.same_site() == Response::Cookie::SameSite::Strict);
+        CHECK(c1.origin()->to_string() == "https://www.tut.by");
+
+        REQUIRE(dc[".ya.ru"].size() == 1);
+        auto& c2 = dc[".ya.ru"][0];
+        CHECK(c2.name() == "k2");
+        CHECK(c2.value() == "v2");
+        CHECK(c2.domain() == "ya.ru");
+        CHECK(c2.host_only());
     }
 
 }

@@ -14,6 +14,7 @@ struct CookieJar {
     using Date = Response::Date;
 
     struct Cookie : Response::Cookie {
+        Cookie() = default;
         Cookie(const string& name, const Response::Cookie& original, const URISP& origin, const Date& now) noexcept;
 
         const URISP& origin() const noexcept  { return _origin;   }
@@ -56,8 +57,9 @@ struct CookieJar {
     DomainCookies domain_cookies;
     IgnorePredicate ignore_predicate;
 
+    static std::error_code parse_cookies(const string& data, DomainCookies& dest) noexcept;
 private:
-    inline static string canonize(const string& host) {
+    inline static string canonize(const string& host) noexcept  {
         int add_dot = (host[0] == '.') ? 0 : 1;
         string r(host.size() + add_dot);
         if (add_dot) r[0] = '.';
