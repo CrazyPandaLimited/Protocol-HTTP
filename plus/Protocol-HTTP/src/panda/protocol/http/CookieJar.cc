@@ -157,8 +157,8 @@ CookieJar::Cookies CookieJar::find(const URISP& uri, const Date& now, bool lax_c
     return result;
 }
 
-void CookieJar::collect(const Response &res, const Request &req, const Date& now) noexcept {
-    string req_domain = canonize(req.uri->host());
+void CookieJar::collect(const Response &res, const URISP& request_uri, const Date& now) noexcept {
+    string req_domain = canonize(request_uri->host());
     for(auto& wrapped_coo: res.cookies) {
         auto& coo = wrapped_coo.value;
 
@@ -167,7 +167,7 @@ void CookieJar::collect(const Response &res, const Request &req, const Date& now
 
         if (ignore) continue;
 
-        add(wrapped_coo.name, coo, req.uri, now);
+        add(wrapped_coo.name, coo, request_uri, now);
     }
 }
 

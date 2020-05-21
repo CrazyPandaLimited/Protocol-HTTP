@@ -7,10 +7,11 @@
 #include <boost/container/small_vector.hpp>
 #include "Request.h"
 #include "Response.h"
+#include "panda/refcnt.h"
 
 namespace panda { namespace protocol { namespace http {
 
-struct CookieJar {
+struct CookieJar: Refcnt {
     using Date = Response::Date;
 
     struct Cookie : Response::Cookie {
@@ -49,7 +50,7 @@ struct CookieJar {
 
     static bool sub_match(const string& cookie_domain, const string& request_domain) noexcept;
 
-    void collect(const Response& res, const Request& req, const Date& now = Date::now()) noexcept;
+    void collect(const Response& res, const URISP& request_uri, const Date& now = Date::now()) noexcept;
     void populate(Request& request, const Date& now = Date::now(), bool lax_context = false) noexcept;
 
     string to_string(bool include_session = false, const Date& now = Date::now()) const noexcept;
@@ -98,6 +99,9 @@ void CookieJar::match(const URISP& uri, Fn&& fn, const Date& now, bool lax_conte
     });
     for(auto& it: result) fn(it);
 }
+
+using CookieJarSP = iptr<CookieJar>;
+
 
 
 }}}
