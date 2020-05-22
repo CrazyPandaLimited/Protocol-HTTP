@@ -29,7 +29,7 @@ struct CookieJar: Refcnt {
 
         string to_string () const;
     private:
-        bool allowed_by_same_site(const URISP& request, bool top_level) const noexcept;
+        bool allowed_by_same_site(const URISP& context_uri, bool top_level) const noexcept;
 
         string _name;
         URISP _origin;
@@ -45,13 +45,19 @@ struct CookieJar: Refcnt {
     CookieJar(const string& data = "");
 
     void add(const string& name, const Response::Cookie& cookie, const URISP& origin, const Date& now = Date::now()) noexcept;
-    Cookies find(const URISP& request_uri, const Date& now = Date::now(), bool lax_context = false) noexcept;
+    Cookies find(const URISP& request_uri, const URISP& context_uri, const Date& now = Date::now(), bool top_level = false) noexcept;
+    Cookies find(const URISP& request_uri, const Date& now = Date::now(), bool top_level = false) noexcept {
+        return find(request_uri, request_uri, now, top_level);
+    }
     void clear() noexcept { domain_cookies.clear(); }
 
     template<typename Fn> void set_ignore(Fn&& fn) noexcept { ignore_predicate = fn; }
 
     void collect(const Response& res, const URISP& request_uri, const Date& now = Date::now()) noexcept;
-    void populate(Request& request, const Date& now = Date::now(), bool lax_context = false) noexcept;
+    void populate(Request& request, const URISP& context_uri, const Date& now = Date::now(), bool top_level = false) noexcept;
+    void populate(Request& request, const Date& now = Date::now(), bool top_level = false) noexcept {
+        populate(request, request.uri, now, top_level);
+    }
 
     string to_string(bool include_session = false, const Date& now = Date::now()) const noexcept;
     static std::error_code parse_cookies(const string& data, DomainCookies& dest) noexcept;
@@ -61,7 +67,7 @@ struct CookieJar: Refcnt {
     IgnorePredicate ignore_predicate;
 
 private:
-    static bool sub_match(const string& cookie_domain, const string& request_domain) noexcept;
+    static bool is_subdomain(const string& domain, const string& test_domain) noexcept;
 
     inline static string canonize(const string& host) noexcept  {
         int add_dot = (host[0] == '.') ? 0 : 1;
@@ -72,25 +78,25 @@ private:
         return r;
     }
 
-    template<typename Fn> void match(const URISP& uri, Fn&& fn, const Date& now, bool top_level) const noexcept;
+    template<typename Fn> void match(const URISP& request_uri, const URISP& context_uri, const Date& now, bool top_level, Fn&& fn) const noexcept;
 };
 
 template<typename Fn>
-void CookieJar::match(const URISP& request_uri, Fn&& fn, const Date& now, bool top_level) const noexcept {
+void CookieJar::match(const URISP& request_uri, const URISP& context_uri, const Date& now, bool top_level, Fn&& fn) const noexcept {
     Cookies result;
     auto& path = request_uri->path();
     auto request_domain = canonize(request_uri->host());
 
     for(auto& pair: domain_cookies) {
         auto& domain = pair.first;
-        if (!sub_match(domain, request_domain)) continue;
+        if (!is_subdomain(domain, request_domain)) continue;
 
         for(auto& coo: pair.second) {
             auto& p = coo.path();
             bool ignore =  (coo.secure() && !request_uri->secure())
                         || (std::mismatch(p.begin(), p.end(), path.begin()).second != path.end())
                         || (coo.expires() && coo.expires().value() < now)
-                        || !coo.allowed_by_same_site(request_uri, top_level)
+                        || !coo.allowed_by_same_site(context_uri, top_level)
                         || (coo.host_only() && request_domain != domain);
             // we ignore http-only flag, i.e. provide API-access to that cookie
             if (ignore) continue;

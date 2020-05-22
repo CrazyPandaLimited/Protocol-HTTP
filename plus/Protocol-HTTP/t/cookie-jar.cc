@@ -196,7 +196,7 @@ TEST("find/match cookie") {
         CookieJarSP jar(new CookieJar());
         REQUIRE(jar->domain_cookies.size() == 0);
 
-        URISP origin(new URI("https://auth.crazypanda.ru/"));
+        URISP origin(new URI("https://my.crazypanda.ru/"));
 
         Response::Cookie coo1("v1");
         coo1.domain("crazypanda.ru");
@@ -238,6 +238,11 @@ TEST("find/match cookie") {
             REQUIRE(cookies.size() == 2);
             CHECK(cookies[0].name() == "k5");
             CHECK(cookies[1].name() == "k1");
+        }
+
+        SECTION("subdomain") {
+            auto cookies = jar->find(URISP{new URI("https://static.my.crazypanda.ru/")}, past);
+            REQUIRE(cookies.size() == 3);
         }
     }
 

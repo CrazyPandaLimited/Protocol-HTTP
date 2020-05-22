@@ -13,10 +13,6 @@ https://publicsuffix.org/list/
 
 namespace panda { namespace protocol { namespace http {
 
-static bool is_same(const string& original_host, const string& request_host) noexcept {
-    return original_host == request_host;
-}
-
 CookieJar::Cookie::Cookie(const string& name, const Response::Cookie& original, const URISP& origin, const Date& now) noexcept
     : Response::Cookie{original}, _name{name}, _origin{origin}
 {
@@ -57,11 +53,16 @@ CookieJar::Cookie::Cookie(const string& name, const Response::Cookie& original, 
     }
 }
 
-bool CookieJar::Cookie::allowed_by_same_site(const URISP& request, bool top_level) const noexcept {
+bool CookieJar::Cookie::allowed_by_same_site(const URISP& context_uri, bool top_level) const noexcept {
     bool r = true;
+    auto check = [&]() -> bool {
+        auto original_domain = canonize(origin()->host());
+        auto context_domain  = canonize(context_uri->host());
+        return is_subdomain(original_domain, context_domain);
+    };
     switch (same_site()) {
-    case SameSite::Strict: r = is_same(origin()->host(), request->host()); break;
-    case SameSite::Lax:    r = top_level || is_same(origin()->host(), request->host()); break;
+    case SameSite::Strict: r = check(); break;
+    case SameSite::Lax:    r = top_level || check(); break;
     default:               break;
     }
     return r;
@@ -139,21 +140,21 @@ void CookieJar::add(const string& name, const Response::Cookie& cookie, const UR
     add(cookie);
 }
 
-bool CookieJar::sub_match(const string& cookie_domain, const string& request_domain) noexcept {
-    assert(cookie_domain[0] == '.');
-    assert(request_domain[0] == '.');
+bool CookieJar::is_subdomain(const string& domain, const string& test_domain) noexcept {
+    assert(domain[0] == '.');
+    assert(test_domain[0] == '.');
     // xxx.yyy.com [idomain] (from URI) should pull-in cookies for
     //     yyy.com [domain]
     // do backward search than
-    auto r = std::mismatch(cookie_domain.rbegin(), cookie_domain.rend(), request_domain.rbegin());
-    if (r.first != cookie_domain.rend()) return false;
+    auto r = std::mismatch(domain.rbegin(), domain.rend(), test_domain.rbegin());
+    if (r.first != domain.rend()) return false;
     return true;
 }
 
 
-CookieJar::Cookies CookieJar::find(const URISP& uri, const Date& now, bool lax_context) noexcept {
+CookieJar::Cookies CookieJar::find(const URISP& uri, const URISP& context_uri, const Date& now, bool top_level) noexcept {
     Cookies result;
-    match(uri, [&](auto& coo){ result.emplace_back(coo); }, now, lax_context );
+    match(uri, context_uri, now, top_level, [&](auto& coo){ result.emplace_back(coo); } );
     return result;
 }
 
@@ -162,7 +163,7 @@ void CookieJar::collect(const Response &res, const URISP& request_uri, const Dat
     for(auto& wrapped_coo: res.cookies) {
         auto& coo = wrapped_coo.value;
 
-        bool ignore = (coo.domain() && !sub_match(canonize(coo.domain()), req_domain))
+        bool ignore = (coo.domain() && !is_subdomain(canonize(coo.domain()), req_domain))
                    || (ignore_predicate && ignore_predicate(coo));
 
         if (ignore) continue;
@@ -171,8 +172,8 @@ void CookieJar::collect(const Response &res, const URISP& request_uri, const Dat
     }
 }
 
-void CookieJar::populate(Request& request, const Date& now, bool top_level) noexcept {
-    match(request.uri, [&](auto& coo) { request.cookies.add(coo.name(), coo.value()); }, now, top_level);
+void CookieJar::populate(Request& request, const URISP& context_uri, const Date& now, bool top_level) noexcept {
+    match(request.uri, context_uri, now, top_level, [&](auto& coo) { request.cookies.add(coo.name(), coo.value()); });
 }
 
 string CookieJar::to_string(bool include_session, const Date& now) const noexcept {
