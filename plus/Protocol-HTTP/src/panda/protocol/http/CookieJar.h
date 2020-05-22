@@ -54,9 +54,9 @@ struct CookieJar: Refcnt {
     template<typename Fn> void set_ignore(Fn&& fn) noexcept { ignore_predicate = fn; }
 
     void collect(const Response& res, const URISP& request_uri, const Date& now = Date::now()) noexcept;
-    void populate(Request& request, const URISP& context_uri, const Date& now = Date::now(), bool top_level = false) noexcept;
-    void populate(Request& request, const Date& now = Date::now(), bool top_level = false) noexcept {
-        populate(request, request.uri, now, top_level);
+    void populate(Request& request, const URISP& context_uri,  bool top_level = false, const Date& now = Date::now()) noexcept;
+    void populate(Request& request,  bool top_level = false, const Date& now = Date::now()) noexcept {
+        populate(request, request.uri, top_level, now);
     }
 
     string to_string(bool include_session = false, const Date& now = Date::now()) const noexcept;
@@ -78,11 +78,11 @@ private:
         return r;
     }
 
-    template<typename Fn> void match(const URISP& request_uri, const URISP& context_uri, const Date& now, bool top_level, Fn&& fn) const noexcept;
+    template<typename Fn> void match(const URISP& request_uri, const URISP& context_uri, bool top_level, const Date& now, Fn&& fn) const noexcept;
 };
 
 template<typename Fn>
-void CookieJar::match(const URISP& request_uri, const URISP& context_uri, const Date& now, bool top_level, Fn&& fn) const noexcept {
+void CookieJar::match(const URISP& request_uri, const URISP& context_uri, bool top_level, const Date& now, Fn&& fn) const noexcept {
     Cookies result;
     auto& path = request_uri->path();
     auto request_domain = canonize(request_uri->host());

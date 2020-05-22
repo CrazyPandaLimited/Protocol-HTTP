@@ -154,7 +154,7 @@ bool CookieJar::is_subdomain(const string& domain, const string& test_domain) no
 
 CookieJar::Cookies CookieJar::find(const URISP& uri, const URISP& context_uri, const Date& now, bool top_level) noexcept {
     Cookies result;
-    match(uri, context_uri, now, top_level, [&](auto& coo){ result.emplace_back(coo); } );
+    match(uri, context_uri, top_level, now, [&](auto& coo){ result.emplace_back(coo); } );
     return result;
 }
 
@@ -172,8 +172,8 @@ void CookieJar::collect(const Response &res, const URISP& request_uri, const Dat
     }
 }
 
-void CookieJar::populate(Request& request, const URISP& context_uri, const Date& now, bool top_level) noexcept {
-    match(request.uri, context_uri, now, top_level, [&](auto& coo) { request.cookies.add(coo.name(), coo.value()); });
+void CookieJar::populate(Request& request, const URISP& context_uri, bool top_level, const Date& now) noexcept {
+    match(request.uri, context_uri, top_level, now, [&](auto& coo) { request.cookies.add(coo.name(), coo.value()); });
 }
 
 string CookieJar::to_string(bool include_session, const Date& now) const noexcept {
