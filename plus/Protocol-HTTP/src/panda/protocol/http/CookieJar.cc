@@ -57,11 +57,11 @@ CookieJar::Cookie::Cookie(const string& name, const Response::Cookie& original, 
     }
 }
 
-bool CookieJar::Cookie::allowed_by_same_site(const URISP& request, bool lax_context) const noexcept {
+bool CookieJar::Cookie::allowed_by_same_site(const URISP& request, bool top_level) const noexcept {
     bool r = true;
     switch (same_site()) {
     case SameSite::Strict: r = is_same(origin()->host(), request->host()); break;
-    case SameSite::Lax:    r = lax_context || is_same(origin()->host(), request->host()); break;
+    case SameSite::Lax:    r = top_level || is_same(origin()->host(), request->host()); break;
     default:               break;
     }
     return r;
@@ -171,8 +171,8 @@ void CookieJar::collect(const Response &res, const URISP& request_uri, const Dat
     }
 }
 
-void CookieJar::populate(Request& request, const Date& now, bool lax_context) noexcept {
-    match(request.uri, [&](auto& coo) { request.cookies.add(coo.name(), coo.value()); }, now, lax_context);
+void CookieJar::populate(Request& request, const Date& now, bool top_level) noexcept {
+    match(request.uri, [&](auto& coo) { request.cookies.add(coo.name(), coo.value()); }, now, top_level);
 }
 
 string CookieJar::to_string(bool include_session, const Date& now) const noexcept {

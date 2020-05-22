@@ -88,14 +88,6 @@ TEST("add cookie") {
     }
 }
 
-TEST("domain submatch") {
-    CHECK(CookieJar::sub_match(".perl.org", ".perl.org"));
-    CHECK(CookieJar::sub_match(".perl.org", ".news.perl.org"));
-    CHECK(!CookieJar::sub_match(".perl.org", ".php.net"));
-    CHECK(!CookieJar::sub_match(".perl.org", ".pppperl.org"));
-    CHECK(!CookieJar::sub_match(".perl.org", ".perl.org.fake.com"));
-}
-
 TEST("find/match cookie") {
     CookieJarSP jar(new CookieJar());
 
