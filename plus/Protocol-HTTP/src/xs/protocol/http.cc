@@ -81,10 +81,11 @@ void set_response_cookies (Response* p, const Hash& hv) {
 
 namespace xs {
 
-using Cookie = panda::protocol::http::Response::Cookie;
+using Response = panda::protocol::http::Response;
+using CookieJar = panda::protocol::http::CookieJar;
 
-Cookie Typemap<Cookie>::in (const Hash& h) {
-    Cookie c;
+Response::Cookie Typemap<Response::Cookie>::in (const Hash& h) {
+    Response::Cookie c;
     Sv sv; Simple v;
     if ((v  = h.fetch("value")))     c.value(v.as_string());
     if ((v  = h.fetch("domain")))    c.domain(v.as_string());
@@ -97,7 +98,7 @@ Cookie Typemap<Cookie>::in (const Hash& h) {
     return c;
 }
 
-Sv Typemap<Cookie>::out (const Cookie& c, const Sv& ) {
+Sv Typemap<Response::Cookie>::out (const Response::Cookie& c, const Sv& ) {
     Hash h = Hash::create();
     h["value"]     = xs::out(c.value());
     h["secure"]    = xs::out(c.secure());
@@ -108,6 +109,30 @@ Sv Typemap<Cookie>::out (const Cookie& c, const Sv& ) {
     if (c.path())    { h["path"]    = xs::out(c.path());    }
     if (c.expires()) { h["expires"] = xs::out(c.expires()); }
     if (c.max_age()) { h["max_age"] = xs::out(c.max_age()); }
+    return Ref::create(h);
+}
+
+Sv Typemap<CookieJar::Cookie>::out (const CookieJar::Cookie& c, const Sv&) {
+    Ref r = xs::out<Response::Cookie>(c);
+    Hash h(r);
+    h["name"]      = xs::out(c.name());
+    h["host_only"] = c.host_only() ? Simple::yes : Simple::no;
+    if (c.origin()) h["origin"] = xs::out(c.origin());
+    return std::move(r);
+}
+
+Sv Typemap<CookieJar::Cookies>::out(const CookieJar::Cookies& cookies, const Sv&) {
+    auto r = Array::create(cookies.size());
+    for (auto& coo: cookies) r.push(xs::out(coo));
+    return Ref::create(r);
+}
+
+Sv Typemap<CookieJar::DomainCookies>::out(const DomainCookies& domain_cookies, const Sv&) {
+    Hash h = Hash::create();
+    for(auto& pair : domain_cookies) {
+        auto domain = pair.first.substr(1); // cut "." part
+        h[domain] = xs::out(pair.second);
+    }
     return Ref::create(h);
 }
 

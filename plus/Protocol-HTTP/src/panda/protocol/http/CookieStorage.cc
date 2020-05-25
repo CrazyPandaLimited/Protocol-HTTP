@@ -24,13 +24,12 @@ std::error_code CookieJar::parse_cookies(const string& buffer, DomainCookies& de
     const char* ps  = buffer.data();
     const char* p   = ps;
     const char* pe  = ps + buffer.size();
-    const char* eof = pe;
     int         cs  = jar_parser_start;
     size_t mark;
     CookieJar::Cookie v;
 
     
-#line 34 "src/panda/protocol/http/CookieStorage.cc"
+#line 33 "src/panda/protocol/http/CookieStorage.cc"
 	{
 	if ( p == pe )
 		goto _test_eof;
@@ -167,7 +166,7 @@ st16:
 	if ( ++p == pe )
 		goto _test_eof16;
 case 16:
-#line 171 "src/panda/protocol/http/CookieStorage.cc"
+#line 170 "src/panda/protocol/http/CookieStorage.cc"
 	if ( (*p) == 34 )
 		goto tr25;
 	goto st16;
@@ -231,7 +230,7 @@ st17:
 	if ( ++p == pe )
 		goto _test_eof17;
 case 17:
-#line 235 "src/panda/protocol/http/CookieStorage.cc"
+#line 234 "src/panda/protocol/http/CookieStorage.cc"
 	switch( (*p) ) {
 		case 44: goto st18;
 		case 125: goto tr27;
@@ -257,7 +256,7 @@ st19:
 	if ( ++p == pe )
 		goto _test_eof19;
 case 19:
-#line 261 "src/panda/protocol/http/CookieStorage.cc"
+#line 260 "src/panda/protocol/http/CookieStorage.cc"
 	switch( (*p) ) {
 		case 10: goto st4;
 		case 44: goto st20;
@@ -358,7 +357,7 @@ st32:
 	if ( ++p == pe )
 		goto _test_eof32;
 case 32:
-#line 362 "src/panda/protocol/http/CookieStorage.cc"
+#line 361 "src/panda/protocol/http/CookieStorage.cc"
 	if ( (*p) == 34 )
 		goto tr41;
 	goto st32;
@@ -458,7 +457,7 @@ st45:
 	if ( ++p == pe )
 		goto _test_eof45;
 case 45:
-#line 462 "src/panda/protocol/http/CookieStorage.cc"
+#line 461 "src/panda/protocol/http/CookieStorage.cc"
 	if ( (*p) == 34 )
 		goto tr56;
 	goto st45;
@@ -549,7 +548,7 @@ st57:
 	if ( ++p == pe )
 		goto _test_eof57;
 case 57:
-#line 553 "src/panda/protocol/http/CookieStorage.cc"
+#line 552 "src/panda/protocol/http/CookieStorage.cc"
 	if ( (*p) == 34 )
 		goto tr69;
 	goto st57;
@@ -605,7 +604,7 @@ st64:
 	if ( ++p == pe )
 		goto _test_eof64;
 case 64:
-#line 609 "src/panda/protocol/http/CookieStorage.cc"
+#line 608 "src/panda/protocol/http/CookieStorage.cc"
 	if ( (*p) == 34 )
 		goto tr77;
 	goto st64;
@@ -682,7 +681,7 @@ st74:
 	if ( ++p == pe )
 		goto _test_eof74;
 case 74:
-#line 686 "src/panda/protocol/http/CookieStorage.cc"
+#line 685 "src/panda/protocol/http/CookieStorage.cc"
 	if ( (*p) == 34 )
 		goto tr88;
 	goto st74;
@@ -745,7 +744,7 @@ st82:
 	if ( ++p == pe )
 		goto _test_eof82;
 case 82:
-#line 749 "src/panda/protocol/http/CookieStorage.cc"
+#line 748 "src/panda/protocol/http/CookieStorage.cc"
 	if ( (*p) == 34 )
 		goto tr97;
 	goto st82;
@@ -845,7 +844,7 @@ st95:
 	if ( ++p == pe )
 		goto _test_eof95;
 case 95:
-#line 849 "src/panda/protocol/http/CookieStorage.cc"
+#line 848 "src/panda/protocol/http/CookieStorage.cc"
 	if ( (*p) == 34 )
 		goto tr112;
 	goto st95;
@@ -915,7 +914,7 @@ st104:
 	if ( ++p == pe )
 		goto _test_eof104;
 case 104:
-#line 919 "src/panda/protocol/http/CookieStorage.cc"
+#line 918 "src/panda/protocol/http/CookieStorage.cc"
 	if ( (*p) == 34 )
 		goto tr122;
 	goto st104;
@@ -985,7 +984,7 @@ st113:
 	if ( ++p == pe )
 		goto _test_eof113;
 case 113:
-#line 989 "src/panda/protocol/http/CookieStorage.cc"
+#line 988 "src/panda/protocol/http/CookieStorage.cc"
 	if ( (*p) == 34 )
 		goto tr132;
 	goto st113;
@@ -1108,7 +1107,7 @@ case 113:
 	_out: {}
 	}
 
-#line 75 "src/panda/protocol/http/CookieStorage.rl"
+#line 74 "src/panda/protocol/http/CookieStorage.rl"
 
     if (p == pe) return {};
     else return make_error_code(errc::corrupted_cookie_jar);

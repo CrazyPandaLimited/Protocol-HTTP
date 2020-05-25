@@ -184,15 +184,15 @@ CookieJar::Cookies CookieJar::find(const URISP& uri, const URISP& context_uri, c
     return result;
 }
 
-void CookieJar::collect(const Response &res, const URISP& request_uri, const Date& now) noexcept {
+void CookieJar::collect(const Response &res, const URISP& request_uri, const Date& now) {
     string req_domain = canonize(request_uri->host());
     for(auto& wrapped_coo: res.cookies) {
         auto& coo = wrapped_coo.value;
 
-        bool ignore = (coo.domain() && !is_subdomain(canonize(coo.domain()), req_domain))
-                   || (ignore_predicate && ignore_predicate(coo));
+        bool skip = (coo.domain() && !is_subdomain(canonize(coo.domain()), req_domain))
+                 || (ignore && ignore(wrapped_coo.name, coo));
 
-        if (ignore) continue;
+        if (skip) continue;
 
         add(wrapped_coo.name, coo, request_uri, now);
     }

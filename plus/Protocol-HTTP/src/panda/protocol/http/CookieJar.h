@@ -1,13 +1,14 @@
 #pragma once
 
 #include <panda/string.h>
+#include <panda/refcnt.h>
+#include <panda/function.h>
 #include <unordered_map>
 #include <algorithm>
 #include <functional>
 #include <boost/container/small_vector.hpp>
 #include "Request.h"
 #include "Response.h"
-#include "panda/refcnt.h"
 
 namespace panda { namespace protocol { namespace http {
 
@@ -37,7 +38,8 @@ struct CookieJar: Refcnt {
         friend struct CookieJar;
     };
 
-    using IgnorePredicate = std::function<bool(const Response::Cookie&)>;
+    using IgnorePredicate = bool(const string& name, const Response::Cookie&);
+    using ignore_fn  = function<IgnorePredicate>;
     using Cookies = boost::container::small_vector<Cookie, 15>;
     using DomainCookies = std::unordered_map<string, Cookies>;
 
@@ -52,11 +54,11 @@ struct CookieJar: Refcnt {
     }
     void clear() noexcept { domain_cookies.clear(); }
 
-    template<typename Fn> void set_ignore(Fn&& fn) noexcept { ignore_predicate = fn; }
+    void set_ignore(ignore_fn& fn) noexcept { ignore = fn; }
 
-    void collect(const Response& res, const URISP& request_uri, const Date& now = Date::now()) noexcept;
-    void populate(Request& request, const URISP& context_uri,  bool top_level = false, const Date& now = Date::now()) noexcept;
-    void populate(Request& request,  bool top_level = false, const Date& now = Date::now()) noexcept {
+    void collect(const Response& res, const URISP& request_uri, const Date& now = Date::now());
+    void populate(Request& request, const URISP& context_uri,  bool top_level = true, const Date& now = Date::now()) noexcept;
+    void populate(Request& request,  bool top_level = true, const Date& now = Date::now()) noexcept {
         populate(request, request.uri, top_level, now);
     }
 
@@ -67,7 +69,7 @@ struct CookieJar: Refcnt {
     DomainCookies domain_cookies;
 
 private:
-    IgnorePredicate ignore_predicate;
+    ignore_fn ignore;
     static bool is_subdomain(const string& domain, const string& test_domain) noexcept;
 
     inline static string canonize(const string& host) noexcept  {

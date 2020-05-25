@@ -66,7 +66,6 @@ std::error_code CookieJar::parse_cookies(const string& buffer, DomainCookies& de
     const char* ps  = buffer.data();
     const char* p   = ps;
     const char* pe  = ps + buffer.size();
-    const char* eof = pe;
     int         cs  = jar_parser_start;
     size_t mark;
     CookieJar::Cookie v;

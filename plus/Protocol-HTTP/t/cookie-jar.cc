@@ -390,7 +390,8 @@ TEST("cookies collection from the request") {
     }
 
     SECTION("ignore predicate") {
-        jar->set_ignore([](auto&){ return true; });
+        CookieJar::ignore_fn fn([](auto&, auto&){ return true; });
+        jar->set_ignore(fn);
         jar->collect(*res, req_uri);
         auto cookies = jar->find(URISP{new URI("http://games.crazypanda.ru")});
         REQUIRE(cookies.size() == 0);

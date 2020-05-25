@@ -1,7 +1,10 @@
 #pragma once
 #include <xs/uri.h>
+#include <xs/date.h>
+#include <xs/function.h>
 #include <panda/protocol/http/RequestParser.h>
 #include <panda/protocol/http/ResponseParser.h>
+#include <panda/protocol/http/CookieJar.h>
 #include <panda/protocol/http/CookieJar.h>
 
 namespace xs { namespace protocol { namespace http {
@@ -100,5 +103,24 @@ template <class TYPE>
 struct Typemap<panda::protocol::http::CookieJar*, TYPE> : TypemapObject<panda::protocol::http::CookieJar*, TYPE, ObjectTypeRefcntPtr, ObjectStorageMG> {
     static std::string package () { return "Protocol::HTTP::CookieJar"; }
 };
+
+template <>
+struct Typemap<panda::protocol::http::CookieJar::Cookie> : Typemap<panda::protocol::http::Response::Cookie> {
+    using Cookie = panda::protocol::http::CookieJar::Cookie;
+    static Sv     out (const Cookie&, const Sv& = {});
+};
+
+template <>
+struct Typemap<panda::protocol::http::CookieJar::Cookies> : TypemapBase<panda::protocol::http::CookieJar::Cookies> {
+    using Cookies = panda::protocol::http::CookieJar::Cookies;
+    static Sv     out (const Cookies&, const Sv& = {});
+};
+
+template <>
+struct Typemap<panda::protocol::http::CookieJar::DomainCookies> : TypemapBase<panda::protocol::http::CookieJar::DomainCookies> {
+    using DomainCookies = panda::protocol::http::CookieJar::DomainCookies;
+    static Sv     out (const DomainCookies&, const Sv& = {});
+};
+
 
 }
