@@ -2,6 +2,7 @@
 #include <xs/uri.h>
 #include <panda/protocol/http/RequestParser.h>
 #include <panda/protocol/http/ResponseParser.h>
+#include <panda/protocol/http/CookieJar.h>
 
 namespace xs { namespace protocol { namespace http {
     using namespace panda::protocol::http;
@@ -93,6 +94,11 @@ struct Typemap<panda::protocol::http::RequestParser*, TYPE> : TypemapObject<pand
 template <class TYPE>
 struct Typemap<panda::protocol::http::ResponseParser*, TYPE> : TypemapObject<panda::protocol::http::ResponseParser*, TYPE, ObjectTypePtr, ObjectStorageMG> {
     static std::string package () { return "Protocol::HTTP::ResponseParser"; }
+};
+
+template <class TYPE>
+struct Typemap<panda::protocol::http::CookieJar*, TYPE> : TypemapObject<panda::protocol::http::CookieJar*, TYPE, ObjectTypeRefcntPtr, ObjectStorageMG> {
+    static std::string package () { return "Protocol::HTTP::CookieJar"; }
 };
 
 }

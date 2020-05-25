@@ -45,6 +45,7 @@ struct CookieJar: Refcnt {
     CookieJar(const string& data = "");
 
     void add(const string& name, const Response::Cookie& cookie, const URISP& origin, const Date& now = Date::now()) noexcept;
+    Cookies remove(const string& domain = "", const string& name = "", const string& path = "/") noexcept;
     Cookies find(const URISP& request_uri, const URISP& context_uri, const Date& now = Date::now(), bool top_level = false) noexcept;
     Cookies find(const URISP& request_uri, const Date& now = Date::now(), bool top_level = false) noexcept {
         return find(request_uri, request_uri, now, top_level);
@@ -64,9 +65,9 @@ struct CookieJar: Refcnt {
 
 
     DomainCookies domain_cookies;
-    IgnorePredicate ignore_predicate;
 
 private:
+    IgnorePredicate ignore_predicate;
     static bool is_subdomain(const string& domain, const string& test_domain) noexcept;
 
     inline static string canonize(const string& host) noexcept  {

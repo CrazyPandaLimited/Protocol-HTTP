@@ -140,6 +140,32 @@ void CookieJar::add(const string& name, const Response::Cookie& cookie, const UR
     add(cookie);
 }
 
+CookieJar::Cookies CookieJar::remove(const string& domain, const string& name, const string& path) noexcept {
+    CookieJar::Cookies r;
+    auto strict   = domain && (domain[0] == '.');
+    auto c_domain = domain ?  canonize(domain) : "";
+    for(auto it_d = domain_cookies.begin(); it_d != domain_cookies.end(); ) {
+        bool d_match = !domain
+                    || (strict ? it_d->first == domain : is_subdomain(c_domain, it_d->first));
+        auto& cookies = it_d->second;
+        if (d_match) {
+            for(auto it_c = cookies.begin(); it_c != cookies.end(); ) {
+                auto& coo = *it_c;
+                auto& p = coo.path();
+                bool name_match = !name || coo.name() == name;
+                bool path_match = !path || std::mismatch(p.begin(), p.end(), path.begin()).second == path.end();
+
+                if (name_match && path_match) { r.emplace_back(coo);  it_c = cookies.erase(it_c); }
+                else                                                ++it_c;
+            }
+        }
+        if (cookies.empty()) it_d = domain_cookies.erase(it_d);
+        else               ++it_d;
+    }
+    return r;
+}
+
+
 bool CookieJar::is_subdomain(const string& domain, const string& test_domain) noexcept {
     assert(domain[0] == '.');
     assert(test_domain[0] == '.');

@@ -12,7 +12,6 @@ TEST("add cookie") {
     auto& dc = jar->domain_cookies;
     URISP origin(new URI("https://www.perl.org/my-path"));
 
-
     Response::Cookie coo("v");
     coo.domain("crazypanda.ru");
     coo.path("/p");
@@ -85,6 +84,101 @@ TEST("add cookie") {
         REQUIRE(dc.size() == 1);
         auto& cookies = dc[".crazypanda.ru"];
         CHECK(cookies.at(0).path() == "/my-path");
+    }
+}
+
+TEST("remove cookies") {
+    CookieJarSP jar(new CookieJar());
+    auto& dc = jar->domain_cookies;
+    URISP origin(new URI("https://www.perl.org/my-path"));
+
+    Response::Cookie coo("v");
+    coo.domain("crazypanda.ru");
+    coo.path("/p");
+    jar->add("c1", coo, origin);
+
+    Response::Cookie coo2("v");
+    coo.domain("crazypanda.ru");
+    coo.path("/");
+    jar->add("c2", coo, origin);
+
+    Response::Cookie coo3("v");
+    coo.domain("poker.crazypanda.ru");
+    coo.path("/perl");
+    jar->add("c3", coo, origin);
+
+    Response::Cookie coo4("v");
+    coo.domain("poker.crazypanda.ru");
+    coo.path("/cpp");
+    jar->add("c4", coo, origin);
+
+    REQUIRE(!dc.empty());
+
+    SECTION("by domain") {
+        SECTION("all") {
+            auto cookies = jar->remove("crazypanda.ru");
+            CHECK(dc.empty());
+            CHECK(cookies.size() == 4);
+        }
+
+        SECTION("patrial") {
+            auto cookies = jar->remove("poker.crazypanda.ru");
+            CHECK(!dc.empty());
+            CHECK(cookies.size() == 2);
+            CHECK(cookies[0].name() == "c3");
+            CHECK(cookies[1].name() == "c4");
+        }
+
+        SECTION("none") {
+            auto cookies = jar->remove("panda.ru");
+            CHECK(!dc.empty());
+            CHECK(cookies.size() == 0);
+        }
+
+        SECTION("strict") {
+            auto cookies = jar->remove(".crazypanda.ru");
+            CHECK(!dc.empty());
+            CHECK(cookies.size() == 2);
+            CHECK(cookies[0].name() == "c1");
+            CHECK(cookies[1].name() == "c2");
+        }
+    }
+
+    SECTION("by name") {
+        auto cookies = jar->remove("", "c4");
+        CHECK(!dc.empty());
+        CHECK(cookies.size() == 1);
+        CHECK(cookies[0].name() == "c4");
+    }
+
+    SECTION("by path") {
+        SECTION("prefix") {
+            auto cookies = jar->remove("", "", "/p");
+            CHECK(!dc.empty());
+            CHECK(cookies.size() == 2);
+            CHECK(cookies[0].name() == "c3");
+            CHECK(cookies[1].name() == "c1");
+        }
+
+        SECTION("full path") {
+            auto cookies = jar->remove("", "", "/perl");
+            CHECK(!dc.empty());
+            CHECK(cookies.size() == 1);
+            CHECK(cookies[0].name() == "c3");
+        }
+    }
+
+    SECTION("all") {
+        auto cookies = jar->remove();
+        CHECK(dc.empty());
+        CHECK(cookies.size() == 4);
+    }
+
+    SECTION("full match") {
+        auto cookies = jar->remove(".poker.crazypanda.ru", "c3", "/perl");
+        CHECK(!dc.empty());
+        CHECK(cookies.size() == 1);
+        CHECK(cookies[0].name() == "c3");
     }
 }
 
@@ -394,5 +488,4 @@ TEST("(de)serialization") {
         CHECK(c2.domain() == "ya.ru");
         CHECK(c2.host_only());
     }
-
 }
