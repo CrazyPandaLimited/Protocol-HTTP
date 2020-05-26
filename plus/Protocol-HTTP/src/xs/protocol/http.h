@@ -5,7 +5,6 @@
 #include <panda/protocol/http/RequestParser.h>
 #include <panda/protocol/http/ResponseParser.h>
 #include <panda/protocol/http/CookieJar.h>
-#include <panda/protocol/http/CookieJar.h>
 
 namespace xs { namespace protocol { namespace http {
     using namespace panda::protocol::http;

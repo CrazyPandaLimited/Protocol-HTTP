@@ -44,7 +44,7 @@ subtest "simple API test" => sub {
             my ($name, $coo) = @_;
             return scalar($name =~ /^unsecure/);
         });
-        my $res = new Protocol::HTTP::Response({
+        my $res = Protocol::HTTP::Response->new({
             cookies => {
                 c3 => {
                     value  => "v3",
