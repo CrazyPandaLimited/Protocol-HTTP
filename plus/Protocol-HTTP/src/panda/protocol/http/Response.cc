@@ -60,7 +60,7 @@ void Response::Cookie::serialize_to (string& acc, const string& name, const Requ
     }
 }
 
-string Response::_http_header (const Request* req, Compression::Type applied_compression) const {
+string Response::_http_header (const Request* req, const Body& effective_body, Compression::Type applied_compression) const {
     //part 1: precalc pieces
     auto tmp_http_ver = this->http_version;
     auto tmp_code = code ? code : 200;
@@ -82,7 +82,7 @@ string Response::_http_header (const Request* req, Compression::Type applied_com
 
     string out_content_length;
     if (!chunked && !headers.has("Content-Length")) {
-        out_content_length = panda::to_string(body.length());
+        out_content_length = panda::to_string(effective_body.length());
     }
 
     auto out_content_encoding = _content_encoding(applied_compression);
@@ -141,7 +141,7 @@ std::vector<string> Response::to_vector (const Request* req) {
             ? compression.type
             : Compression::IDENTITY;
 
-    return _to_vector(applied_compression, [&]{ return _http_header(req,  applied_compression); });
+    return _to_vector(applied_compression, [&](auto& body){ return _http_header(req, body, applied_compression); });
 }
 
 string Response::message_for_code (int code) {

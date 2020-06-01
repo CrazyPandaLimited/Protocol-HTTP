@@ -21,7 +21,7 @@ static inline bool _method_has_meaning_for_body (Request::Method method) {
     return method == Request::Method::POST || method == Request::Method::PUT;
 }
 
-string Request::http_header (Compression::Type applied_compression) const {
+string Request::http_header (const Body &effective_body, Compression::Type applied_compression) const {
     //part 1: precalc pieces
     auto out_meth = _method_str(method);
 
@@ -29,9 +29,11 @@ string Request::http_header (Compression::Type applied_compression) const {
 
     auto tmp_http_ver = !http_version ? 11 : http_version;
     string out_content_length;
-    if (!chunked && (body.parts.size() || _method_has_meaning_for_body(method)) && !headers.has("Content-Length")) {
-        out_content_length = panda::to_string(body.length());
-    }
+    bool calc_content_length
+              = !chunked
+            && (effective_body.parts.size() || _method_has_meaning_for_body(method))
+            && !headers.has("Content-Length");
+    if (calc_content_length) out_content_length = panda::to_string(effective_body.length());
 
     size_t sz_host = 0;
     size_t sz_host_port = 0;
@@ -139,7 +141,7 @@ string Request::http_header (Compression::Type applied_compression) const {
 }
 
 std::vector<string> Request::to_vector () {
-    return _to_vector(compression.type, [this]{ return http_header(compression.type); });
+    return _to_vector(compression.type, [this](auto& effective_body){ return http_header(effective_body, compression.type); });
 }
 
 bool Request::expects_continue () const {

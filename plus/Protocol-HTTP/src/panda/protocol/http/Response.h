@@ -99,7 +99,7 @@ protected:
 private:
     friend struct ResponseParser;
 
-    string _http_header (const Request*, Compression::Type) const;
+    string _http_header (const Request*, const Body& effective_body, Compression::Type) const;
 };
 using ResponseSP = iptr<Response>;
 

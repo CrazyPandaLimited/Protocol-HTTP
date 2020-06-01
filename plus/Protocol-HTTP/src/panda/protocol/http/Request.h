@@ -70,7 +70,7 @@ protected:
 private:
     friend struct RequestParser;
 
-    string http_header (Compression::Type applied_compression) const;
+    string http_header (const Body& effective_body, Compression::Type applied_compression) const;
 };
 using RequestSP = iptr<Request>;
 

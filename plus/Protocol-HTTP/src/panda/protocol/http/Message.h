@@ -2,7 +2,6 @@
 #include "Body.h"
 #include "error.h"
 #include "Headers.h"
-#include "BodyGuard.h"
 #include "compression/Compressor.h"
 #include <array>
 #include <panda/refcnt.h>
@@ -97,29 +96,37 @@ protected:
     template <class T>
     inline std::vector<string> _to_vector (Compression::Type applied_compression, const T& f) {
         _prepare_compressor(applied_compression, compression.level);
-        auto body_holder = maybe_compress();
+        Body mutable_body;
+        const Body* effective_body;
+        if (compressor && !chunked) {
+            compress_body(mutable_body);
+            effective_body = &mutable_body;
+        } else {
+            effective_body = &body;
+        }
+
         _compile_prepare();
-        auto hdr = f();
-        if (!body.length()) return {hdr};
-        auto sz = body.parts.size();
+        auto hdr = f(*effective_body);
+        if (!effective_body->length()) return {hdr};
+        auto sz = effective_body->parts.size();
 
         std::vector<string> result;
         if (chunked) {
             result.reserve(1 + sz * 3 + 1);
             result.emplace_back(hdr);
             auto append_piecewise = [&](auto& piece) { result.emplace_back(piece); };
-            _serialize_body(append_piecewise);
+            _serialize_body(*effective_body, append_piecewise);
         } else {
             result.reserve(1 + sz);
             result.emplace_back(hdr);
-            for (auto& part : body.parts) result.emplace_back(part);
+            for (auto& part : effective_body->parts) result.emplace_back(part);
         }
 
         return result;
     }
 
 private:
-    BodyGuard maybe_compress();
+    void compress_body(Body& dest);
 
     template<typename Fn>
     inline void _append_chunk (wrapped_chunk chunk, Fn&& fn) {
@@ -127,8 +134,8 @@ private:
     }
 
     template<typename Fn>
-    inline void _serialize_body (Fn&& fn) {
-        for (auto& part : body.parts) {
+    inline void _serialize_body (const Body& effective_body, Fn&& fn) {
+        for (auto& part : effective_body.parts) {
             _append_chunk(make_chunk(part), fn);
         }
         _append_chunk(final_chunk(), fn);
