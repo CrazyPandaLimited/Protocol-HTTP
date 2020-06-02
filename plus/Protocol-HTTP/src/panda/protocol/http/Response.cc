@@ -60,41 +60,43 @@ void Response::Cookie::serialize_to (string& acc, const string& name, const Requ
     }
 }
 
-string Response::_http_header (const Request* req, const Body& effective_body, Compression::Type applied_compression) const {
+string Response::_http_header (SerializationContext &ctx) const {
     //part 1: precalc pieces
-    auto tmp_http_ver = this->http_version;
+    auto req = ctx.request;
+    auto tmp_http_ver = ctx.http_version;
     auto tmp_code = code ? code : 200;
 
-    auto out_connection = headers.get("Connection");
+    auto val_connection = headers.get("Connection");
     if (req) {
         if (!tmp_http_ver) tmp_http_ver = req->http_version;
 
         if (req->keep_alive()) { // user can change connection to 'close'
-            if (tmp_http_ver == 10 && !out_connection) out_connection = "keep-alive";
+            if (tmp_http_ver == 10 && !val_connection) val_connection = "keep-alive";
         }
         else { // user can not change connection to 'keep-alive'
-            if (tmp_http_ver == 10) out_connection = "";
-            else                    out_connection = "close";
+            if (tmp_http_ver == 10) val_connection = "";
+            else                    val_connection = "close";
         }
     }
+    if (val_connection) ctx.handled_headers.add("Connection", val_connection);
 
     auto out_mesasge = message ? message : message_for_code(tmp_code);
 
     string out_content_length;
     if (!chunked && !headers.has("Content-Length")) {
-        out_content_length = panda::to_string(effective_body.length());
+        out_content_length = panda::to_string(ctx.src_body->length());
     }
 
-    auto out_content_encoding = _content_encoding(applied_compression);
+    auto out_content_encoding = _content_encoding(ctx);
 
     // part 2: summarize pieces size
     size_t reserved = 5 + 4 + 4 + out_mesasge.length() + 2 + headers.length() + 2;
-    if (out_connection)       reserved += 10 + 2 + out_connection.length()       + 2;
     if (out_content_length)   reserved += 14 + 2 + out_content_length.length()   + 2;
     if (out_content_encoding) reserved += 16 + 2 + out_content_encoding.length() + 2;
 
+    for (auto& h: ctx.handled_headers) reserved += h.name.length() + 2 + h.value.length() + 2;
     for (auto& h: headers) {
-        if (h.name == "Connection") continue; // already handled
+        if (ctx.handled_headers.has(h.name)) continue;
         reserved += h.name.length() + 2 + h.value.length() + 2;
     };
     reserved += (200 + 14) * cookies.fields.size(); // should be enough for average set-cookie header
@@ -114,12 +116,12 @@ string Response::_http_header (const Request* req, const Body& effective_body, C
     s += out_mesasge;
     s += "\r\n";
 
-    if (out_connection)       { s += "Connection: "      ; s += out_connection      ; s += "\r\n" ;};
     if (out_content_length)   { s += "Content-Length: "  ; s += out_content_length  ; s += "\r\n" ;};
     if (out_content_encoding) { s += "Content-Encoding: "; s += out_content_encoding; s += "\r\n" ;};
 
+    for (auto& h: ctx.handled_headers) { s += h.name; s += ": "; s += h.value; s+= "\r\n"; }
     for (auto& h: headers)  {
-        if (h.name == "Connection") continue; // already handled
+        if (ctx.handled_headers.has(h.name)) continue;
         s += h.name; s += ": "; s += h.value; s+= "\r\n";
     };
     for (auto& c: cookies.fields) {
@@ -134,14 +136,17 @@ string Response::_http_header (const Request* req, const Body& effective_body, C
     return s;
 }
 
-std::vector<string> Response::to_vector (const Request* req) {
+std::vector<string> Response::to_vector (const Request* req) const {
     /* if client didn't announce Accept-Encoding or we do not support it, just pass data as it is */
     auto applied_compression
             = req && (compression.type != Compression::IDENTITY) && (req->allowed_compression() & (uint8_t)compression.type)
             ? compression.type
             : Compression::IDENTITY;
 
-    return _to_vector(applied_compression, [&](auto& body){ return _http_header(req, body, applied_compression); });
+    SerializationContext ctx;
+    ctx.compression = applied_compression;
+    ctx.request = req;
+    return _to_vector(ctx, [&]() { return _compile_prepare(ctx); }, [&]() { return _http_header(ctx); });
 }
 
 string Response::message_for_code (int code) {

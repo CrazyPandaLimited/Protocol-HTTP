@@ -51,8 +51,8 @@ TEST("request context: follow connection type unless explicitly specified") {
         SECTION("change - ignored") { res->headers.connection("keep-alive"); }
         CHECK(res->to_string(req) ==
             "HTTP/1.1 200 OK\r\n"
-            "Connection: close\r\n"
             "Content-Length: 0\r\n"
+            "Connection: close\r\n"
             "\r\n"
         );
     }
@@ -68,8 +68,8 @@ TEST("request context: follow connection type unless explicitly specified") {
             res->headers.connection("close");
             CHECK(res->to_string(req) ==
                 "HTTP/1.1 200 OK\r\n"
-                "Connection: close\r\n"
                 "Content-Length: 0\r\n"
+                "Connection: close\r\n"
                 "\r\n"
             );
         }
@@ -91,8 +91,8 @@ TEST("request context: follow http_version unless explicitly specified") {
         res->http_version = 11;
         CHECK(res->to_string(req) ==
             "HTTP/1.1 200 OK\r\n"
-            "Connection: close\r\n"
             "Content-Length: 0\r\n"
+            "Connection: close\r\n"
             "\r\n"
         );
     }

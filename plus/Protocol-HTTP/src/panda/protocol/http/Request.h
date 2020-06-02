@@ -44,8 +44,8 @@ struct Request : Message, AllocatedObject<Request> {
 
     bool expects_continue () const;
 
-    std::vector<string> to_vector ();
-    string              to_string () { return Message::to_string(to_vector()); }
+    std::vector<string> to_vector () const;
+    string              to_string () const { return Message::to_string(to_vector()); }
 
     virtual ResponseSP new_response () const { return make_iptr<Response>(); }
 
@@ -70,7 +70,7 @@ protected:
 private:
     friend struct RequestParser;
 
-    string http_header (const Body& effective_body, Compression::Type applied_compression) const;
+    string _http_header (SerializationContext &ctx) const;
 };
 using RequestSP = iptr<Request>;
 

@@ -15,12 +15,12 @@ string Message::to_string (const std::vector<string>& pieces) {
     return r;
 }
 
-void Message::compress_body(Body& dest) {
-    for(auto& part: body.parts) {
-        auto data = compressor->compress(part);
-        if (data) dest.parts.emplace_back(std::move(data));
+void Message::compress_body(compression::Compressor& compressor, const Body &src, Body &dst) const {
+    for(auto& part: src.parts) {
+        auto data = compressor.compress(part);
+        if (data) dst.parts.emplace_back(std::move(data));
     }
-    dest.parts.emplace_back(compressor->flush());
+    dst.parts.emplace_back(compressor.flush());
 }
 
 

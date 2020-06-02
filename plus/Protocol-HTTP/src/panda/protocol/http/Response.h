@@ -86,8 +86,8 @@ struct Response : Message, AllocatedObject<Response> {
 
     string full_message () const { return panda::to_string(code) + " " + (message ? message : message_for_code(code)); }
 
-    std::vector<string> to_vector (const Request* req = nullptr);
-    string              to_string (const Request* req = nullptr) { return Message::to_string(to_vector(req)); }
+    std::vector<string> to_vector (const Request* req = nullptr) const;
+    string              to_string (const Request* req = nullptr) const { return Message::to_string(to_vector(req)); }
 
     static string message_for_code (int code);
 
@@ -99,7 +99,7 @@ protected:
 private:
     friend struct ResponseParser;
 
-    string _http_header (const Request*, const Body& effective_body, Compression::Type) const;
+    string _http_header (SerializationContext& ctx) const;
 };
 using ResponseSP = iptr<Response>;
 

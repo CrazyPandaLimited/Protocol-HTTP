@@ -21,19 +21,19 @@ static inline bool _method_has_meaning_for_body (Request::Method method) {
     return method == Request::Method::POST || method == Request::Method::PUT;
 }
 
-string Request::http_header (const Body &effective_body, Compression::Type applied_compression) const {
+string Request::_http_header (SerializationContext& ctx) const {
     //part 1: precalc pieces
     auto out_meth = _method_str(method);
 
     auto out_reluri  = uri ? uri->relative() : string("/");
 
-    auto tmp_http_ver = !http_version ? 11 : http_version;
+    auto tmp_http_ver = !ctx.http_version ? 11 : ctx.http_version;
     string out_content_length;
     bool calc_content_length
               = !chunked
-            && (effective_body.parts.size() || _method_has_meaning_for_body(method))
+            && (ctx.src_body->parts.size() || _method_has_meaning_for_body(method))
             && !headers.has("Content-Length");
-    if (calc_content_length) out_content_length = panda::to_string(effective_body.length());
+    if (calc_content_length) out_content_length = panda::to_string(ctx.src_body->length());
 
     size_t sz_host = 0;
     size_t sz_host_port = 0;
@@ -77,7 +77,7 @@ string Request::http_header (const Body &effective_body, Compression::Type appli
         if (comp_pos) { out_accept_encoding = comp_pos; }
     }
 
-    auto out_content_encoding = _content_encoding(applied_compression);
+    auto out_content_encoding = _content_encoding(ctx);
     size_t sz_cookies = 0;
     if (cookies.size()) {
         for (auto& f : cookies.fields) sz_cookies += f.name.length() + f.value.length() + 3; // 3 for ' ', '=' and ';' for each pair
@@ -94,7 +94,11 @@ string Request::http_header (const Body &effective_body, Compression::Type appli
     if (out_content_encoding) reserved += 16 + 2 + out_content_encoding.length() + 2;
     if (sz_cookies)           reserved += 6  + 2 + sz_cookies                    + 2;
 
-    for (auto& h: headers) { reserved += h.name.length() + 2 + h.value.length() + 2; };
+    for (auto& h: ctx.handled_headers) { reserved += h.name.length() + 2 + h.value.length() + 2; }
+    for (auto& h: headers)  {
+        if (ctx.handled_headers.has(h.name)) continue;
+        reserved += h.name.length() + 2 + h.value.length() + 2;
+    }
 
     // part 3: write out pieces
     string s(reserved);
@@ -129,8 +133,10 @@ string Request::http_header (const Body &effective_body, Compression::Type appli
         s += "\r\n";
     }
 
-    if (headers.size()) {
-        for (auto& h: headers) {  s += h.name; s += ": "; s += h.value; s+= "\r\n"; };
+    for (auto& h: ctx.handled_headers) { s += h.name; s += ": "; s += h.value; s+= "\r\n"; }
+    for (auto& h: headers)  {
+        if (ctx.handled_headers.has(h.name)) continue;
+        s += h.name; s += ": "; s += h.value; s+= "\r\n";
     }
     s += "\r\n";
 
@@ -140,8 +146,10 @@ string Request::http_header (const Body &effective_body, Compression::Type appli
     return s;
 }
 
-std::vector<string> Request::to_vector () {
-    return _to_vector(compression.type, [this](auto& effective_body){ return http_header(effective_body, compression.type); });
+std::vector<string> Request::to_vector () const {
+    SerializationContext ctx;
+    ctx.compression = compression.type;
+    return _to_vector(ctx, [&]() { return _compile_prepare(ctx); }, [&]() { return _http_header(ctx); });
 }
 
 bool Request::expects_continue () const {
