@@ -146,6 +146,7 @@ std::vector<string> Response::to_vector (const Request* req) const {
     SerializationContext ctx;
     ctx.compression = applied_compression;
     ctx.request = req;
+    ctx.src_body = &body;
     return _to_vector(ctx, [&]() { return _compile_prepare(ctx); }, [&]() { return _http_header(ctx); });
 }
 

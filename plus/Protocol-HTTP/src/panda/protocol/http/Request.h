@@ -2,6 +2,7 @@
 #include "Response.h"
 #include <panda/memory.h>
 #include <panda/uri/URI.h>
+#include <panda/string_map.h>
 
 namespace panda { namespace protocol { namespace http {
 
@@ -10,6 +11,7 @@ using panda::uri::URISP;
 
 struct Request : Message, AllocatedObject<Request> {
     enum class Method {OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT};
+    enum class EncType {MULTIPART, URLENCODED};
 
     static inline string method_str(Request::Method rm) noexcept {
         using Method = Request::Method;
@@ -29,9 +31,33 @@ struct Request : Message, AllocatedObject<Request> {
     struct Builder; template <class, class> struct BuilderImpl;
     using Cookies = Fields<string, true, 3>;
 
+    struct Form: string_multimap<string, string> {
+        using Parent = string_multimap<string, string>;
+        using Parent::Parent;
+
+        Form() = default;
+        Form(const EncType value) noexcept: _enc_type(value) {}
+
+        void enc_type (const EncType value) noexcept { _enc_type = value; }
+        EncType enc_type () const noexcept { return _enc_type; }
+
+        operator bool () const noexcept { return !empty(); }
+
+        void add(const string& key, const string& value) {
+            insert({key, value});
+        }
+
+    private:
+        void to_body (Body& body, const string& boundary) const noexcept;
+        EncType _enc_type = EncType::MULTIPART;
+        friend struct Request;
+    };
+
+
     Method  method = Method::GET;
     URISP   uri;
     Cookies cookies;
+    Form    form;
 
     compression::storage_t compression_prefs = Compression::IDENTITY;
 
@@ -70,6 +96,7 @@ protected:
 private:
     friend struct RequestParser;
 
+    Method deduce_method (bool body_method) const noexcept;
     string _http_header (SerializationContext &ctx) const;
 };
 using RequestSP = iptr<Request>;
@@ -101,6 +128,12 @@ struct Request::BuilderImpl : Message::Builder<T, R> {
     template<typename... PrefN>
     T& allow_compression(PrefN... prefn) {
         this->_message->allow_compression(prefn...);
+        return this->self();
+    }
+
+    template<typename Form>
+    T& form(Form&& form) {
+        this->_message->form = std::forward<Form>(form);
         return this->self();
     }
 };

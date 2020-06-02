@@ -92,10 +92,8 @@ protected:
 
         Body mutable_body;
         if (ctx.compressor && !chunked) {
-            compress_body(*ctx.compressor, body, mutable_body);
+            compress_body(*ctx.compressor, *ctx.src_body, mutable_body);
             ctx.src_body = &mutable_body;
-        } else {
-            ctx.src_body = &body;
         }
 
         prepare();

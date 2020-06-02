@@ -1,6 +1,15 @@
 #include "Request.h"
+#include <ctime>
+#include <cstdlib>
 
 namespace panda { namespace protocol { namespace http {
+
+static bool _init () {
+    std::srand(std::time(NULL));
+    return true;
+}
+
+static const bool _inited = _init();
 
 static inline string _method_str (Request::Method rm) {
     using Method = Request::Method;
@@ -17,13 +26,37 @@ static inline string _method_str (Request::Method rm) {
     }
 }
 
+static inline string generate_boundary() noexcept {
+    const constexpr size_t SZ = (string::MAX_SSO_CHARS / sizeof (int)) + (string::MAX_SSO_CHARS % sizeof (int) == 0 ? 0 : 1);
+    static const char alphabet[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    int dices[SZ];
+    for(size_t i = 0; i <SZ; ++i) { dices[i] = std::rand(); }
+
+    const char* random_bytes = (const char*)dices;
+    string r(40, '-');
+    for(size_t i = r.size() - 16; i < r.capacity(); ++i) {
+        r[i] = alphabet[*random_bytes++ % sizeof(alphabet)];
+    }
+    return r;
+}
+
+Request::Method Request::deduce_method(bool body_method) const noexcept {
+    if (form && form.enc_type() == EncType::MULTIPART) {
+        if (!body_method) return Method::POST;
+    }
+    return method;
+}
+
+
 static inline bool _method_has_meaning_for_body (Request::Method method) {
     return method == Request::Method::POST || method == Request::Method::PUT;
 }
 
 string Request::_http_header (SerializationContext& ctx) const {
     //part 1: precalc pieces
-    auto out_meth = _method_str(method);
+    bool body_method = _method_has_meaning_for_body(method);
+    auto eff_method = deduce_method(body_method);
+    auto out_meth = _method_str(eff_method);
 
     auto out_reluri  = uri ? uri->relative() : string("/");
 
@@ -149,6 +182,19 @@ string Request::_http_header (SerializationContext& ctx) const {
 std::vector<string> Request::to_vector () const {
     SerializationContext ctx;
     ctx.compression = compression.type;
+    ctx.src_body = &body;
+    Body form_body;
+    if (form) {
+        if (form.enc_type() == EncType::MULTIPART) {
+            auto boundary = generate_boundary();
+            string ct = "multipart/form-data; boundary=";
+            ct += boundary;
+            ctx.handled_headers.add("Content-Type", ct);
+
+            form.to_body(form_body, boundary);
+            ctx.src_body = &form_body;
+        }
+    }
     return _to_vector(ctx, [&]() { return _compile_prepare(ctx); }, [&]() { return _http_header(ctx); });
 }
 
@@ -165,6 +211,33 @@ std::uint8_t Request::allowed_compression (bool inverse) const noexcept {
         }
     });
     return result;
+}
+
+void Request::Form::to_body(Body& body, const string &boundary) const noexcept {
+    // pass 1: calc total
+    auto fields_count = size();
+    size_t size = (
+            boundary.length() + 2   /* \r\n */
+            + 37 + 2                /* Content-Disposition: form-data; name="" + \r\n */
+        ) * fields_count  + 2;      /* -- */
+    for(auto it : *this) size += it.second.length();
+
+    // pass 2: merge strings
+    string r(size);
+    for(auto it : *this) {
+        r += boundary;
+        r += "\r\n";
+        r += "Content-Disposition: form-data; name=\"";
+        r += it.first;
+        r += "\"\r\n";
+        r += "\r\n";
+        r += it.second;
+        r += "\r\n";
+    }
+    r += boundary;
+    r += "--\r\n";
+
+    body.parts.emplace_back(r);
 }
 
 }}}
