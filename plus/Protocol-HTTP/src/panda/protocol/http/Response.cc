@@ -84,7 +84,7 @@ string Response::_http_header (SerializationContext &ctx) const {
 
     string out_content_length;
     if (!chunked && !headers.has("Content-Length")) {
-        out_content_length = panda::to_string(ctx.src_body->length());
+        out_content_length = panda::to_string(ctx.body->length());
     }
 
     auto out_content_encoding = _content_encoding(ctx);
@@ -146,7 +146,7 @@ std::vector<string> Response::to_vector (const Request* req) const {
     SerializationContext ctx;
     ctx.compression = applied_compression;
     ctx.request = req;
-    ctx.src_body = &body;
+    ctx.body = &body;
     return _to_vector(ctx, [&]() { return _compile_prepare(ctx); }, [&]() { return _http_header(ctx); });
 }
 

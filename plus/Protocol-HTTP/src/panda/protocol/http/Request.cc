@@ -40,9 +40,9 @@ static inline string generate_boundary() noexcept {
     return r;
 }
 
-Request::Method Request::deduce_method(bool body_method) const noexcept {
-    if (form && form.enc_type() == EncType::MULTIPART) {
-        if (!body_method) return Method::POST;
+Request::Method Request::deduce_method(bool has_form, EncType form_enc, bool has_body, Method method) noexcept {
+    if (has_form && form_enc == EncType::MULTIPART) {
+        if (!has_body) return Method::POST;
     }
     return method;
 }
@@ -55,27 +55,28 @@ static inline bool _method_has_meaning_for_body (Request::Method method) {
 string Request::_http_header (SerializationContext& ctx) const {
     //part 1: precalc pieces
     bool body_method = _method_has_meaning_for_body(method);
-    auto eff_method = deduce_method(body_method);
-    auto out_meth = _method_str(eff_method);
+    auto eff_method  = deduce_method(ctx.has_form, form.enc_type(), body_method, method);
+    auto out_meth    = _method_str(eff_method);
+    auto eff_uri     = ctx.uri;
 
-    auto out_reluri  = uri ? uri->relative() : string("/");
+    auto out_reluri  = eff_uri ? eff_uri->relative() : string("/");
 
     auto tmp_http_ver = !ctx.http_version ? 11 : ctx.http_version;
     string out_content_length;
     bool calc_content_length
               = !chunked
-            && (ctx.src_body->parts.size() || _method_has_meaning_for_body(method))
+            && (ctx.body->parts.size() || _method_has_meaning_for_body(method))
             && !headers.has("Content-Length");
-    if (calc_content_length) out_content_length = panda::to_string(ctx.src_body->length());
+    if (calc_content_length) out_content_length = panda::to_string(ctx.body->length());
 
     size_t sz_host = 0;
     size_t sz_host_port = 0;
-    if (!headers.has("Host") && uri && uri->host()) {
+    if (!headers.has("Host") && eff_uri && eff_uri->host()) {
         // Host field builder
         // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Host
-        sz_host = uri->host().length();
-        auto& scheme = uri->scheme();
-        auto port = uri->port();
+        sz_host = eff_uri->host().length();
+        auto& scheme = eff_uri->scheme();
+        auto port = eff_uri->port();
         if ((!scheme) || (scheme == "http" && port != 80) || (scheme == "https" && port != 443)) {
             sz_host_port = 6;
         }
@@ -144,8 +145,8 @@ string Request::_http_header (SerializationContext& ctx) const {
 
     if (sz_host) {
         s += "Host: " ;
-        s += uri->host();
-        if (sz_host_port) { s+= ":";  s += panda::to_string(uri->port()); }
+        s += eff_uri->host();
+        if (sz_host_port) { s+= ":";  s += panda::to_string(eff_uri->port()); }
         s += "\r\n";
     };
 
@@ -182,17 +183,28 @@ string Request::_http_header (SerializationContext& ctx) const {
 std::vector<string> Request::to_vector () const {
     SerializationContext ctx;
     ctx.compression = compression.type;
-    ctx.src_body = &body;
+    ctx.body        = &body;
+    ctx.uri         = uri.get();
+    ctx.has_form    = false;
+
     Body form_body;
+    URI form_uri;
     if (form) {
         if (form.enc_type() == EncType::MULTIPART) {
-            auto boundary = generate_boundary();
-            string ct = "multipart/form-data; boundary=";
-            ct += boundary;
-            ctx.handled_headers.add("Content-Type", ct);
-
-            form.to_body(form_body, boundary);
-            ctx.src_body = &form_body;
+            if (!form.empty() || (uri && !uri->query().empty())) {
+                auto boundary = generate_boundary();
+                form.to_body(form_body, form_uri, uri, boundary);
+                string ct = "multipart/form-data; boundary=";
+                ct += boundary;
+                ctx.handled_headers.add("Content-Type", ct);
+                ctx.body     = &form_body;
+                ctx.uri      = &form_uri;
+                ctx.has_form = true;
+            }
+        }
+        else if((form.enc_type() == EncType::URLENCODED) && !form.empty()) {
+            form.to_uri(form_uri, uri);
+            ctx.uri = &form_uri;
         }
     }
     return _to_vector(ctx, [&]() { return _compile_prepare(ctx); }, [&]() { return _http_header(ctx); });
@@ -213,31 +225,48 @@ std::uint8_t Request::allowed_compression (bool inverse) const noexcept {
     return result;
 }
 
-void Request::Form::to_body(Body& body, const string &boundary) const noexcept {
-    // pass 1: calc total
-    auto fields_count = size();
-    size_t size = (
-            boundary.length() + 2   /* \r\n */
-            + 37 + 2                /* Content-Disposition: form-data; name="" + \r\n */
-        ) * fields_count  + 2;      /* -- */
-    for(auto it : *this) size += it.second.length();
+void Request::Form::to_body(Body& body, uri::URI &uri, const uri::URISP original_uri, const string &boundary) const noexcept {
+    using Container = string_multimap<string, string>;
 
-    // pass 2: merge strings
-    string r(size);
-    for(auto it : *this) {
+    auto serialize = [&body, &boundary](auto fields_count, const Container& container) {
+        // pass 1: calc total
+        size_t size = (
+                boundary.length() + 2   /* \r\n */
+                + 37 + 2                /* Content-Disposition: form-data; name="" + \r\n */
+            ) * fields_count  + 2;      /* -- */
+        for(auto it : container) size += it.second.length();
+
+        // pass 2: merge strings
+        string r(size);
+        for(auto it : container) {
+            r += boundary;
+            r += "\r\n";
+            r += "Content-Disposition: form-data; name=\"";
+            r += it.first;
+            r += "\"\r\n";
+            r += "\r\n";
+            r += it.second;
+            r += "\r\n";
+        }
         r += boundary;
-        r += "\r\n";
-        r += "Content-Disposition: form-data; name=\"";
-        r += it.first;
-        r += "\"\r\n";
-        r += "\r\n";
-        r += it.second;
-        r += "\r\n";
-    }
-    r += boundary;
-    r += "--\r\n";
+        r += "--\r\n";
 
-    body.parts.emplace_back(r);
+        body.parts.emplace_back(r);
+    };
+
+    if (empty()) {
+        auto q = original_uri->query();
+        serialize(q.size(), q);
+        uri = URI(*original_uri);
+        uri.query().clear();
+    } else {
+        serialize(size(), *this);
+    }
 }
+
+void Request::Form::to_uri  (uri::URI &uri, const URISP original_uri) const noexcept {
+    std::abort();
+}
+
 
 }}}

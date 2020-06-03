@@ -5,6 +5,7 @@
 #include "compression/Compressor.h"
 #include <array>
 #include <panda/refcnt.h>
+#include <panda/uri/URI.h>
 
 namespace panda { namespace protocol { namespace http {
 
@@ -14,6 +15,8 @@ using compression::Compression;
 using compression::is_valid_compression;
 
 struct Request;
+using panda::uri::URI;
+using panda::uri::URISP;
 
 struct Message : virtual Refcnt {
     template <class, class> struct Builder;
@@ -31,12 +34,13 @@ struct Message : virtual Refcnt {
 
     struct SerializationContext {
         int                         http_version;
-        const Body*                 src_body;
-        Body*                       dst_body;
+        const Body*                 body;
         Headers                     handled_headers;
         Compression::Type           compression;
         compression::CompressorPtr  compressor;
         const Request*              request;
+        const URI*                  uri;
+        bool                        has_form;
     };
 
     compression::CompressorPtr compressor;
@@ -92,14 +96,14 @@ protected:
 
         Body mutable_body;
         if (ctx.compressor && !chunked) {
-            compress_body(*ctx.compressor, *ctx.src_body, mutable_body);
-            ctx.src_body = &mutable_body;
+            compress_body(*ctx.compressor, *ctx.body, mutable_body);
+            ctx.body = &mutable_body;
         }
 
         prepare();
         auto compiled_headers = compile();
-        if (!ctx.src_body->length()) return  {compiled_headers};
-        auto sz = ctx.src_body->parts.size();
+        if (!ctx.body->length()) return  {compiled_headers};
+        auto sz = ctx.body->parts.size();
 
         std::vector<string> result;
         if (chunked) {
@@ -110,7 +114,7 @@ protected:
         } else {
             result.reserve(1 + sz);
             result.emplace_back(compiled_headers);
-            for (auto& part : ctx.src_body->parts) result.emplace_back(part);
+            for (auto& part : ctx.body->parts) result.emplace_back(part);
         }
 
         return result;
@@ -150,7 +154,7 @@ private:
 
     template<typename Fn>
     inline void _serialize_body (SerializationContext& ctx, Fn&& fn) const {
-        for (auto& part : ctx.src_body->parts) {
+        for (auto& part : ctx.body->parts) {
             _append_chunk(make_chunk(part, ctx.compressor), fn);
         }
         _append_chunk(final_chunk(ctx.compressor), fn);

@@ -1,17 +1,14 @@
 #pragma once
 #include "Response.h"
 #include <panda/memory.h>
-#include <panda/uri/URI.h>
 #include <panda/string_map.h>
 
 namespace panda { namespace protocol { namespace http {
 
-using panda::uri::URI;
-using panda::uri::URISP;
 
 struct Request : Message, AllocatedObject<Request> {
     enum class Method {OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT};
-    enum class EncType {MULTIPART, URLENCODED};
+    enum class EncType {MULTIPART, URLENCODED, disabled};
 
     static inline string method_str(Request::Method rm) noexcept {
         using Method = Request::Method;
@@ -32,23 +29,21 @@ struct Request : Message, AllocatedObject<Request> {
     using Cookies = Fields<string, true, 3>;
 
     struct Form: string_multimap<string, string> {
-        using Parent = string_multimap<string, string>;
-        using Parent::Parent;
 
-        Form() = default;
-        Form(const EncType value) noexcept: _enc_type(value) {}
+        Form(EncType enc_type = EncType::disabled) noexcept :_enc_type(enc_type){}
 
         void enc_type (const EncType value) noexcept { _enc_type = value; }
         EncType enc_type () const noexcept { return _enc_type; }
 
-        operator bool () const noexcept { return !empty(); }
+        operator bool () const noexcept { return _enc_type != EncType::disabled; }
 
         void add(const string& key, const string& value) {
             insert({key, value});
         }
 
     private:
-        void to_body (Body& body, const string& boundary) const noexcept;
+        void to_body (Body& body, URI& uri, const URISP original_uri, const string& boundary) const noexcept;
+        void to_uri  (URI& uri, const URISP original_uri) const noexcept;
         EncType _enc_type = EncType::MULTIPART;
         friend struct Request;
     };
@@ -96,7 +91,7 @@ protected:
 private:
     friend struct RequestParser;
 
-    Method deduce_method (bool body_method) const noexcept;
+    static Method deduce_method (bool has_form, EncType form_enc, bool has_body, Method method) noexcept;
     string _http_header (SerializationContext &ctx) const;
 };
 using RequestSP = iptr<Request>;
