@@ -255,7 +255,7 @@ void Request::Form::to_body(Body& body, uri::URI &uri, const uri::URISP original
     };
 
     if (empty()) {
-        auto q = original_uri->query();
+        auto& q = original_uri->query();
         serialize(q.size(), q);
         uri = URI(*original_uri);
         uri.query().clear();
@@ -265,7 +265,12 @@ void Request::Form::to_body(Body& body, uri::URI &uri, const uri::URISP original
 }
 
 void Request::Form::to_uri  (uri::URI &uri, const URISP original_uri) const noexcept {
-    std::abort();
+    if (original_uri) uri = *original_uri;
+    else              uri = "/";
+    auto& q = uri.query();
+    for(auto it : *this) {
+        q.insert({it.first, it.second});
+    }
 }
 
 

@@ -50,3 +50,30 @@ TEST("multipart/form-data") {
     }
 }
 
+TEST("application/x-www-form-urlencoded") {
+    Request::Form form(Request::EncType::URLENCODED);
+    form.add("k1", "v11");
+    form.add("k1", "v12");
+    form.add("k2", "v2");
+
+    SECTION("enrich query") {
+        auto req = Request::Builder()
+                .method(Request::Method::POST)
+                .uri("/path?k3=v3&k4=v4")
+                .form(std::move(form)).build();
+        CHECK(req->to_string() ==
+            "POST /path?k1=v11&k1=v12&k2=v2&k3=v3&k4=v4 HTTP/1.1\r\n"
+             "Content-Length: 0\r\n"
+            "\r\n"
+        );
+    }
+
+    SECTION("empty uri case") {
+        auto req = Request::Builder()
+                .form(std::move(form)).build();
+        CHECK(req->to_string() ==
+            "GET /?k1=v11&k1=v12&k2=v2 HTTP/1.1\r\n"
+            "\r\n"
+        );
+    }
+}
