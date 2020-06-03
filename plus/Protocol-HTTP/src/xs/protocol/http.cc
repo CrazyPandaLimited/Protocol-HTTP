@@ -31,7 +31,7 @@ static Request::EncType get_encoding(const Sv& sv) noexcept {
     return Request::EncType::MULTIPART;
 }
 
-static bool fill(Request::Form& form, Array& arr, Request::EncType enc_type) noexcept {
+static void fill(Request::Form& form, Array& arr, Request::EncType enc_type)  {
     if (arr.size()) {
         form.enc_type(enc_type);
         bool even = arr.size() % 2 == 0;
