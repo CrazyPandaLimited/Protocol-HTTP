@@ -8,17 +8,17 @@ TEST("multipart/form-data") {
     string str =
         "POST / HTTP/1.1\r\n"
         "Content-Length: 226\r\n"
-        "Content-Type: multipart/form-data; boundary=------------------------Vs0hJS3LYKozagRS\r\n"
+        "Content-Type: multipart/form-data; boundary=-----------------------Tr8hHQ2MZKozcfPSt\r\n"
         "\r\n"
-        "------------------------Vs0hJS3LYKozagRS\r\n"
+        "-----------------------Tr8hHQ2MZKozcfPSt\r\n"
         "Content-Disposition: form-data; name=\"k1\"\r\n"
         "\r\n"
         "v1\r\n"
-        "------------------------Vs0hJS3LYKozagRS\r\n"
+        "-----------------------Tr8hHQ2MZKozcfPSt\r\n"
         "Content-Disposition: form-data; name=\"k2\"\r\n"
         "\r\n"
         "v2\r\n"
-        "------------------------Vs0hJS3LYKozagRS--\r\n";
+        "-----------------------Tr8hHQ2MZKozcfPSt--\r\n";
     //auto d = std::mismatch(data.begin(), data.end(), str.begin());
 
     SECTION("empty form -> no body is sent, method is still GET") {

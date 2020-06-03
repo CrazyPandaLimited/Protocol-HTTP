@@ -29,13 +29,14 @@ static inline string _method_str (Request::Method rm) {
 static inline string generate_boundary() noexcept {
     const constexpr size_t SZ = (string::MAX_SSO_CHARS / sizeof (int)) + (string::MAX_SSO_CHARS % sizeof (int) == 0 ? 0 : 1);
     static const char alphabet[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    const constexpr size_t alphabet_sz = sizeof (alphabet) - 1;
     int dices[SZ];
     for(size_t i = 0; i <SZ; ++i) { dices[i] = std::rand(); }
 
     const char* random_bytes = (const char*)dices;
     string r(40, '-');
-    for(size_t i = r.size() - 16; i < r.capacity(); ++i) {
-        r[i] = alphabet[*random_bytes++ % sizeof(alphabet)];
+    for(size_t i = r.size() - 17; i < r.size(); ++i) {
+        r[i] = alphabet[*random_bytes++ % alphabet_sz];
     }
     return r;
 }
