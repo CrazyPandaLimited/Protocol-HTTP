@@ -35,7 +35,7 @@ struct Message : virtual Refcnt {
     struct SerializationContext {
         int                         http_version;
         const Body*                 body;
-        Headers                     handled_headers;
+        GenericHeaders<2>           handled_headers;
         Compression::Type           compression;
         compression::CompressorPtr  compressor;
         const Request*              request;
