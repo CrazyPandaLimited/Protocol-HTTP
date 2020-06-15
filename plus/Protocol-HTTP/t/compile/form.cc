@@ -1,4 +1,5 @@
 #include "../lib/test.h"
+#include <regex>
 
 #define TEST(name) TEST_CASE("compile-form: " name, "[compile-form]")
 
@@ -47,6 +48,31 @@ TEST("multipart/form-data") {
                 .build();
         auto data = req->to_string();
         CHECK(data == str);
+    }
+
+    SECTION("boundary cannot be part of key/value") {
+        string sample =
+            "POST / HTTP/1.1\r\n"
+            "Content-Length: 173\r\n"
+            "Content-Type: multipart/form-data; boundary=-----------------------FR7ODbhRMIR3XblaZ\r\n"
+            "\r\n"
+            "-----------------------FR7ODbhRMIR3XblaZ\r\n"
+            "Content-Disposition: form-data; name=\"k1\"\r\n"
+            "\r\n"
+            "-----------------------Tr8hHQ2MZKozcfPSt\r\n"
+            "-----------------------FR7ODbhRMIR3XblaZ--\r\n";
+        Request::Form form(Request::EncType::MULTIPART);
+        form.add("k1", "-----------------------Tr8hHQ2MZKozcfPSt");
+        auto req = Request::Builder().form(std::move(form)).build();
+        auto data = std::string(req->to_string());
+
+        std::regex re("-----------------------Tr8hHQ2MZKozcfPSt");
+        std::sregex_iterator begin(data.begin(), data.end(), re);
+        std::sregex_iterator end;
+        auto count = std::distance(begin, end);
+        CHECK(count == 1);
+
+        CHECK(req->to_string() == sample);
     }
 }
 

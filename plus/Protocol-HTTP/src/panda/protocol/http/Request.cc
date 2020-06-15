@@ -26,18 +26,26 @@ static inline string _method_str (Request::Method rm) {
     }
 }
 
-static inline string generate_boundary() noexcept {
+static inline string generate_boundary(const Request::Form& form) noexcept {
     const constexpr size_t SZ = (string::MAX_SSO_CHARS / sizeof (int)) + (string::MAX_SSO_CHARS % sizeof (int) == 0 ? 0 : 1);
-    static const char alphabet[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    const constexpr char alphabet[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
     const constexpr size_t alphabet_sz = sizeof (alphabet) - 1;
     int dices[SZ];
-    for(size_t i = 0; i <SZ; ++i) { dices[i] = std::rand(); }
-
-    const char* random_bytes = (const char*)dices;
+    bool matches_form;
     string r(40, '-');
-    for(size_t i = r.size() - 17; i < r.size(); ++i) {
-        r[i] = alphabet[*random_bytes++ % alphabet_sz];
-    }
+    do {
+        for(size_t i = 0; i <SZ; ++i) { dices[i] = std::rand(); }
+
+        const char* random_bytes = (const char*)dices;
+        for(size_t i = r.size() - 17; i < r.size(); ++i) {
+            r[i] = alphabet[*random_bytes++ % alphabet_sz];
+        }
+
+        matches_form = false;
+        for(auto it = form.begin(); (!matches_form) && (it != form.end()); ++it) {
+            matches_form = (it->first.find(r) != string::npos) || (it->second.find(r) != string::npos);
+        }
+    } while(matches_form);
     return r;
 }
 
@@ -194,7 +202,7 @@ std::vector<string> Request::to_vector () const {
     if (form) {
         if (form.enc_type() == EncType::MULTIPART) {
             if (!form.empty() || (uri && !uri->query().empty())) {
-                auto boundary = generate_boundary();
+                auto boundary = generate_boundary(form);
                 form.to_body(form_body, form_uri, uri, boundary);
                 string ct = "multipart/form-data; boundary=";
                 ct += boundary;
