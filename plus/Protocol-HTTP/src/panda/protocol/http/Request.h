@@ -7,7 +7,7 @@ namespace panda { namespace protocol { namespace http {
 
 
 struct Request : Message, AllocatedObject<Request> {
-    enum class Method {OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT};
+    enum class Method {unspecified, OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT};
     enum class EncType {MULTIPART, URLENCODED, disabled};
 
     static inline string method_str(Request::Method rm) noexcept {
@@ -49,7 +49,7 @@ struct Request : Message, AllocatedObject<Request> {
     };
 
 
-    Method  method = Method::GET;
+    Method  method = Method::unspecified;
     URISP   uri;
     Cookies cookies;
     Form    form;
@@ -91,7 +91,7 @@ protected:
 private:
     friend struct RequestParser;
 
-    static Method deduce_method (bool has_form, EncType form_enc, bool has_body, Method method) noexcept;
+    static Method deduce_method (bool has_form, EncType form_enc, Method method) noexcept;
     string _http_header (SerializationContext &ctx) const;
 };
 using RequestSP = iptr<Request>;

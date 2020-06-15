@@ -41,9 +41,10 @@ static inline string generate_boundary() noexcept {
     return r;
 }
 
-Request::Method Request::deduce_method(bool has_form, EncType form_enc, bool has_body, Method method) noexcept {
-    if (has_form && form_enc == EncType::MULTIPART) {
-        if (!has_body) return Method::POST;
+Request::Method Request::deduce_method(bool has_form, EncType form_enc, Method method) noexcept {
+    if (method == Method::unspecified) {
+        if (has_form && form_enc == EncType::MULTIPART) return Method::POST;
+        return Method::GET;
     }
     return method;
 }
@@ -55,8 +56,8 @@ static inline bool _method_has_meaning_for_body (Request::Method method) {
 
 string Request::_http_header (SerializationContext& ctx) const {
     //part 1: precalc pieces
-    bool body_method = _method_has_meaning_for_body(method);
-    auto eff_method  = deduce_method(ctx.has_form, form.enc_type(), body_method, method);
+    auto eff_method  = deduce_method(ctx.has_form, form.enc_type(), method);
+    bool body_method = _method_has_meaning_for_body(eff_method);
     auto out_meth    = _method_str(eff_method);
     auto eff_uri     = ctx.uri;
 
@@ -66,7 +67,7 @@ string Request::_http_header (SerializationContext& ctx) const {
     string out_content_length;
     bool calc_content_length
               = !chunked
-            && (ctx.body->parts.size() || _method_has_meaning_for_body(method))
+            && (ctx.body->parts.size() || body_method)
             && !headers.has("Content-Length");
     if (calc_content_length) out_content_length = panda::to_string(ctx.body->length());
 

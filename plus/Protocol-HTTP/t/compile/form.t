@@ -46,6 +46,17 @@ subtest "multipart/form-data (2)" => sub {
     is $req->to_string, $sample;
 };
 
+subtest "allow to submit multipart/form-data with GET-request" => sub {
+    MyTest::native_srand(777);
+    my $req = Protocol::HTTP::Request->new({
+        method => METHOD_GET,
+        form   => [k1 => 'v1', k2 => 'v2'],
+    });
+    my $changed_samle = ($sample =~ s/POST/GET/r);
+    is $req->to_string, $changed_samle;
+};
+
+
 subtest "multipart/form-data (3)" => sub {
     MyTest::native_srand(777);
     my $req = Protocol::HTTP::Request->new({
