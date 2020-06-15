@@ -3,6 +3,7 @@ use lib 't/lib';
 use MyTest;
 use Test::More;
 use Test::Catch;
+use Test::Fatal;
 use Protocol::HTTP::Request;
 
 catch_run('[compile-form]');
@@ -65,6 +66,16 @@ subtest "application/x-www-form-urlencoded" => sub {
         "GET /?k1=v1&k2=v2 HTTP/1.1\r\n".
         "\r\n"
     ;
+};
+
+subtest "wrong enc_type" => sub {
+    like exception { Protocol::HTTP::Request->new({uri  => '/', form => -1, }) },
+        qr/invalid form encoding/;
+    like exception { Protocol::HTTP::Request->new({uri  => '/', form => {
+            enc_type => -1,
+            fields   => [k1 => 'v1', k2 => 'v2'],
+        }}) },
+        qr/invalid form encoding/;
 };
 
 done_testing;

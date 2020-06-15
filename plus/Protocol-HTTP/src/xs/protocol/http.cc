@@ -25,10 +25,11 @@ static inline void msgfill (Message* m, const Hash& h) {
     }
 }
 
-static Request::EncType get_encoding(const Sv& sv) noexcept {
+static Request::EncType get_encoding(const Sv& sv) {
+    using Type = Request::EncType;
     int val = SvIV(sv);
-    if (val == (int)Request::EncType::URLENCODED) return Request::EncType::URLENCODED;
-    return Request::EncType::MULTIPART;
+    if (val < (int)Type::MULTIPART || val > (int)Type::URLENCODED) throw "invalid form encoding";
+    return (Type)val;
 }
 
 static void fill(Request::Form& form, Array& arr, Request::EncType enc_type)  {
