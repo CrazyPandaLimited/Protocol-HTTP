@@ -439,6 +439,7 @@ TEST("(de)serialization") {
     }
 
     SECTION("by date filtration") {
+        panda::time::tzset("Europe/Moscow");
         panda::date::Date expires(2020, 05, 18, 5);
         auto past = expires - 3600;
         auto future = expires + 3600;
