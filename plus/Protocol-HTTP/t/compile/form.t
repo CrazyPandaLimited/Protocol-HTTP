@@ -8,7 +8,15 @@ use Protocol::HTTP::Request;
 
 catch_run('[compile-form]');
 
-my $sample =
+my $canonize = sub {
+    my $s = shift;
+    if ($s !~ /; boundary=(-+\w+)/) { die("no boundary at string '$s'"); }
+    my ($b) = $1;
+    my $r = $s =~ s/$b/-----------------------XXXXXXXXXXXXXXXXX/gr;
+    return $r;
+};
+
+my $sample = $canonize->(
     "POST / HTTP/1.1\r\n".
     "Content-Length: 226\r\n".
     "Content-Type: multipart/form-data; boundary=-----------------------xn654lb75PltJaTBy\r\n".
@@ -25,14 +33,14 @@ my $sample =
     "v2\r\n".
 
     "-----------------------xn654lb75PltJaTBy--\r\n"
-;
+);
 
 subtest "simple multipart/form-data" => sub {
     MyTest::native_srand(777);
     my $req = Protocol::HTTP::Request->new({
         form => [k1 => 'v1', k2 => 'v2'],
     });
-    is $req->to_string, $sample;
+    is $canonize->($req->to_string), $sample;
 };
 
 subtest "multipart/form-data (2)" => sub {
@@ -43,7 +51,7 @@ subtest "multipart/form-data (2)" => sub {
             fields   => [k1 => 'v1', k2 => 'v2'],
         },
     });
-    is $req->to_string, $sample;
+    is $canonize->($req->to_string), $sample;
 };
 
 subtest "allow to submit multipart/form-data with GET-request" => sub {
@@ -53,7 +61,7 @@ subtest "allow to submit multipart/form-data with GET-request" => sub {
         form   => [k1 => 'v1', k2 => 'v2'],
     });
     my $changed_samle = ($sample =~ s/POST/GET/r);
-    is $req->to_string, $changed_samle;
+    is $canonize->($req->to_string), $changed_samle;
 };
 
 
@@ -63,7 +71,7 @@ subtest "multipart/form-data (3)" => sub {
         uri  => '/?k1=v1&k2=v2',
         form => ENCODING_MULTIPART,
     });
-    is $req->to_string, $sample;
+    is $canonize->($req->to_string), $sample;
 };
 
 subtest "application/x-www-form-urlencoded" => sub {
