@@ -40,7 +40,6 @@ struct Message : virtual Refcnt {
         compression::CompressorPtr  compressor;
         const Request*              request;
         const URI*                  uri;
-        bool                        has_form;
     };
 
     compression::CompressorPtr compressor;

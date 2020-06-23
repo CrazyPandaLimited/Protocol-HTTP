@@ -76,6 +76,7 @@ struct Request : Message, AllocatedObject<Request> {
         return _allow_compression(prefn...);
     }
 
+    Method effective_method() const noexcept;
     std::uint8_t allowed_compression (bool inverse = false) const noexcept;
 
 protected:

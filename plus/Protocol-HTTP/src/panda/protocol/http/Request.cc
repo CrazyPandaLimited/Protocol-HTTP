@@ -49,14 +49,15 @@ static inline string generate_boundary(const Request::Form& form) noexcept {
     return r;
 }
 
-Request::Method Request::deduce_method(bool has_form, EncType form_enc, Method method) noexcept {
+Request::Method Request::effective_method() const noexcept {
     if (method == Method::unspecified) {
-        if (has_form && form_enc == EncType::MULTIPART) return Method::POST;
+        if (form && form.enc_type() == EncType::MULTIPART && (!form.empty() || (uri && !uri->query().empty()))) {
+            return Method::POST;
+        }
         return Method::GET;
     }
     return method;
 }
-
 
 static inline bool _method_has_meaning_for_body (Request::Method method) {
     return method == Request::Method::POST || method == Request::Method::PUT;
@@ -64,7 +65,7 @@ static inline bool _method_has_meaning_for_body (Request::Method method) {
 
 string Request::_http_header (SerializationContext& ctx) const {
     //part 1: precalc pieces
-    auto eff_method  = deduce_method(ctx.has_form, form.enc_type(), method);
+    auto eff_method  = effective_method();
     bool body_method = _method_has_meaning_for_body(eff_method);
     auto out_meth    = _method_str(eff_method);
     auto eff_uri     = ctx.uri;
@@ -195,7 +196,6 @@ std::vector<string> Request::to_vector () const {
     ctx.compression = compression.type;
     ctx.body        = &body;
     ctx.uri         = uri.get();
-    ctx.has_form    = false;
 
     Body form_body;
     URI form_uri;
@@ -209,7 +209,6 @@ std::vector<string> Request::to_vector () const {
                 ctx.handled_headers.add("Content-Type", ct);
                 ctx.body     = &form_body;
                 ctx.uri      = &form_uri;
-                ctx.has_form = true;
             }
         }
         else if((form.enc_type() == EncType::URLENCODED) && !form.empty()) {
