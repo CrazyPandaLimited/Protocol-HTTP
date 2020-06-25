@@ -13,14 +13,15 @@ struct Request : Message, AllocatedObject<Request> {
     static inline string method_str(Request::Method rm) noexcept {
         using Method = Request::Method;
         switch (rm) {
-            case Method::OPTIONS : return "OPTIONS";
-            case Method::GET     : return "GET";
-            case Method::HEAD    : return "HEAD";
-            case Method::POST    : return "POST";
-            case Method::PUT     : return "PUT";
-            case Method::DELETE  : return "DELETE";
-            case Method::TRACE   : return "TRACE";
-            case Method::CONNECT : return "CONNECT";
+            case Method::unspecified : return "[unspecified]";
+            case Method::OPTIONS     : return "OPTIONS";
+            case Method::GET         : return "GET";
+            case Method::HEAD        : return "HEAD";
+            case Method::POST        : return "POST";
+            case Method::PUT         : return "PUT";
+            case Method::DELETE      : return "DELETE";
+            case Method::TRACE       : return "TRACE";
+            case Method::CONNECT     : return "CONNECT";
             default: return "[UNKNOWN]";
         }
     }
@@ -49,7 +50,6 @@ struct Request : Message, AllocatedObject<Request> {
     };
 
 
-    Method  method = Method::unspecified;
     URISP   uri;
     Cookies cookies;
     Form    form;
@@ -59,7 +59,7 @@ struct Request : Message, AllocatedObject<Request> {
     Request () {}
 
     Request (Method method, const URISP& uri, Headers&& header = Headers(), Body&& body = Body(), bool chunked = false, int http_version = 0) :
-        Message(std::move(header), std::move(body), chunked, http_version), method(method), uri(uri)
+        Message(std::move(header), std::move(body), chunked, http_version), uri(uri), _method(method)
     {
     }
 
@@ -76,10 +76,16 @@ struct Request : Message, AllocatedObject<Request> {
         return _allow_compression(prefn...);
     }
 
-    Method effective_method() const noexcept;
+    Method method()     const noexcept;
+    Method method_raw() const noexcept { return _method; }
+
+    void   method_raw(Method value) noexcept { _method = value; }
+
     std::uint8_t allowed_compression (bool inverse = false) const noexcept;
 
 protected:
+    Method  _method = Method::unspecified;
+
     template<typename... PrefN>
     void _allow_compression (Compression::Type p, PrefN... prefn) {
         compression::pack(this->compression_prefs, p);
@@ -92,7 +98,7 @@ protected:
 private:
     friend struct RequestParser;
 
-    static Method deduce_method (bool has_form, EncType form_enc, Method method) noexcept;
+    static Method deduce_method (bool has_form, EncType form_enc, Method _method) noexcept;
     string _http_header (SerializationContext &ctx) const;
 };
 using RequestSP = iptr<Request>;
@@ -102,7 +108,7 @@ struct Request::BuilderImpl : Message::Builder<T, R> {
     using Message::Builder<T, R>::Builder;
 
     T& method (Request::Method method) {
-        this->_message->method = method;
+        this->_message->method_raw(method);
         return this->self();
     }
 

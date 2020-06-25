@@ -53,7 +53,8 @@ subtest "method string" => sub {
         uri => "http://crazypanda.ru/hello/world",
     });
     is $req2->method_str, 'GET', "correctly deduced";
-    is $req2->method, METHOD_UNSPECIFIED;
+    is $req2->method_raw, METHOD_UNSPECIFIED;
+    is $req2->method, METHOD_GET;
 };
 
 subtest "bugfix: MEIACORE-1000, no double cookeis on output " => sub {

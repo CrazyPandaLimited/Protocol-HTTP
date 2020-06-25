@@ -107,7 +107,7 @@ void set_method (Request* req, const Sv& method) {
     using Method = Request::Method;
     int num = SvIV_nomg(method);
     if (num < (int)Method::OPTIONS || num > (int)Method::CONNECT) throw panda::exception("invalid http method");
-    req->method = (Method)num;
+    req->method_raw((Method)num);
 }
 
 void set_request_cookies (Request* p, const Hash& hv) {

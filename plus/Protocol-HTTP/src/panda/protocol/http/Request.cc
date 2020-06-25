@@ -49,14 +49,14 @@ static inline string generate_boundary(const Request::Form& form) noexcept {
     return r;
 }
 
-Request::Method Request::effective_method() const noexcept {
-    if (method == Method::unspecified) {
+Request::Method Request::method() const noexcept {
+    if (_method == Method::unspecified) {
         if (form && form.enc_type() == EncType::MULTIPART && (!form.empty() || (uri && !uri->query().empty()))) {
             return Method::POST;
         }
         return Method::GET;
     }
-    return method;
+    return _method;
 }
 
 static inline bool _method_has_meaning_for_body (Request::Method method) {
@@ -65,7 +65,7 @@ static inline bool _method_has_meaning_for_body (Request::Method method) {
 
 string Request::_http_header (SerializationContext& ctx) const {
     //part 1: precalc pieces
-    auto eff_method  = effective_method();
+    auto eff_method  = method();
     bool body_method = _method_has_meaning_for_body(eff_method);
     auto out_meth    = _method_str(eff_method);
     auto eff_uri     = ctx.uri;
