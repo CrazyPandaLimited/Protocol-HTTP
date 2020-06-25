@@ -56,15 +56,16 @@ TEST("multipart/form-data") {
         auto boundary = pair.second;
 
         SECTION("boundary cannot be part of key/value") {
-            string sample_str =
-                "POST / HTTP/1.1\r\n"
-                "Content-Length: 173\r\n"
-                "Content-Type: multipart/form-data; boundary=-----------------------FR7ODbhRMIR3XblaZ\r\n"
-                "\r\n"
-                "-----------------------FR7ODbhRMIR3XblaZ\r\n"
-                "Content-Disposition: form-data; name=\"k1\"\r\n"
-                "\r\n"
-                "-----------------------Tr8hHQ2MZKozcfPSt\r\n"
+            std::srand(123);
+            string sample_str = string(
+                    "POST / HTTP/1.1\r\n"
+                    "Content-Length: 173\r\n"
+                    "Content-Type: multipart/form-data; boundary=-----------------------FR7ODbhRMIR3XblaZ\r\n"
+                    "\r\n"
+                    "-----------------------FR7ODbhRMIR3XblaZ\r\n"
+                    "Content-Disposition: form-data; name=\"k1\"\r\n"
+                    "\r\n"
+                ) + boundary + "\r\n"
                 "-----------------------FR7ODbhRMIR3XblaZ--\r\n";
             auto sample = canonize(sample_str).first;
             Request::Form form(Request::EncType::MULTIPART);
