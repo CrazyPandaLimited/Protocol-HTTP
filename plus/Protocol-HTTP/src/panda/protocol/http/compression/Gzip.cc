@@ -117,6 +117,7 @@ std::error_code Gzip::uncompress(const string& piece, Body& body) noexcept {
             stream.next_out = reinterpret_cast<Bytef*>(acc.buf());
             stream.avail_out = static_cast<uInt>(acc.capacity());
         }
+        stream.next_in += consumed_bytes;
         return true;
     };
 
