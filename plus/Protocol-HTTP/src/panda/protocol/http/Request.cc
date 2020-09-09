@@ -304,8 +304,6 @@ static void _serialize(Body& body, const string &boundary, const string_multimap
 }
 
 void Request::Form::to_body(Body& body, uri::URI &uri, const uri::URISP original_uri, const string &boundary) const noexcept {
-    using Container = string_multimap<string, string>;
-
     if (empty()) {
         auto& q = original_uri->query();
         _serialize(body, boundary, q);
