@@ -39,8 +39,20 @@ static void fill(Request::Form& form, Array& arr, Request::EncType enc_type)  {
         size_t last = even ? arr.size() - 1 : arr.size() - 2;
         for(size_t i = 0; i < last; i += 2) {
             string key = arr.at(i).as_string();
-            string val = arr.at(i + 1).as_string();
-            form.add(key, val);
+            auto value = arr.at(i +1);
+            if (value.is_simple()) {
+                form.add(key, value.as_string());
+            }
+            else if(value.is_array_ref()) {
+                auto values = Array(value);
+                if (values.size() != 2) {
+                    string err = "invalid file fieild '";
+                    err += key;
+                    err += ": it should be array [$filename => $filecontent]";
+                    throw err;
+                }
+                form.add(key, values[1].as_string(), values[0].as_string());
+            }
         }
         if (!even) {
             string key = arr.back().as_string();

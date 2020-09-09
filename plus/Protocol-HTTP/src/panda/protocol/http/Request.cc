@@ -43,7 +43,7 @@ static inline string generate_boundary(const Request::Form& form) noexcept {
 
         matches_form = false;
         for(auto it = form.begin(); (!matches_form) && (it != form.end()); ++it) {
-            matches_form = (it->first.find(r) != string::npos) || (it->second.find(r) != string::npos);
+            matches_form = (it->first.find(r) != string::npos) || (it->second.value.find(r) != string::npos);
         }
     } while(matches_form);
     return r;
@@ -234,51 +234,96 @@ std::uint8_t Request::allowed_compression (bool inverse) const noexcept {
     return result;
 }
 
+static void _serialize(Body& body, const string &boundary, const Request::Form& container) {
+    auto fields_count= container.size();
+    // pass 1: calc total
+    size_t size = (
+            boundary.length() + 2   /* \r\n */
+            + 37 + 2                /* Content-Disposition: form-data; name="" + \r\n */
+        ) * fields_count  + 2;      /* -- */
+    for(auto it : container) {
+        size += it.second.value.length();
+        auto& name = it.second.name;
+        if (name) {
+            size += name.length() + 14;   //; filename=""
+        }
+    }
+
+    // pass 2: merge strings
+    string r(size);
+    for(auto it : container) {
+        r += boundary;
+        r += "\r\n";
+        r += "Content-Disposition: form-data; name=\"";
+        r += it.first;
+        r += "\"";
+        if (it.second.name) {
+            r+= "; filename=\"";
+            r += it.second.name;
+            r += "\"";
+        }
+        r += "\r\n";
+        r += "\r\n";
+        r += it.second.value;
+        r += "\r\n";
+    }
+    r += boundary;
+    r += "--\r\n";
+
+    body.parts.emplace_back(r);
+}
+
+static void _serialize(Body& body, const string &boundary, const string_multimap<string, string>& container) {
+    auto fields_count= container.size();
+    // pass 1: calc total
+    size_t size = (
+            boundary.length() + 2   /* \r\n */
+            + 37 + 2                /* Content-Disposition: form-data; name="" + \r\n */
+        ) * fields_count  + 2;      /* -- */
+    for(auto it : container) {
+        size += it.second.length();
+    }
+
+    // pass 2: merge strings
+    string r(size);
+    for(auto it : container) {
+        r += boundary;
+        r += "\r\n";
+        r += "Content-Disposition: form-data; name=\"";
+        r += it.first;
+        r += "\"";
+        r += "\r\n";
+        r += "\r\n";
+        r += it.second;
+        r += "\r\n";
+    }
+    r += boundary;
+    r += "--\r\n";
+
+    body.parts.emplace_back(r);
+}
+
 void Request::Form::to_body(Body& body, uri::URI &uri, const uri::URISP original_uri, const string &boundary) const noexcept {
     using Container = string_multimap<string, string>;
 
-    auto serialize = [&body, &boundary](auto fields_count, const Container& container) {
-        // pass 1: calc total
-        size_t size = (
-                boundary.length() + 2   /* \r\n */
-                + 37 + 2                /* Content-Disposition: form-data; name="" + \r\n */
-            ) * fields_count  + 2;      /* -- */
-        for(auto it : container) size += it.second.length();
-
-        // pass 2: merge strings
-        string r(size);
-        for(auto it : container) {
-            r += boundary;
-            r += "\r\n";
-            r += "Content-Disposition: form-data; name=\"";
-            r += it.first;
-            r += "\"\r\n";
-            r += "\r\n";
-            r += it.second;
-            r += "\r\n";
-        }
-        r += boundary;
-        r += "--\r\n";
-
-        body.parts.emplace_back(r);
-    };
-
     if (empty()) {
         auto& q = original_uri->query();
-        serialize(q.size(), q);
+        _serialize(body, boundary, q);
         uri = URI(*original_uri);
         uri.query().clear();
     } else {
-        serialize(size(), *this);
+        _serialize(body, boundary, *this);
     }
 }
 
-void Request::Form::to_uri  (uri::URI &uri, const URISP original_uri) const noexcept {
+void Request::Form::to_uri  (uri::URI &uri, const URISP original_uri) const  {
     if (original_uri) uri = *original_uri;
     else              uri = "/";
     auto& q = uri.query();
     for(auto it : *this) {
-        q.insert({it.first, it.second});
+        auto& named = it.second;
+        if (named.name) throw string("form contains named field (filename) " + it.second.value + ", it cannot be converted to URI");
+        q.insert({it.first, it.second.value});
     }
 }
 

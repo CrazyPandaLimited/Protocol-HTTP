@@ -54,6 +54,29 @@ subtest "multipart/form-data (2)" => sub {
     is $canonize->($req->to_string), $sample;
 };
 
+subtest "multipart/form-data (file)" => sub {
+    MyTest::native_srand(777);
+    my $req = Protocol::HTTP::Request->new({
+        form => {
+            enc_type => ENCODING_MULTIPART,
+            fields   => [k1 => ['sample.jpg' => 'bla-bla-bla']],
+        },
+    });
+    is $canonize->($req->to_string), $canonize->(
+        "POST / HTTP/1.1\r\n".
+        "Content-Length: 167\r\n".
+        "Content-Type: multipart/form-data; boundary=-----------------------xn654lb75PltJaTBy\r\n".
+        "\r\n".
+
+        "-----------------------xn654lb75PltJaTBy\r\n".
+        "Content-Disposition: form-data; name=\"k1\"; filename=\"sample.jpg\"\r\n".
+        "\r\n".
+        "bla-bla-bla\r\n".
+
+        "-----------------------xn654lb75PltJaTBy--\r\n"
+    );
+};
+
 subtest "allow to submit multipart/form-data with GET-request" => sub {
     MyTest::native_srand(777);
     my $req = Protocol::HTTP::Request->new({

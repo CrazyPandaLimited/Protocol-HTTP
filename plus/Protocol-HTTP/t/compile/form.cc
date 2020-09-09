@@ -84,6 +84,28 @@ TEST("multipart/form-data") {
         }
     }
 
+    SECTION("send a small file") {
+        Request::Form form(Request::EncType::MULTIPART);
+        form.add("k1", "v1", "sample.jpg");
+        auto req = Request::Builder().form(std::move(form)).build();
+        auto data = canonize(req->to_string()).first;
+
+        std::srand(123);
+        string sample_str = string(
+                "POST / HTTP/1.1\r\n"
+                "Content-Length: 158\r\n"
+                "Content-Type: multipart/form-data; boundary=-----------------------FR7ODbhRMIR3XblaZ\r\n"
+                "\r\n"
+                "-----------------------FR7ODbhRMIR3XblaZ\r\n"
+                "Content-Disposition: form-data; name=\"k1\"; filename=\"sample.jpg\"\r\n"
+                "\r\n"
+            ) + "v1\r\n"
+            "-----------------------FR7ODbhRMIR3XblaZ--\r\n";
+        auto sample = canonize(sample_str).first;
+
+        CHECK(data == sample);
+    }
+
     SECTION("uri query -> form") {
         Request::Form form(Request::EncType::MULTIPART);
         auto req = Request::Builder()
