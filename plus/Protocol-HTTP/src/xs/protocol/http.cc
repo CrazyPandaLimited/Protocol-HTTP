@@ -45,13 +45,13 @@ static void fill(Request::Form& form, Array& arr, Request::EncType enc_type)  {
             }
             else if(value.is_array_ref()) {
                 auto values = Array(value);
-                if (values.size() != 2) {
+                if (values.size() != 3) {
                     string err = "invalid file fieild '";
                     err += key;
-                    err += ": it should be array [$filename => $filecontent]";
+                    err += ": it should be array [$filename => $filecontent, $filetype]";
                     throw err;
                 }
-                form.add(key, values[1].as_string(), values[0].as_string());
+                form.add(key, values[1].as_string(), values[0].as_string(), values[2].as_string());
             }
         }
         if (!even) {

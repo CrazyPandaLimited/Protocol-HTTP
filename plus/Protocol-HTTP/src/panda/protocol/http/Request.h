@@ -32,6 +32,7 @@ struct Request : Message, AllocatedObject<Request> {
     struct NamedString {
         string value;
         string name;
+        string content_type;
     };
 
     struct Form: string_multimap<string, NamedString> {
@@ -43,8 +44,8 @@ struct Request : Message, AllocatedObject<Request> {
 
         operator bool () const noexcept { return _enc_type != EncType::disabled; }
 
-        void add(const string& key, const string& value, const string& filename = "") {
-            insert({key, NamedString{value, filename}});
+        void add(const string& key, const string& value, const string& filename = "", const string content_type = "") {
+            insert({key, NamedString{value, filename, content_type}});
         }
 
     private:

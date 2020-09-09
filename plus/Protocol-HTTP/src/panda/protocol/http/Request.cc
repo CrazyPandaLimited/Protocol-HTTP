@@ -247,6 +247,10 @@ static void _serialize(Body& body, const string &boundary, const Request::Form& 
         if (name) {
             size += name.length() + 14;   //; filename=""
         }
+        auto& ct = it.second.content_type;
+        if (ct) {
+            size += ct.size() + 18; //Content-Type: image/jpeg\r\n
+        }
     }
 
     // pass 2: merge strings
@@ -263,6 +267,13 @@ static void _serialize(Body& body, const string &boundary, const Request::Form& 
             r += "\"";
         }
         r += "\r\n";
+
+        if (it.second.content_type) {
+            r += "Content-Type: ";
+            r += it.second.content_type;
+            r += "\r\n";
+        }
+
         r += "\r\n";
         r += it.second.value;
         r += "\r\n";
