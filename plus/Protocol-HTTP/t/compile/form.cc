@@ -22,18 +22,18 @@ TEST("multipart/form-data") {
 
     string str_sample =
         "POST / HTTP/1.1\r\n"
-        "Content-Length: 226\r\n"
+        "Content-Length: 232\r\n"
         "Content-Type: multipart/form-data; boundary=-----------------------YYYYYYYYYYYYYYYYY\r\n"
         "\r\n"
-        "-----------------------YYYYYYYYYYYYYYYYY\r\n"
+        "-------------------------YYYYYYYYYYYYYYYYY\r\n"
         "Content-Disposition: form-data; name=\"k1\"\r\n"
         "\r\n"
         "v1\r\n"
-        "-----------------------YYYYYYYYYYYYYYYYY\r\n"
+        "-------------------------YYYYYYYYYYYYYYYYY\r\n"
         "Content-Disposition: form-data; name=\"k2\"\r\n"
         "\r\n"
         "v2\r\n"
-        "-----------------------YYYYYYYYYYYYYYYYY--\r\n";
+        "-------------------------YYYYYYYYYYYYYYYYY--\r\n";
     auto str = canonize(str_sample).first;
 
     SECTION("empty form -> no body is sent, method is still GET") {
@@ -59,14 +59,14 @@ TEST("multipart/form-data") {
             std::srand(123);
             string sample_str = string(
                     "POST / HTTP/1.1\r\n"
-                    "Content-Length: 173\r\n"
+                    "Content-Length: 177\r\n"
                     "Content-Type: multipart/form-data; boundary=-----------------------FR7ODbhRMIR3XblaZ\r\n"
                     "\r\n"
-                    "-----------------------FR7ODbhRMIR3XblaZ\r\n"
+                    "-------------------------FR7ODbhRMIR3XblaZ\r\n"
                     "Content-Disposition: form-data; name=\"k1\"\r\n"
                     "\r\n"
                 ) + boundary + "\r\n"
-                "-----------------------FR7ODbhRMIR3XblaZ--\r\n";
+                "-------------------------FR7ODbhRMIR3XblaZ--\r\n";
             auto sample = canonize(sample_str).first;
             Request::Form form(Request::EncType::MULTIPART);
             form.add("k1", boundary);
@@ -93,15 +93,15 @@ TEST("multipart/form-data") {
         std::srand(123);
         string sample_str = string(
                 "POST / HTTP/1.1\r\n"
-                "Content-Length: 184\r\n"
+                "Content-Length: 188\r\n"
                 "Content-Type: multipart/form-data; boundary=-----------------------FR7ODbhRMIR3XblaZ\r\n"
                 "\r\n"
-                "-----------------------FR7ODbhRMIR3XblaZ\r\n"
+                "-------------------------FR7ODbhRMIR3XblaZ\r\n"
                 "Content-Disposition: form-data; name=\"k1\"; filename=\"sample.jpg\"\r\n"
                 "Content-Type: image/jpeg\r\n"
                 "\r\n"
             ) + "v1\r\n"
-            "-----------------------FR7ODbhRMIR3XblaZ--\r\n";
+            "-------------------------FR7ODbhRMIR3XblaZ--\r\n";
         auto sample = canonize(sample_str).first;
 
         CHECK(data == sample);

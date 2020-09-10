@@ -203,12 +203,11 @@ std::vector<string> Request::to_vector () const {
         if (form.enc_type() == EncType::MULTIPART) {
             if (!form.empty() || (uri && !uri->query().empty())) {
                 auto boundary = generate_boundary(form);
-                form.to_body(form_body, form_uri, uri, boundary);
+                ctx.uri = form.to_body(form_body, form_uri, uri, boundary);
                 string ct = "multipart/form-data; boundary=";
                 ct += boundary;
                 ctx.handled_headers.add("Content-Type", ct);
                 ctx.body     = &form_body;
-                ctx.uri      = &form_uri;
             }
         }
         else if((form.enc_type() == EncType::URLENCODED) && !form.empty()) {
@@ -238,7 +237,7 @@ static void _serialize(Body& body, const string &boundary, const Request::Form& 
     auto fields_count= container.size();
     // pass 1: calc total
     size_t size = (
-            boundary.length() + 2   /* \r\n */
+            boundary.length() + 4   /* "--" prefix and "\r\n" */
             + 37 + 2                /* Content-Disposition: form-data; name="" + \r\n */
         ) * fields_count  + 2;      /* -- */
     for(auto it : container) {
@@ -256,6 +255,7 @@ static void _serialize(Body& body, const string &boundary, const Request::Form& 
     // pass 2: merge strings
     string r(size);
     for(auto it : container) {
+        r += "--";
         r += boundary;
         r += "\r\n";
         r += "Content-Disposition: form-data; name=\"";
@@ -278,6 +278,7 @@ static void _serialize(Body& body, const string &boundary, const Request::Form& 
         r += it.second.value;
         r += "\r\n";
     }
+    r += "--";
     r += boundary;
     r += "--\r\n";
 
@@ -288,7 +289,7 @@ static void _serialize(Body& body, const string &boundary, const string_multimap
     auto fields_count= container.size();
     // pass 1: calc total
     size_t size = (
-            boundary.length() + 2   /* \r\n */
+            boundary.length() + 4   /* "--" prefix and "\r\n" */
             + 37 + 2                /* Content-Disposition: form-data; name="" + \r\n */
         ) * fields_count  + 2;      /* -- */
     for(auto it : container) {
@@ -298,6 +299,7 @@ static void _serialize(Body& body, const string &boundary, const string_multimap
     // pass 2: merge strings
     string r(size);
     for(auto it : container) {
+        r += "--";
         r += boundary;
         r += "\r\n";
         r += "Content-Disposition: form-data; name=\"";
@@ -308,20 +310,23 @@ static void _serialize(Body& body, const string &boundary, const string_multimap
         r += it.second;
         r += "\r\n";
     }
+    r += "--";
     r += boundary;
     r += "--\r\n";
 
     body.parts.emplace_back(r);
 }
 
-void Request::Form::to_body(Body& body, uri::URI &uri, const uri::URISP original_uri, const string &boundary) const noexcept {
+const uri::URI *Request::Form::to_body(Body& body, uri::URI &uri, const uri::URISP original_uri, const string &boundary) const noexcept {
     if (empty()) {
         auto& q = original_uri->query();
         _serialize(body, boundary, q);
         uri = URI(*original_uri);
         uri.query().clear();
+        return &uri;
     } else {
         _serialize(body, boundary, *this);
+        return original_uri.get();
     }
 }
 

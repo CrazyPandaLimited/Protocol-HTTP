@@ -49,7 +49,7 @@ struct Request : Message, AllocatedObject<Request> {
         }
 
     private:
-        void to_body (Body& body, URI& uri, const URISP original_uri, const string& boundary) const noexcept;
+        const URI* to_body (Body& body, uri::URI &uri, const URISP original_uri, const string& boundary) const noexcept;
         void to_uri  (URI& uri, const URISP original_uri) const ;
         EncType _enc_type = EncType::MULTIPART;
         friend struct Request;
