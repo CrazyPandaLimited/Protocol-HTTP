@@ -1,6 +1,7 @@
 #include "Request.h"
 #include <ctime>
 #include <cstdlib>
+#include <type_traits>
 
 namespace panda { namespace protocol { namespace http {
 
@@ -250,29 +251,37 @@ Request::wrapped_chunk Request::form_finish() {
     return final_chunk(form_trailer(_form_boundary));
 }
 
+namespace tag {
+    using uri = std::integral_constant<int, 0>;
+    using form = std::integral_constant<int, 1>;
+}
 
-static void _serialize(Body& body, const string &boundary, const Request::Form& container) {
-    auto fields_count= container.size();
-    // pass 1: calc total
-    size_t size = (
-            boundary.length() + 4   /* "--" prefix and "\r\n" */
-            + 37 + 2                /* Content-Disposition: form-data; name="" + \r\n */
-        ) * fields_count  + 2;      /* -- */
-    for(auto it : container) {
-        size += it.second.value.length();
-        auto& name = it.second.name;
-        if (name) {
-            size += name.length() + 14;   //; filename=""
+template<typename Tag> struct Helper;
+
+template<> struct Helper<tag::form> {
+    using Field =  Request::Form::value_type;
+
+    static size_t buffer_size(const string &boundary, const Request::Form& container) noexcept {
+        auto fields_count = container.size();
+        size_t size = (
+                boundary.length() + 4   /* "--" prefix and "\r\n" */
+                + 37 + 2                /* Content-Disposition: form-data; name="" + \r\n */
+            ) * fields_count  + 2;      /* -- */
+        for(auto it : container) {
+            size += it.second.value.length();
+            auto& name = it.second.name;
+            if (name) {
+                size += name.length() + 14;   //; filename=""
+            }
+            auto& ct = it.second.content_type;
+            if (ct) {
+                size += ct.size() + 18; //Content-Type: xxx\r\n
+            }
         }
-        auto& ct = it.second.content_type;
-        if (ct) {
-            size += ct.size() + 18; //Content-Type: image/jpeg\r\n
-        }
+        return size;
     }
 
-    // pass 2: merge strings
-    string r(size);
-    for(auto it : container) {
+    static void append(string& r, const Field& it, const string& boundary) noexcept {
         r += "--";
         r += boundary;
         r += "\r\n";
@@ -296,25 +305,25 @@ static void _serialize(Body& body, const string &boundary, const Request::Form& 
         r += it.second.value;
         r += "\r\n";
     }
-    r += form_trailer(boundary);
 
-    body.parts.emplace_back(r);
-}
+};
 
-static void _serialize(Body& body, const string &boundary, const string_multimap<string, string>& container) {
-    auto fields_count= container.size();
-    // pass 1: calc total
-    size_t size = (
-            boundary.length() + 4   /* "--" prefix and "\r\n" */
-            + 37 + 2                /* Content-Disposition: form-data; name="" + \r\n */
-        ) * fields_count  + 2;      /* -- */
-    for(auto it : container) {
-        size += it.second.length();
+template<> struct Helper<tag::uri> {
+    using Field =  string_multimap<string, string>::value_type;
+
+    static size_t buffer_size(const string &boundary, const string_multimap<string, string>& container) noexcept {
+        auto fields_count= container.size();
+        size_t size = (
+                boundary.length() + 4   /* "--" prefix and "\r\n" */
+                + 37 + 2                /* Content-Disposition: form-data; name="" + \r\n */
+            ) * fields_count  + 2;      /* -- */
+        for(auto it : container) {
+            size += it.second.length();
+        }
+        return size;
     }
 
-    // pass 2: merge strings
-    string r(size);
-    for(auto it : container) {
+    static void append(string& r, const Field& it, const string& boundary) noexcept {
         r += "--";
         r += boundary;
         r += "\r\n";
@@ -326,20 +335,26 @@ static void _serialize(Body& body, const string &boundary, const string_multimap
         r += it.second;
         r += "\r\n";
     }
-    r += form_trailer(boundary);
+};
 
+template<typename Tag, typename Container>
+void _serialize(Body& body, const string &boundary, const Container& container) {
+    using H = Helper<Tag>;
+    string r(H::buffer_size(boundary, container));
+    for(auto it : container) { H::append(r, it, boundary); }
+    r += form_trailer(boundary);
     body.parts.emplace_back(r);
 }
 
 const uri::URI *Request::Form::to_body(Body& body, uri::URI &uri, const uri::URISP original_uri, const string &boundary) const noexcept {
     if (empty()) {
         auto& q = original_uri->query();
-        _serialize(body, boundary, q);
+        _serialize<tag::uri>(body, boundary, q);
         uri = URI(*original_uri);
         uri.query().clear();
         return &uri;
     } else {
-        _serialize(body, boundary, *this);
+        _serialize<tag::form>(body, boundary, *this);
         return original_uri.get();
     }
 }
