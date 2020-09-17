@@ -247,10 +247,6 @@ static string form_trailer(const string& boundary) noexcept {
     return r;
 }
 
-Request::wrapped_chunk Request::form_finish() {
-    return final_chunk(form_trailer(_form_boundary));
-}
-
 namespace tag {
     using uri = std::integral_constant<int, 0>;
     using form = std::integral_constant<int, 1>;
@@ -260,6 +256,12 @@ template<typename Tag> struct Helper;
 
 template<> struct Helper<tag::form> {
     using Field =  Request::Form::value_type;
+    struct FullField {
+        string name;
+        string value;
+        string filename;
+        string mime_type;
+    };
 
     static size_t buffer_size(const string &boundary, const Request::Form& container) noexcept {
         auto fields_count = container.size();
@@ -281,29 +283,33 @@ template<> struct Helper<tag::form> {
         return size;
     }
 
-    static void append(string& r, const Field& it, const string& boundary) noexcept {
+    static void append(string& r, const FullField& field, const string& boundary) noexcept {
         r += "--";
         r += boundary;
         r += "\r\n";
         r += "Content-Disposition: form-data; name=\"";
-        r += it.first;
+        r += field.name;
         r += "\"";
-        if (it.second.name) {
+        if (field.filename) {
             r+= "; filename=\"";
-            r += it.second.name;
+            r += field.filename;
             r += "\"";
         }
         r += "\r\n";
 
-        if (it.second.content_type) {
+        if (field.mime_type) {
             r += "Content-Type: ";
-            r += it.second.content_type;
+            r += field.mime_type;
             r += "\r\n";
         }
 
         r += "\r\n";
-        r += it.second.value;
+        r += field.value;
         r += "\r\n";
+    }
+
+    static void append(string& r, const Field& it, const string& boundary) noexcept {
+        append(r, FullField{it.first, it.second.value, it.second.name, it.second.content_type}, boundary);
     }
 
 };
@@ -336,6 +342,17 @@ template<> struct Helper<tag::uri> {
         r += "\r\n";
     }
 };
+
+Request::wrapped_chunk Request::form_finish() {
+    return final_chunk(form_trailer(_form_boundary));
+}
+
+Request::wrapped_chunk Request::form_field(const string& name, const string& content, const string& filename, const string& mime_type) {
+    using H = Helper<tag::form>;
+    string data;
+    H::append(data, H::FullField{name, content, filename, mime_type}, _form_boundary);
+    return make_chunk(data);
+}
 
 template<typename Tag, typename Container>
 void _serialize(Body& body, const string &boundary, const Container& container) {

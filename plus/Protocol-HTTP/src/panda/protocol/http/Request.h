@@ -97,6 +97,7 @@ struct Request : Message, AllocatedObject<Request> {
     }
 
     wrapped_chunk form_finish();
+    wrapped_chunk form_field(const string& name, const string& content, const string& filename = "", const string& mime_type = "");
 
 protected:
     struct SerializationContext: Message::SerializationContext {

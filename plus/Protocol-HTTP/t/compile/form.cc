@@ -121,8 +121,8 @@ TEST("application/x-www-form-urlencoded") {
     }
 }
 
-template<typename Container>
-string merge(string s, Container c) {
+template<typename String, typename Container>
+string merge(String s, Container c) {
     for(auto& it:c) {
         s += string(it);
     }
@@ -130,16 +130,37 @@ string merge(string s, Container c) {
 }
 
 TEST("multipart/form-data (streaming)") {
-    std::srand(123);
+    auto req = Request::Builder().form_stream().build();
     SECTION("emtpy form") {
-        auto req = Request::Builder().form_stream().build();
         auto data = merge(req->to_string(), req->form_finish());
-        //std::cout << "zzz:\n" << data << "zzz\n";
         CHECK(canonize(data).first ==
             "POST / HTTP/1.1\r\n"
             "Content-Type: multipart/form-data; boundary=-----------------------XXXXXXXXXXXXXXXXX\r\n"
             "Transfer-Encoding: chunked\r\n"
             "\r\n"
+            "2e\r\n"
+            "-------------------------XXXXXXXXXXXXXXXXX--\r\n"
+            "\r\n"
+            "0\r\n\r\n"
+        );
+    }
+
+    SECTION("form with 1 embedded field") {
+        auto data = req->to_string();
+        data = merge(data, req->form_field("key", "value"));
+        data = merge(data, req->form_finish());
+        std::cout << "zzz:\n" << data << "zzz\n";
+        CHECK(canonize(data).first ==
+            "POST / HTTP/1.1\r\n"
+            "Content-Type: multipart/form-data; boundary=-----------------------XXXXXXXXXXXXXXXXX\r\n"
+            "Transfer-Encoding: chunked\r\n"
+            "\r\n"
+            "61\r\n"
+            "-------------------------XXXXXXXXXXXXXXXXX\r\n"
+            "Content-Disposition: form-data; name=\"key\"\r\n"
+            "\r\n"
+            "value"
+            "\r\n\r\n"
             "2e\r\n"
             "-------------------------XXXXXXXXXXXXXXXXX--\r\n"
             "\r\n"
