@@ -149,7 +149,7 @@ TEST("multipart/form-data (streaming)") {
         auto data = req->to_string();
         data = merge(data, req->form_field("key", "value"));
         data = merge(data, req->form_finish());
-        std::cout << "zzz:\n" << data << "zzz\n";
+        //std::cout << "zzz:\n" << data << "zzz\n";
         CHECK(canonize(data).first ==
             "POST / HTTP/1.1\r\n"
             "Content-Type: multipart/form-data; boundary=-----------------------XXXXXXXXXXXXXXXXX\r\n"
@@ -160,6 +160,30 @@ TEST("multipart/form-data (streaming)") {
             "Content-Disposition: form-data; name=\"key\"\r\n"
             "\r\n"
             "value"
+            "\r\n\r\n"
+            "2e\r\n"
+            "-------------------------XXXXXXXXXXXXXXXXX--\r\n"
+            "\r\n"
+            "0\r\n\r\n"
+        );
+    }
+
+    SECTION("form with 1 embedded file") {
+        auto data = req->to_string();
+        data = merge(data, req->form_field("key", "[pdf]", "cv.pdf", "application/pdf"));
+        data = merge(data, req->form_finish());
+        //std::cout << "zzz:\n" << data << "zzz\n";
+        CHECK(canonize(data).first ==
+            "POST / HTTP/1.1\r\n"
+            "Content-Type: multipart/form-data; boundary=-----------------------XXXXXXXXXXXXXXXXX\r\n"
+            "Transfer-Encoding: chunked\r\n"
+            "\r\n"
+            "93\r\n"
+            "-------------------------XXXXXXXXXXXXXXXXX\r\n"
+            "Content-Disposition: form-data; name=\"key\"; filename=\"cv.pdf\"\r\n"
+            "Content-Type: application/pdf\r\n"
+            "\r\n"
+            "[pdf]"
             "\r\n\r\n"
             "2e\r\n"
             "-------------------------XXXXXXXXXXXXXXXXX--\r\n"
