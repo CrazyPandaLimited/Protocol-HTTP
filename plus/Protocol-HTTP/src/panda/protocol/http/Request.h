@@ -9,6 +9,7 @@ namespace panda { namespace protocol { namespace http {
 struct Request : Message, AllocatedObject<Request> {
     enum class Method {unspecified, OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT};
     enum class EncType {MULTIPART, URLENCODED, disabled};
+    enum class FormStreaming { none, stated, file, done };
 
     static inline string method_str(Request::Method rm) noexcept {
         using Method = Request::Method;
@@ -89,8 +90,31 @@ struct Request : Message, AllocatedObject<Request> {
 
     std::uint8_t allowed_compression (bool inverse = false) const noexcept;
 
+    void form_streaming() {
+        if (_form_streaming != FormStreaming::none) throw "invalid state for form streaming";
+        _form_streaming = FormStreaming::stated;
+        _form_boundary = _generate_boundary();
+    }
+
+    wrapped_chunk form_finish();
+
 protected:
+    struct SerializationContext: Message::SerializationContext {
+        const URI* uri;
+    };
+
+    string form_trailer(const string& boundary) const noexcept {
+        auto sz = boundary.size() + 6;
+        string r(sz);
+        r += "--";
+        r += boundary;
+        r += "--\r\n";
+        return r;
+    }
+
     Method  _method = Method::unspecified;
+    FormStreaming _form_streaming = FormStreaming::none;
+    string _form_boundary;
 
     template<typename... PrefN>
     void _allow_compression (Compression::Type p, PrefN... prefn) {
@@ -106,6 +130,7 @@ private:
 
     static Method deduce_method (bool has_form, EncType form_enc, Method _method) noexcept;
     string _http_header (SerializationContext &ctx) const;
+    static string _generate_boundary() noexcept;
 };
 using RequestSP = iptr<Request>;
 
@@ -142,6 +167,11 @@ struct Request::BuilderImpl : Message::Builder<T, R> {
     template<typename Form>
     T& form(Form&& form) {
         this->_message->form = std::forward<Form>(form);
+        return this->self();
+    }
+
+    T& form_stream() {
+        this->_message->form_streaming();
         return this->self();
     }
 };

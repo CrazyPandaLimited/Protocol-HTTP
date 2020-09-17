@@ -1,5 +1,6 @@
 #include "../lib/test.h"
 #include <regex>
+#include <iostream>
 
 #define TEST(name) TEST_CASE("compile-form: " name, "[compile-form]")
 
@@ -17,7 +18,7 @@ static std::pair<string, string> canonize(const string& str) {
     return {r, string(boundary.c_str())};
 }
 
-TEST("multipart/form-data") {
+TEST("multipart/form-data (complete)") {
     std::srand(123);
 
     string str_sample =
@@ -54,34 +55,6 @@ TEST("multipart/form-data") {
         auto pair = canonize(data);
         REQUIRE(pair.first == str);
         auto boundary = pair.second;
-
-        SECTION("boundary cannot be part of key/value") {
-            std::srand(123);
-            string sample_str = string(
-                    "POST / HTTP/1.1\r\n"
-                    "Content-Length: 177\r\n"
-                    "Content-Type: multipart/form-data; boundary=-----------------------FR7ODbhRMIR3XblaZ\r\n"
-                    "\r\n"
-                    "-------------------------FR7ODbhRMIR3XblaZ\r\n"
-                    "Content-Disposition: form-data; name=\"k1\"\r\n"
-                    "\r\n"
-                ) + boundary + "\r\n"
-                "-------------------------FR7ODbhRMIR3XblaZ--\r\n";
-            auto sample = canonize(sample_str).first;
-            Request::Form form(Request::EncType::MULTIPART);
-            form.add("k1", boundary);
-            auto req = Request::Builder().form(std::move(form)).build();
-            auto data = std::string(req->to_string());
-
-            std::regex re(boundary.c_str());
-            std::sregex_iterator begin(data.begin(), data.end(), re);
-            std::sregex_iterator end;
-            auto count = std::distance(begin, end);
-            CHECK(count == 1);
-
-            auto pair = canonize(req->to_string());
-            CHECK(pair.first == sample);
-        }
     }
 
     SECTION("send a small file") {
@@ -144,6 +117,33 @@ TEST("application/x-www-form-urlencoded") {
         CHECK(req->to_string() ==
             "GET /?k1=v11&k1=v12&k2=v2 HTTP/1.1\r\n"
             "\r\n"
+        );
+    }
+}
+
+template<typename Container>
+string merge(string s, Container c) {
+    for(auto& it:c) {
+        s += string(it);
+    }
+    return s;
+}
+
+TEST("multipart/form-data (streaming)") {
+    std::srand(123);
+    SECTION("emtpy form") {
+        auto req = Request::Builder().form_stream().build();
+        auto data = merge(req->to_string(), req->form_finish());
+        //std::cout << "zzz:\n" << data << "zzz\n";
+        CHECK(canonize(data).first ==
+            "POST / HTTP/1.1\r\n"
+            "Content-Type: multipart/form-data; boundary=-----------------------XXXXXXXXXXXXXXXXX\r\n"
+            "Transfer-Encoding: chunked\r\n"
+            "\r\n"
+            "2e\r\n"
+            "-------------------------XXXXXXXXXXXXXXXXX--\r\n"
+            "\r\n"
+            "0\r\n\r\n"
         );
     }
 }

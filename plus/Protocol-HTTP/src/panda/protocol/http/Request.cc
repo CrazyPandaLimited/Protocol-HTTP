@@ -26,35 +26,27 @@ static inline string _method_str (Request::Method rm) {
     }
 }
 
-static inline string generate_boundary(const Request::Form& form) noexcept {
+string Request::_generate_boundary() noexcept {
     const constexpr size_t SZ = (string::MAX_SSO_CHARS / sizeof (int)) + (string::MAX_SSO_CHARS % sizeof (int) == 0 ? 0 : 1);
     const constexpr char alphabet[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
     const constexpr size_t alphabet_sz = sizeof (alphabet) - 1;
     int dices[SZ];
-    bool matches_form;
     string r(40, '-');
-    do {
-        for(size_t i = 0; i <SZ; ++i) { dices[i] = std::rand(); }
+    for(size_t i = 0; i <SZ; ++i) { dices[i] = std::rand(); }
 
-        const char* random_bytes = (const char*)dices;
-        for(size_t i = r.size() - 17; i < r.size(); ++i) {
-            r[i] = alphabet[*random_bytes++ % alphabet_sz];
-        }
+    const char* random_bytes = (const char*)dices;
+    for(size_t i = r.size() - 17; i < r.size(); ++i) {
+        r[i] = alphabet[*random_bytes++ % alphabet_sz];
+    }
 
-        matches_form = false;
-        for(auto it = form.begin(); (!matches_form) && (it != form.end()); ++it) {
-            matches_form = (it->first.find(r) != string::npos) || (it->second.value.find(r) != string::npos);
-        }
-    } while(matches_form);
     return r;
 }
 
 Request::Method Request::method() const noexcept {
     if (_method == Method::unspecified) {
-        if (form && form.enc_type() == EncType::MULTIPART && (!form.empty() || (uri && !uri->query().empty()))) {
-            return Method::POST;
-        }
-        return Method::GET;
+        bool use_post = (form && form.enc_type() == EncType::MULTIPART && (!form.empty() || (uri && !uri->query().empty()))) // complete form
+                     || _form_streaming != FormStreaming::none;
+        return use_post ? Method::POST : Method::GET;
     }
     return _method;
 }
@@ -75,7 +67,7 @@ string Request::_http_header (SerializationContext& ctx) const {
     auto tmp_http_ver = !ctx.http_version ? 11 : ctx.http_version;
     string out_content_length;
     bool calc_content_length
-              = !chunked
+              = !ctx.chunked
             && (ctx.body->parts.size() || body_method)
             && !headers.has("Content-Length");
     if (calc_content_length) out_content_length = panda::to_string(ctx.body->length());
@@ -193,27 +185,39 @@ string Request::_http_header (SerializationContext& ctx) const {
 
 std::vector<string> Request::to_vector () const {
     SerializationContext ctx;
+    if (_form_streaming != FormStreaming::none && _form_streaming != FormStreaming::stated)
+        throw "form streaming already finished";
+
+    bool from_streaming =  _form_streaming == FormStreaming::stated;
     ctx.compression = compression.type;
     ctx.body        = &body;
     ctx.uri         = uri.get();
+    ctx.chunked     = this->chunked || from_streaming;
+
+    auto add_form_header = [&](auto& boundary) {
+        string ct = "multipart/form-data; boundary=";
+        ct += boundary;
+        ctx.handled_headers.add("Content-Type", ct);
+    };
 
     Body form_body;
     URI form_uri;
     if (form) {
         if (form.enc_type() == EncType::MULTIPART) {
             if (!form.empty() || (uri && !uri->query().empty())) {
-                auto boundary = generate_boundary(form);
-                ctx.uri = form.to_body(form_body, form_uri, uri, boundary);
-                string ct = "multipart/form-data; boundary=";
-                ct += boundary;
-                ctx.handled_headers.add("Content-Type", ct);
-                ctx.body     = &form_body;
+                auto boundary = _generate_boundary();
+                ctx.uri  = form.to_body(form_body, form_uri, uri, boundary);
+                ctx.body = &form_body;
+                add_form_header(boundary);
             }
         }
         else if((form.enc_type() == EncType::URLENCODED) && !form.empty()) {
             form.to_uri(form_uri, uri);
             ctx.uri = &form_uri;
         }
+    }
+    else if (from_streaming) {
+        add_form_header(_form_boundary);
     }
     return _to_vector(ctx, [&]() { return _compile_prepare(ctx); }, [&]() { return _http_header(ctx); });
 }
@@ -232,6 +236,20 @@ std::uint8_t Request::allowed_compression (bool inverse) const noexcept {
     });
     return result;
 }
+
+static string form_trailer(const string& boundary) noexcept {
+    auto sz = boundary.size() + 6;
+    string r(sz);
+    r += "--";
+    r += boundary;
+    r += "--\r\n";
+    return r;
+}
+
+Request::wrapped_chunk Request::form_finish() {
+    return final_chunk(form_trailer(_form_boundary));
+}
+
 
 static void _serialize(Body& body, const string &boundary, const Request::Form& container) {
     auto fields_count= container.size();
@@ -278,9 +296,7 @@ static void _serialize(Body& body, const string &boundary, const Request::Form& 
         r += it.second.value;
         r += "\r\n";
     }
-    r += "--";
-    r += boundary;
-    r += "--\r\n";
+    r += form_trailer(boundary);
 
     body.parts.emplace_back(r);
 }
@@ -310,9 +326,7 @@ static void _serialize(Body& body, const string &boundary, const string_multimap
         r += it.second;
         r += "\r\n";
     }
-    r += "--";
-    r += boundary;
-    r += "--\r\n";
+    r += form_trailer(boundary);
 
     body.parts.emplace_back(r);
 }
