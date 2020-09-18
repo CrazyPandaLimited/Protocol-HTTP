@@ -200,7 +200,7 @@ TEST("multipart/form-data (streaming)") {
         data = merge(data, req->form_file("key", "cv.pdf", "application/pdf"));
         data = merge(data, req->form_data("[0123456789]"));
         data = merge(data, req->form_finish());
-        std::cout << "zzz:\n" << data << "zzz\n";
+        //std::cout << "zzz:\n" << data << "zzz\n";
         CHECK(canonize(data).first ==
             "POST / HTTP/1.1\r\n"
             "Content-Type: multipart/form-data; boundary=-----------------------XXXXXXXXXXXXXXXXX\r\n"
@@ -217,6 +217,41 @@ TEST("multipart/form-data (streaming)") {
             "\r\n"
             "30\r\n"
             "\r\n"
+            "-------------------------XXXXXXXXXXXXXXXXX--\r\n"
+            "\r\n"
+            "0\r\n\r\n"
+        );
+    }
+
+    SECTION("start streaming file, then embed field") {
+        //auto req = Request::Builder().uri("http://ptsv2.com/t/27ibp-1600433748/post").form_stream().build();
+        auto data = req->to_string();
+        data = merge(data, req->form_file("key", "cv.pdf", "application/pdf"));
+        data = merge(data, req->form_data("[0123456789]"));
+        data = merge(data, req->form_field("key2", "[pdf]"));
+        data = merge(data, req->form_finish());
+        //std::cout << "zzz:\n" << data << "zzz\n";
+        CHECK(canonize(data).first ==
+            "POST / HTTP/1.1\r\n"
+            "Content-Type: multipart/form-data; boundary=-----------------------XXXXXXXXXXXXXXXXX\r\n"
+            "Transfer-Encoding: chunked\r\n"
+            "\r\n"
+            "8c\r\n"
+            "-------------------------XXXXXXXXXXXXXXXXX\r\n"
+            "Content-Disposition: form-data; name=\"key\"; filename=\"cv.pdf\"\r\n"
+            "Content-Type: application/pdf\r\n"
+            "\r\n"
+            "\r\n"
+            "c\r\n"
+            "[0123456789]"
+            "\r\n"
+            "64\r\n"
+            "\r\n"
+            "-------------------------XXXXXXXXXXXXXXXXX\r\n"
+            "Content-Disposition: form-data; name=\"key2\"\r\n"
+            "\r\n"
+            "[pdf]\r\n\r\n"
+            "30\r\n\r\n"
             "-------------------------XXXXXXXXXXXXXXXXX--\r\n"
             "\r\n"
             "0\r\n\r\n"
