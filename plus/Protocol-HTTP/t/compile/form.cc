@@ -129,10 +129,13 @@ string merge(String s, Container c) {
     return s;
 }
 
+// content can be tested with http://ptsv2.com + netcat
+
 TEST("multipart/form-data (streaming)") {
     auto req = Request::Builder().form_stream().build();
     SECTION("emtpy form") {
-        auto data = merge(req->to_string(), req->form_finish());
+        auto data = req->to_string();
+        data = merge(data, req->form_finish());
         CHECK(canonize(data).first ==
             "POST / HTTP/1.1\r\n"
             "Content-Type: multipart/form-data; boundary=-----------------------XXXXXXXXXXXXXXXXX\r\n"
@@ -186,6 +189,34 @@ TEST("multipart/form-data (streaming)") {
             "[pdf]"
             "\r\n\r\n"
             "2e\r\n"
+            "-------------------------XXXXXXXXXXXXXXXXX--\r\n"
+            "\r\n"
+            "0\r\n\r\n"
+        );
+    }
+
+    SECTION("start streaming file") {
+        auto data = req->to_string();
+        data = merge(data, req->form_file("key", "cv.pdf", "application/pdf"));
+        data = merge(data, req->form_data("[0123456789]"));
+        data = merge(data, req->form_finish());
+        std::cout << "zzz:\n" << data << "zzz\n";
+        CHECK(canonize(data).first ==
+            "POST / HTTP/1.1\r\n"
+            "Content-Type: multipart/form-data; boundary=-----------------------XXXXXXXXXXXXXXXXX\r\n"
+            "Transfer-Encoding: chunked\r\n"
+            "\r\n"
+            "8c\r\n"
+            "-------------------------XXXXXXXXXXXXXXXXX\r\n"
+            "Content-Disposition: form-data; name=\"key\"; filename=\"cv.pdf\"\r\n"
+            "Content-Type: application/pdf\r\n"
+            "\r\n"
+            "\r\n"
+            "c\r\n"
+            "[0123456789]"
+            "\r\n"
+            "30\r\n"
+            "\r\n"
             "-------------------------XXXXXXXXXXXXXXXXX--\r\n"
             "\r\n"
             "0\r\n\r\n"

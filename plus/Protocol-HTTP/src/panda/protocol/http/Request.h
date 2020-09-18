@@ -9,7 +9,7 @@ namespace panda { namespace protocol { namespace http {
 struct Request : Message, AllocatedObject<Request> {
     enum class Method {unspecified, OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT};
     enum class EncType {MULTIPART, URLENCODED, disabled};
-    enum class FormStreaming { none, stated, file, done };
+    enum class FormStreaming { none, started, file, done };
 
     static inline string method_str(Request::Method rm) noexcept {
         using Method = Request::Method;
@@ -92,12 +92,14 @@ struct Request : Message, AllocatedObject<Request> {
 
     void form_streaming() {
         if (_form_streaming != FormStreaming::none) throw "invalid state for form streaming";
-        _form_streaming = FormStreaming::stated;
+        _form_streaming = FormStreaming::started;
         _form_boundary = _generate_boundary();
     }
 
     wrapped_chunk form_finish();
     wrapped_chunk form_field(const string& name, const string& content, const string& filename = "", const string& mime_type = "");
+    wrapped_chunk form_file(const string& name, const string filename = "", const string& mime_type = "application/octet-stream");
+    wrapped_chunk form_data(const string& data);
 
 protected:
     struct SerializationContext: Message::SerializationContext {

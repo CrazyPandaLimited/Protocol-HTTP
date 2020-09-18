@@ -186,10 +186,10 @@ string Request::_http_header (SerializationContext& ctx) const {
 
 std::vector<string> Request::to_vector () const {
     SerializationContext ctx;
-    if (_form_streaming != FormStreaming::none && _form_streaming != FormStreaming::stated)
-        throw "form streaming already finished";
+    if (_form_streaming != FormStreaming::none && _form_streaming != FormStreaming::started)
+        throw "form streaming wasn't finished";
 
-    bool from_streaming =  _form_streaming == FormStreaming::stated;
+    bool from_streaming =  _form_streaming == FormStreaming::started;
     ctx.compression = compression.type;
     ctx.body        = &body;
     ctx.uri         = uri.get();
@@ -256,11 +256,17 @@ template<typename Tag> struct Helper;
 
 template<> struct Helper<tag::form> {
     using Field =  Request::Form::value_type;
-    struct FullField {
+
+    struct PatrialField {
         string name;
-        string value;
-        string filename;
         string mime_type;
+        string filename;
+    };
+
+    struct FullField: PatrialField {
+        FullField(const string& name_, const string& filename_, const string& mime_type_, const string& value_):
+            PatrialField{name_, mime_type_, filename_}, value{value_}{}
+        string value;
     };
 
     static size_t buffer_size(const string &boundary, const Request::Form& container) noexcept {
@@ -283,7 +289,7 @@ template<> struct Helper<tag::form> {
         return size;
     }
 
-    static void append(string& r, const FullField& field, const string& boundary) noexcept {
+    static void append(string& r, const PatrialField& field, const string& boundary) noexcept {
         r += "--";
         r += boundary;
         r += "\r\n";
@@ -304,12 +310,16 @@ template<> struct Helper<tag::form> {
         }
 
         r += "\r\n";
+    }
+
+    static void append(string& r, const FullField& field, const string& boundary) noexcept {
+        append(r, (const PatrialField&)field, boundary);
         r += field.value;
         r += "\r\n";
     }
 
     static void append(string& r, const Field& it, const string& boundary) noexcept {
-        append(r, FullField{it.first, it.second.value, it.second.name, it.second.content_type}, boundary);
+        append(r, FullField{it.first, it.second.name, it.second.content_type, it.second.value}, boundary);
     }
 
 };
@@ -344,14 +354,44 @@ template<> struct Helper<tag::uri> {
 };
 
 Request::wrapped_chunk Request::form_finish() {
-    return final_chunk(form_trailer(_form_boundary));
+    if (_form_streaming == FormStreaming::none) throw "form streaming was not started";
+    if (_form_streaming == FormStreaming::done) throw "form streaming already complete";
+
+    string data;
+    if (_form_streaming == FormStreaming::file) data += "\r\n"; /* finalize file */
+    data += form_trailer(_form_boundary);
+    _form_streaming = FormStreaming::done;
+    return final_chunk(data);
 }
 
 Request::wrapped_chunk Request::form_field(const string& name, const string& content, const string& filename, const string& mime_type) {
     using H = Helper<tag::form>;
+    if (_form_streaming == FormStreaming::none) throw "form streaming was not started";
+    if (_form_streaming == FormStreaming::done) throw "form streaming already complete";
+
     string data;
-    H::append(data, H::FullField{name, content, filename, mime_type}, _form_boundary);
+    if (_form_streaming == FormStreaming::file) data += "\r\n"; /* finalize file */
+    H::append(data, H::FullField{name, filename, mime_type, content}, _form_boundary);
     return make_chunk(data);
+}
+
+Request::wrapped_chunk Request::form_file(const string& name, const string filename, const string& mime_type) {
+    using H = Helper<tag::form>;
+    if (_form_streaming == FormStreaming::none) throw "form streaming was not started";
+    if (_form_streaming == FormStreaming::done) throw "form streaming already complete";
+
+    string data;
+    if (_form_streaming == FormStreaming::file) data += "\r\n"; /* finalize file */
+    _form_streaming = FormStreaming::file;
+
+    H::append(data, H::PatrialField{name, mime_type, filename}, _form_boundary);
+    return make_chunk(data);
+}
+
+Request::wrapped_chunk Request::form_data(const string& content) {
+    using H = Helper<tag::form>;
+    if (_form_streaming != FormStreaming::file) throw "form file streaming was not started";
+    return make_chunk(content);
 }
 
 template<typename Tag, typename Container>
