@@ -190,7 +190,8 @@ std::vector<string> Request::to_vector () const {
         throw "form streaming wasn't finished";
 
     bool from_streaming =  _form_streaming == FormStreaming::started;
-    ctx.compression = compression.type;
+    /* it seems nobody supports muliptart + gzip + chunk */
+    ctx.compression = !from_streaming ? compression.type : Compression::Type::IDENTITY;
     ctx.body        = &body;
     ctx.uri         = uri.get();
     ctx.chunked     = this->chunked || from_streaming;
@@ -261,11 +262,12 @@ template<> struct Helper<tag::form> {
         string name;
         string mime_type;
         string filename;
+        bool complete = false;
     };
 
     struct FullField: PatrialField {
         FullField(const string& name_, const string& filename_, const string& mime_type_, const string& value_):
-            PatrialField{name_, mime_type_, filename_}, value{value_}{}
+            PatrialField{name_, mime_type_, filename_, true}, value{value_}{}
         string value;
     };
 
@@ -289,6 +291,13 @@ template<> struct Helper<tag::form> {
         return size;
     }
 
+    static void append_header(string& r, const string& header, const string& value) noexcept {
+        r += header;
+        r += ": ";
+        r += value;
+        r += "\r\n";
+    }
+
     static void append(string& r, const PatrialField& field, const string& boundary) noexcept {
         r += "--";
         r += boundary;
@@ -309,7 +318,7 @@ template<> struct Helper<tag::form> {
             r += "\r\n";
         }
 
-        r += "\r\n";
+        if (field.complete) r += "\r\n";
     }
 
     static void append(string& r, const FullField& field, const string& boundary) noexcept {
@@ -353,12 +362,23 @@ template<> struct Helper<tag::uri> {
     }
 };
 
+void Request::form_file_finalize(string& out) noexcept {
+    if (_form_streaming == FormStreaming::file) {
+        if (compressor) {
+            out += compressor->flush();
+            compressor.reset();
+        }
+        out += "\r\n"; /* finalize file */
+    }
+}
+
+
 Request::wrapped_chunk Request::form_finish() {
     if (_form_streaming == FormStreaming::none) throw "form streaming was not started";
     if (_form_streaming == FormStreaming::done) throw "form streaming already complete";
 
     string data;
-    if (_form_streaming == FormStreaming::file) data += "\r\n"; /* finalize file */
+    form_file_finalize(data);
     data += form_trailer(_form_boundary);
     _form_streaming = FormStreaming::done;
     return final_chunk(data);
@@ -370,9 +390,9 @@ Request::wrapped_chunk Request::form_field(const string& name, const string& con
     if (_form_streaming == FormStreaming::done) throw "form streaming already complete";
 
     string data;
-    if (_form_streaming == FormStreaming::file) data += "\r\n"; /* finalize file */
+    form_file_finalize(data);
     H::append(data, H::FullField{name, filename, mime_type, content}, _form_boundary);
-    return make_chunk(data);
+    return make_chunk(data, compression::CompressorPtr{});  // we don't compress
 }
 
 Request::wrapped_chunk Request::form_file(const string& name, const string filename, const string& mime_type) {
@@ -381,15 +401,16 @@ Request::wrapped_chunk Request::form_file(const string& name, const string filen
     if (_form_streaming == FormStreaming::done) throw "form streaming already complete";
 
     string data;
-    if (_form_streaming == FormStreaming::file) data += "\r\n"; /* finalize file */
+    form_file_finalize(data);
     _form_streaming = FormStreaming::file;
 
-    H::append(data, H::PatrialField{name, mime_type, filename}, _form_boundary);
-    return make_chunk(data);
+    H::append(data, H::PatrialField{name, mime_type, filename, false}, _form_boundary);
+    data += "\r\n";
+
+    return make_chunk(data, compression::CompressorPtr{});  // we don't compress
 }
 
 Request::wrapped_chunk Request::form_data(const string& content) {
-    using H = Helper<tag::form>;
     if (_form_streaming != FormStreaming::file) throw "form file streaming was not started";
     return make_chunk(content);
 }

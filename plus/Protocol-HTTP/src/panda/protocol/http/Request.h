@@ -125,6 +125,7 @@ protected:
         return _allow_compression(prefn...);
     }
     void _allow_compression () {}
+    void form_file_finalize(string& out) noexcept;
 
     ~Request () {} // restrict stack allocation
 
