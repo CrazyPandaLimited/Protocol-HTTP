@@ -29,7 +29,13 @@ struct Request : Message, AllocatedObject<Request> {
     struct Builder; template <class, class> struct BuilderImpl;
     using Cookies = Fields<string, true, 3>;
 
-    struct Form: string_multimap<string, string> {
+    struct NamedString {
+        string value;
+        string name;
+        string content_type;
+    };
+
+    struct Form: string_multimap<string, NamedString> {
 
         Form(EncType enc_type = EncType::disabled) noexcept :_enc_type(enc_type){}
 
@@ -38,13 +44,13 @@ struct Request : Message, AllocatedObject<Request> {
 
         operator bool () const noexcept { return _enc_type != EncType::disabled; }
 
-        void add(const string& key, const string& value) {
-            insert({key, value});
+        void add(const string& key, const string& value, const string& filename = "", const string content_type = "") {
+            insert({key, NamedString{value, filename, content_type}});
         }
 
     private:
-        void to_body (Body& body, URI& uri, const URISP original_uri, const string& boundary) const noexcept;
-        void to_uri  (URI& uri, const URISP original_uri) const noexcept;
+        const URI* to_body (Body& body, uri::URI &uri, const URISP original_uri, const string& boundary) const noexcept;
+        void to_uri  (URI& uri, const URISP original_uri) const ;
         EncType _enc_type = EncType::MULTIPART;
         friend struct Request;
     };
