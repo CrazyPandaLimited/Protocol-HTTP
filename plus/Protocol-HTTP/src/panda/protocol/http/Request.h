@@ -90,11 +90,13 @@ struct Request : Message, AllocatedObject<Request> {
 
     std::uint8_t allowed_compression (bool inverse = false) const noexcept;
 
-    void form_streaming() {
+    void form_stream() {
         if (_form_streaming != FormStreaming::none) throw "invalid state for form streaming";
         _form_streaming = FormStreaming::started;
         _form_boundary = _generate_boundary();
     }
+
+    bool form_streaming() noexcept { return  _form_streaming == FormStreaming::started; }
 
     wrapped_chunk form_finish();
     wrapped_chunk form_field(const string& name, const string& content, const string& filename = "", const string& mime_type = "");
@@ -175,7 +177,7 @@ struct Request::BuilderImpl : Message::Builder<T, R> {
     }
 
     T& form_stream() {
-        this->_message->form_streaming();
+        this->_message->form_stream();
         return this->self();
     }
 };
