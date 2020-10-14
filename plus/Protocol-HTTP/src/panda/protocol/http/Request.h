@@ -91,9 +91,13 @@ struct Request : Message, AllocatedObject<Request> {
     std::uint8_t allowed_compression (bool inverse = false) const noexcept;
 
     void form_stream() {
-        if (_form_streaming != FormStreaming::none) throw "invalid state for form streaming";
-        _form_streaming = FormStreaming::started;
-        _form_boundary = _generate_boundary();
+        if (_form_streaming == FormStreaming::none) {
+            _form_streaming = FormStreaming::started;
+            _form_boundary = _generate_boundary();
+        }
+        else if (_form_streaming != FormStreaming::started) {
+            throw "invalid state for form streaming";
+        }
     }
 
     bool form_streaming() noexcept { return  _form_streaming == FormStreaming::started; }
