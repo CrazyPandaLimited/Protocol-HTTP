@@ -189,12 +189,12 @@ std::vector<string> Request::to_vector () const {
     if (_form_streaming != FormStreaming::none && _form_streaming != FormStreaming::started)
         throw "form streaming wasn't finished";
 
-    bool from_streaming =  _form_streaming == FormStreaming::started;
+    bool form_streaming =  _form_streaming == FormStreaming::started;
     /* it seems nobody supports muliptart + gzip + chunk */
-    ctx.compression = !from_streaming ? compression.type : Compression::Type::IDENTITY;
+    ctx.compression = !form_streaming ? compression.type : Compression::Type::IDENTITY;
     ctx.body        = &body;
     ctx.uri         = uri.get();
-    ctx.chunked     = this->chunked || from_streaming;
+    ctx.chunked     = this->chunked || form_streaming;
 
     auto add_form_header = [&](auto& boundary) {
         string ct = "multipart/form-data; boundary=";
@@ -207,10 +207,12 @@ std::vector<string> Request::to_vector () const {
     if (form) {
         if (form.enc_type() == EncType::MULTIPART) {
             if (!form.empty() || (uri && !uri->query().empty())) {
-                auto boundary = _generate_boundary();
+                auto boundary = form_streaming ? _form_boundary : _generate_boundary();
                 ctx.uri  = form.to_body(form_body, form_uri, uri, boundary);
                 ctx.body = &form_body;
                 add_form_header(boundary);
+            } else if (form_streaming) {
+                add_form_header(_form_boundary);
             }
         }
         else if((form.enc_type() == EncType::URLENCODED) && !form.empty()) {
@@ -218,7 +220,7 @@ std::vector<string> Request::to_vector () const {
             ctx.uri = &form_uri;
         }
     }
-    else if (from_streaming) {
+    else if (form_streaming) {
         add_form_header(_form_boundary);
     }
     return _to_vector(ctx, [&]() { return _compile_prepare(ctx); }, [&]() { return _http_header(ctx); });
@@ -426,6 +428,7 @@ void _serialize(Body& body, const string &boundary, const Container& container) 
 
 const uri::URI *Request::Form::to_body(Body& body, uri::URI &uri, const uri::URISP original_uri, const string &boundary) const noexcept {
     if (empty()) {
+        if (!original_uri) return {};
         auto& q = original_uri->query();
         _serialize<tag::uri>(body, boundary, q);
         uri = URI(*original_uri);
