@@ -70,6 +70,7 @@ protected:
         case Compression::BROTLI:   return "br";
         case Compression::IDENTITY: return string{};
         }
+        std::terminate();
     }
 
     inline string _content_encoding(const SerializationContext& ctx) const noexcept {

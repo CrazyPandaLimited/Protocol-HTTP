@@ -61,6 +61,27 @@ static void fill(Request::Form& form, Array& arr, Request::EncType enc_type)  {
     }
 }
 
+void fill_form(Request* req, const Sv& sv) {
+    if (!sv || !sv.defined()) return;
+    auto& form = req->form;
+    if (sv.is_hash_ref()) {
+        Hash h(sv);
+        Request::EncType type = h.exists("enc_type") ? get_encoding(h.fetch("enc_type")) : Request::EncType::MULTIPART;
+        Sv fields;
+        if ((fields = h.fetch("fields"))) {
+            Array arr(fields);
+            fill(form, arr, type);
+        }
+        else form.enc_type(type);
+    }
+    else if (sv.is_array_ref()) {
+        Array arr(sv);
+        fill(form, arr, Request::EncType::MULTIPART);
+    }
+    else form.enc_type(get_encoding(sv));
+}
+
+
 void fill (Request* req, const Hash& h) {
     msgfill(req, h);
     Sv sv;
@@ -80,25 +101,6 @@ void fill (Request* req, const Hash& h) {
             uint8_t val = SvIV(sv);
             if (is_valid_compression(val)) req->allow_compression((Compression::Type)val);
         }
-    }
-
-    if ((sv = h.fetch("form"))) {
-        auto& form = req->form;
-        if (sv.is_hash_ref()) {
-            Hash h(sv);
-            Request::EncType type = h.exists("enc_type") ? get_encoding(h.fetch("enc_type")) : Request::EncType::MULTIPART;
-            Sv fields;
-            if ((fields = h.fetch("fields"))) {
-                Array arr(fields);
-                fill(form, arr, type);
-            }
-            else form.enc_type(type);
-        }
-        else if (sv.is_array_ref()) {
-            Array arr(sv);
-            fill(form, arr, Request::EncType::MULTIPART);
-        }
-        else form.enc_type(get_encoding(sv));
     }
 }
 

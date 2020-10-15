@@ -93,6 +93,7 @@ struct Request : Message, AllocatedObject<Request> {
     void form_stream() {
         if (_form_streaming == FormStreaming::none) {
             _form_streaming = FormStreaming::started;
+            form._enc_type = EncType::MULTIPART;
             _form_boundary = _generate_boundary();
         }
         else if (_form_streaming != FormStreaming::started) {
