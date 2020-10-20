@@ -1,6 +1,5 @@
 #include "../lib/test.h"
 #include <regex>
-#include <iostream>
 
 #define TEST(name) TEST_CASE("compile-form: " name, "[compile-form]")
 
@@ -266,7 +265,6 @@ TEST("multipart/form-data (streaming)") {
         data = merge(data, req->form_data("[0123456789]"));
         data = merge(data, req->form_field("key2", "[pdf]"));
         data = merge(data, req->form_finish());
-        std::cout << "zzz:\n" << data << "zzz\n";
         CHECK(canonize(data).first ==
             "POST / HTTP/1.1\r\n"
             "Content-Type: multipart/form-data; boundary=-----------------------XXXXXXXXXXXXXXXXX\r\n"
