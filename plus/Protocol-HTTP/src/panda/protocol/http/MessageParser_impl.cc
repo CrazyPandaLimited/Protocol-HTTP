@@ -27,8 +27,7 @@ namespace panda { namespace protocol { namespace http {
     return pos;                                                                         \
 } while (0)
 
-template <class F1, class F2>
-size_t MessageParser::parse (const string& buffer, F1&& after_headers_cb, F2&& no_body_cb) {
+size_t MessageParser::_parse (const string& buffer) {
     auto   len = buffer.length();
     size_t pos = 0;
     //printf("parse: %s\n", buffer.c_str());
@@ -48,7 +47,7 @@ size_t MessageParser::parse (const string& buffer, F1&& after_headers_cb, F2&& n
             RETURN_IF_INCOMPLETE;
             
             headers_finished = true;
-            if (!after_headers_cb()) return pos;
+            if (!on_headers()) return pos;
 
             if (message->chunked) {
                 state = State::chunk;
@@ -63,7 +62,7 @@ size_t MessageParser::parse (const string& buffer, F1&& after_headers_cb, F2&& n
                     return pos;
                 }
             }
-            else if (!no_body_cb()) return pos;
+            else if (!on_empty_body()) return pos;
             
             continue;
         }
