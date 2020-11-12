@@ -12,6 +12,7 @@ struct MessageParser {
     size_t max_body_size    = SIZE_UNLIMITED;
     bool   uncompress_content = true;   // false have sense only for proxies
 
+    virtual ~MessageParser();
 protected:
     MessageSP       message;
     RequestSP       request;

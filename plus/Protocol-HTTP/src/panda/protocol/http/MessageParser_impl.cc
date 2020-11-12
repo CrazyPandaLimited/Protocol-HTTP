@@ -1,10 +1,11 @@
-#pragma once
 #include "MessageParser.h"
 
 #define PARSER_DEFINITIONS_ONLY
 #include "MessageParser.cc"
 
 namespace panda { namespace protocol { namespace http {
+
+MessageParser::~MessageParser() {}
 
 #define RETURN_IF_PARSE_ERROR do if (cs == message_parser_error) {  \
     if (!error) set_error(errc::lexical_error);                     \
