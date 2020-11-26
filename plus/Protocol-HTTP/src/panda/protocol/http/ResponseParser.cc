@@ -40,8 +40,8 @@ ResponseParser::Result ResponseParser::parse (const string& buffer) {
 bool ResponseParser::on_headers    () {
     for (const auto& s : response->headers.get_multi("Set-Cookie")) parse_cookie(s);
 
-    if (_context_request->method_raw() == Request::Method::HEAD || response->code  < 200 || response->code == 204 || response->code == 304) {
-        if (response->chunked || (content_length > 0 && _context_request->method_raw() != Request::Method::HEAD)) {
+    if (_context_request->method_raw() == Request::Method::Head || response->code  < 200 || response->code == 204 || response->code == 304) {
+        if (response->chunked || (content_length > 0 && _context_request->method_raw() != Request::Method::Head)) {
             set_error(errc::unexpected_body);
         } else {
             state = State::done;
