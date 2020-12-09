@@ -14,7 +14,11 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
 )
-target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wno-implicit-fallthrough)
+
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
+set_source_files_properties(src/panda/protocol/http/CookieParser.cc  PROPERTIES COMPILE_FLAGS -Wno-implicit-fallthrough)
+set_source_files_properties(src/panda/protocol/http/CookieStorage.cc PROPERTIES COMPILE_FLAGS -Wno-implicit-fallthrough)
+set_source_files_properties(src/panda/protocol/http/MessageParser.cc PROPERTIES COMPILE_FLAGS -Wno-implicit-fallthrough)
 
 find_program(ragel_bin ragel)
 if (ragel_bin)
