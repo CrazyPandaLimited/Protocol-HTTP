@@ -13,7 +13,7 @@ namespace panda { namespace protocol { namespace http {
 #define SAVE(dest) dest = CURSTR
 
 
-#line 26 "src/panda/protocol/http/CookieParser.rl"
+#line 23 "src/panda/protocol/http/CookieParser.rl"
 
 
 
@@ -25,7 +25,7 @@ static const int cookie_parser_error = 0;
 static const int cookie_parser_en_main = 1;
 
 
-#line 36 "src/panda/protocol/http/CookieParser.rl"
+#line 33 "src/panda/protocol/http/CookieParser.rl"
 
 
 void RequestParser::parse_cookie (const string& buffer) {
@@ -109,7 +109,7 @@ case 2:
 		goto st2;
 	goto st0;
 tr3:
-#line 32 "src/panda/protocol/http/CookieParser.rl"
+#line 29 "src/panda/protocol/http/CookieParser.rl"
 	{ cont.emplace_back(CURSTR, string()); }
 	goto st5;
 st5:
@@ -157,11 +157,11 @@ tr8:
 	{
         mark = p - ps;
     }
-#line 32 "src/panda/protocol/http/CookieParser.rl"
+#line 29 "src/panda/protocol/http/CookieParser.rl"
 	{ SAVE(cont.back().value); }
 	goto st7;
 tr12:
-#line 32 "src/panda/protocol/http/CookieParser.rl"
+#line 29 "src/panda/protocol/http/CookieParser.rl"
 	{ SAVE(cont.back().value); }
 	goto st7;
 st7:
@@ -179,11 +179,11 @@ tr10:
 	{
         mark = p - ps;
     }
-#line 32 "src/panda/protocol/http/CookieParser.rl"
+#line 29 "src/panda/protocol/http/CookieParser.rl"
 	{ SAVE(cont.back().value); }
 	goto st3;
 tr13:
-#line 32 "src/panda/protocol/http/CookieParser.rl"
+#line 29 "src/panda/protocol/http/CookieParser.rl"
 	{ SAVE(cont.back().value); }
 	goto st3;
 st3:
@@ -241,7 +241,7 @@ case 8:
 	switch ( cs ) {
 	case 6: 
 	case 8: 
-#line 32 "src/panda/protocol/http/CookieParser.rl"
+#line 29 "src/panda/protocol/http/CookieParser.rl"
 	{ SAVE(cont.back().value); }
 	break;
 	case 5: 
@@ -249,7 +249,7 @@ case 8:
 	{
         mark = p - ps;
     }
-#line 32 "src/panda/protocol/http/CookieParser.rl"
+#line 29 "src/panda/protocol/http/CookieParser.rl"
 	{ SAVE(cont.back().value); }
 	break;
 #line 256 "src/panda/protocol/http/CookieParser.cc"
@@ -259,7 +259,7 @@ case 8:
 	_out: {}
 	}
 
-#line 47 "src/panda/protocol/http/CookieParser.rl"
+#line 44 "src/panda/protocol/http/CookieParser.rl"
 }
 
 
@@ -271,7 +271,7 @@ static const int set_cookie_parser_error = 0;
 static const int set_cookie_parser_en_main = 1;
 
 
-#line 71 "src/panda/protocol/http/CookieParser.rl"
+#line 68 "src/panda/protocol/http/CookieParser.rl"
 
 
 void ResponseParser::parse_cookie (const string& buffer) {
@@ -353,7 +353,7 @@ case 2:
 		goto st2;
 	goto st0;
 tr3:
-#line 53 "src/panda/protocol/http/CookieParser.rl"
+#line 50 "src/panda/protocol/http/CookieParser.rl"
 	{ cont.emplace_back(CURSTR, Response::Cookie()); v = &cont.back().value; }
 	goto st6;
 st6:
@@ -397,15 +397,15 @@ tr16:
 	{
         mark = p - ps;
     }
-#line 53 "src/panda/protocol/http/CookieParser.rl"
+#line 50 "src/panda/protocol/http/CookieParser.rl"
 	{ SAVE(v->_value); }
 	goto st3;
 tr18:
-#line 53 "src/panda/protocol/http/CookieParser.rl"
+#line 50 "src/panda/protocol/http/CookieParser.rl"
 	{ SAVE(v->_value); }
 	goto st3;
 tr28:
-#line 56 "src/panda/protocol/http/CookieParser.rl"
+#line 53 "src/panda/protocol/http/CookieParser.rl"
 	{ SAVE(v->_domain); }
 	goto st3;
 tr37:
@@ -413,39 +413,39 @@ tr37:
 	{
         mark = p - ps;
     }
-#line 54 "src/panda/protocol/http/CookieParser.rl"
+#line 51 "src/panda/protocol/http/CookieParser.rl"
 	{ SAVE(v->_expires); }
 	goto st3;
 tr39:
-#line 54 "src/panda/protocol/http/CookieParser.rl"
+#line 51 "src/panda/protocol/http/CookieParser.rl"
 	{ SAVE(v->_expires); }
 	goto st3;
 tr47:
-#line 59 "src/panda/protocol/http/CookieParser.rl"
+#line 56 "src/panda/protocol/http/CookieParser.rl"
 	{ v->_http_only = true; }
 	goto st3;
 tr63:
-#line 57 "src/panda/protocol/http/CookieParser.rl"
+#line 54 "src/panda/protocol/http/CookieParser.rl"
 	{ SAVE(v->_path); }
 	goto st3;
 tr72:
-#line 61 "src/panda/protocol/http/CookieParser.rl"
+#line 58 "src/panda/protocol/http/CookieParser.rl"
 	{ v->_same_site = Response::Cookie::SameSite::Strict; }
 	goto st3;
 tr79:
-#line 63 "src/panda/protocol/http/CookieParser.rl"
+#line 60 "src/panda/protocol/http/CookieParser.rl"
 	{ v->_same_site = Response::Cookie::SameSite::Lax; }
 	goto st3;
 tr83:
-#line 64 "src/panda/protocol/http/CookieParser.rl"
+#line 61 "src/panda/protocol/http/CookieParser.rl"
 	{ v->_same_site = Response::Cookie::SameSite::None; }
 	goto st3;
 tr89:
-#line 62 "src/panda/protocol/http/CookieParser.rl"
+#line 59 "src/panda/protocol/http/CookieParser.rl"
 	{ v->_same_site = Response::Cookie::SameSite::Strict; }
 	goto st3;
 tr94:
-#line 58 "src/panda/protocol/http/CookieParser.rl"
+#line 55 "src/panda/protocol/http/CookieParser.rl"
 	{ v->_secure = true; }
 	goto st3;
 st3:
@@ -938,13 +938,13 @@ case 41:
 		goto st0;
 	goto st8;
 tr55:
-#line 55 "src/panda/protocol/http/CookieParser.rl"
+#line 52 "src/panda/protocol/http/CookieParser.rl"
 	{ v->_max_age = 0; }
-#line 55 "src/panda/protocol/http/CookieParser.rl"
+#line 52 "src/panda/protocol/http/CookieParser.rl"
 	{ ADD_DIGIT(v->_max_age); }
 	goto st42;
 tr56:
-#line 55 "src/panda/protocol/http/CookieParser.rl"
+#line 52 "src/panda/protocol/http/CookieParser.rl"
 	{ ADD_DIGIT(v->_max_age); }
 	goto st42;
 st42:
@@ -1473,43 +1473,43 @@ case 76:
 	switch ( cs ) {
 	case 7: 
 	case 76: 
-#line 53 "src/panda/protocol/http/CookieParser.rl"
+#line 50 "src/panda/protocol/http/CookieParser.rl"
 	{ SAVE(v->_value); }
 	break;
 	case 25: 
-#line 54 "src/panda/protocol/http/CookieParser.rl"
+#line 51 "src/panda/protocol/http/CookieParser.rl"
 	{ SAVE(v->_expires); }
 	break;
 	case 16: 
-#line 56 "src/panda/protocol/http/CookieParser.rl"
+#line 53 "src/panda/protocol/http/CookieParser.rl"
 	{ SAVE(v->_domain); }
 	break;
 	case 48: 
-#line 57 "src/panda/protocol/http/CookieParser.rl"
+#line 54 "src/panda/protocol/http/CookieParser.rl"
 	{ SAVE(v->_path); }
 	break;
 	case 75: 
-#line 58 "src/panda/protocol/http/CookieParser.rl"
+#line 55 "src/panda/protocol/http/CookieParser.rl"
 	{ v->_secure = true; }
 	break;
 	case 33: 
-#line 59 "src/panda/protocol/http/CookieParser.rl"
+#line 56 "src/panda/protocol/http/CookieParser.rl"
 	{ v->_http_only = true; }
 	break;
 	case 56: 
-#line 61 "src/panda/protocol/http/CookieParser.rl"
+#line 58 "src/panda/protocol/http/CookieParser.rl"
 	{ v->_same_site = Response::Cookie::SameSite::Strict; }
 	break;
 	case 70: 
-#line 62 "src/panda/protocol/http/CookieParser.rl"
+#line 59 "src/panda/protocol/http/CookieParser.rl"
 	{ v->_same_site = Response::Cookie::SameSite::Strict; }
 	break;
 	case 60: 
-#line 63 "src/panda/protocol/http/CookieParser.rl"
+#line 60 "src/panda/protocol/http/CookieParser.rl"
 	{ v->_same_site = Response::Cookie::SameSite::Lax; }
 	break;
 	case 64: 
-#line 64 "src/panda/protocol/http/CookieParser.rl"
+#line 61 "src/panda/protocol/http/CookieParser.rl"
 	{ v->_same_site = Response::Cookie::SameSite::None; }
 	break;
 	case 6: 
@@ -1517,7 +1517,7 @@ case 76:
 	{
         mark = p - ps;
     }
-#line 53 "src/panda/protocol/http/CookieParser.rl"
+#line 50 "src/panda/protocol/http/CookieParser.rl"
 	{ SAVE(v->_value); }
 	break;
 	case 24: 
@@ -1525,7 +1525,7 @@ case 76:
 	{
         mark = p - ps;
     }
-#line 54 "src/panda/protocol/http/CookieParser.rl"
+#line 51 "src/panda/protocol/http/CookieParser.rl"
 	{ SAVE(v->_expires); }
 	break;
 #line 1532 "src/panda/protocol/http/CookieParser.cc"
@@ -1535,7 +1535,7 @@ case 76:
 	_out: {}
 	}
 
-#line 83 "src/panda/protocol/http/CookieParser.rl"
+#line 80 "src/panda/protocol/http/CookieParser.rl"
 }
 
 }}}

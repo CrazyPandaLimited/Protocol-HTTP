@@ -1,4 +1,4 @@
-#include "lib/test.h"
+#include "test.h"
 
 #define TEST(name) TEST_CASE("cookie-jar: " name, "[cookie_jar]")
 

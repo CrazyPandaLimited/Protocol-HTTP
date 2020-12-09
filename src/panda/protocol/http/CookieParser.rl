@@ -20,9 +20,6 @@ namespace panda { namespace protocol { namespace http {
     
     cookie_octet = any - (CTL | WSP | '"' | ',' | ';' | '\\');
     cookie_value = cookie_octet* | ('"' cookie_octet* '"');
-    
-    
-
 }%%
 
 %%{

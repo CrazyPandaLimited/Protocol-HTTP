@@ -1,4 +1,4 @@
-#include "../lib/test.h"
+#include "../test.h"
 
 #define TEST(name) TEST_CASE("parse-special-codes: " name, "[parse-special-codes]")
 

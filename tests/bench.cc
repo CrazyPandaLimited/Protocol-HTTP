@@ -1,23 +1,44 @@
-#include <xs/protocol/http.h>
-#include <cstdlib>
-using namespace panda;
-using namespace panda::protocol::http;
+#include "test.h"
+#include <unordered_map>
 
-MODULE = MyTest                PACKAGE = MyTest
-PROTOTYPES: DISABLE
+#ifndef BENCHMARK // stub if benchmarking is disabled
+    #define BENCHMARK(name) [&]()
+#endif
 
-uint64_t bench_iequals (string_view a, string_view b) {
-    RETVAL = 0;
-    for (auto i = 0; i < 1000; ++i) {
-        RETVAL += iequals(a, b);
-    }
+static string xcnt (string s, int cnt) {
+    string ret;
+    ret.reserve(s.length() * cnt);
+    for (int i = 0; i < cnt; ++i) ret += s;
+    return ret;
 }
 
-void native_srand(int seed) {
-    std::srand(seed);
+TEST_CASE("bench iequals", "[.bench]") {
+    std::unordered_map<string,std::pair<string, string>> m = {
+        {"short", {"Cookie","cookie"}},
+        {"medium", {"Transfer-Encoding123", "transfer-encoding123"}},
+        {"long", {xcnt("Transfer-Encoding123",50), xcnt("Transfer-Encoding123",50)}},
+    };
+
+    string_view s1 = m.at("short").first;
+    string_view s2 = m.at("short").second;
+    BENCHMARK("short") {
+        return iequals(s1,s2);
+    };
+
+    string_view m1 = m.at("medium").first;
+    string_view m2 = m.at("medium").second;
+    BENCHMARK("medium") {
+        return iequals(m1,m2);
+    };
+
+    string_view l1 = m.at("long").first;
+    string_view l2 = m.at("long").second;
+    BENCHMARK("long") {
+        return iequals(l1,l2);
+    };
 }
 
-void bench () {
+TEST_CASE("bench request", "[.bench]") {
     RequestParser p;
     string buf =
         "POST http://alx3apps.appspot.com/jsonrpc_example/json_service/ HTTP/1.1\r\n"
@@ -26,26 +47,26 @@ void bench () {
         "\r\n"
         "{\"params\":[\"Howdy\",\"Python!\"],\"method\":\"concat\",\"id\":1}";
     if (p.parse(buf).error) throw p.parse(buf).error;
-    
-    for (auto i = 0; i < 1000; ++i) {
+
+    BENCHMARK("") {
         p.parse(buf);
-    }
+    };
 }
 
-void bench_min () {
+TEST_CASE("bench request min", "[.bench]") {
     RequestParser p;
     string buf =
         "GET / HTTP/1.1\r\n"
         "Host: ya.ru\r\n"
         "\r\n";
     if (p.parse(buf).error) throw p.parse(buf).error;
-    
-    for (auto i = 0; i < 1000; ++i) {
+
+    BENCHMARK("") {
         p.parse(buf);
-    }
+    };
 }
 
-void bench_res_min () {
+TEST_CASE("bench response min", "[.bench]") {
     RequestSP req = new Request();
     ResponseParser p;
     p.set_context_request(req);
@@ -54,14 +75,14 @@ void bench_res_min () {
         "Content-Length: 0\r\n"
         "\r\n";
     if (p.parse(buf).error) throw p.parse(buf).error;
-    
-    for (auto i = 0; i < 1000; ++i) {
+
+    BENCHMARK("") {
         p.set_context_request(req);
         p.parse(buf);
-    }
+    };
 }
 
-void bench_mid () {
+TEST_CASE("bench request mid", "[.bench]") {
     RequestParser p;
     string buf =
         "GET /49652gatedesc.xml HTTP/1.0\r\n"
@@ -70,13 +91,13 @@ void bench_mid () {
         "Accept-Encoding: gzip\r\n"
         "\r\n";
     if (p.parse(buf).error) throw p.parse(buf).error;
-    
-    for (auto i = 0; i < 1000; ++i) {
+
+    BENCHMARK("") {
         p.parse(buf);
-    }
+    };
 }
 
-void bench_res_mid () {
+TEST_CASE("bench response mid", "[.bench]") {
     RequestSP req = new Request();
     ResponseParser p;
     p.set_context_request(req);
@@ -88,14 +109,14 @@ void bench_res_mid () {
         "Accept-Encoding: gzip\r\n"
         "\r\n";
     if (p.parse(buf).error) throw p.parse(buf).error;
-    
-    for (auto i = 0; i < 1000; ++i) {
+
+    BENCHMARK("") {
         p.set_context_request(req);
         p.parse(buf);
-    }
+    };
 }
 
-void bench_mid2 () {
+TEST_CASE("bench request mid2", "[.bench]") {
     RequestParser p;
     string buf =
         "GET /49652gatedesc/dasfdsf/sdf.xml?ddsf=dsfdsf&adsfdsf=dafdsfds HTTP/1.0\r\n"
@@ -104,13 +125,13 @@ void bench_mid2 () {
         "Accept-Encoding: gzip\r\n"
         "\r\n";
     if (p.parse(buf).error) throw p.parse(buf).error;
-    
-    for (auto i = 0; i < 1000; ++i) {
+
+    BENCHMARK("") {
         p.parse(buf);
-    }
+    };
 }
 
-void bench_body () {
+TEST_CASE("bench body", "[.bench]") {
     RequestParser p;
     string buf =
         "POST http://alx3apps.appspot.com/jsonrpc_example/json_service/ HTTP/1.1\r\n"
@@ -124,12 +145,12 @@ void bench_body () {
         "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
     if (p.parse(buf).error) throw p.parse(buf).error;
 
-    for (auto i = 0; i < 1000; ++i) {
+    BENCHMARK("") {
         p.parse(buf);
-    }
+    };
 }
 
-void bench_heavy_headers () {
+TEST_CASE("bench request heavy headers", "[.bench]") {
     RequestParser p;
     string buf =
         "POST http://alx3apps.appspot.com/jsonrpc_example/json_service/ HTTP/1.1\r\n"
@@ -150,13 +171,13 @@ void bench_heavy_headers () {
         "\r\n"
         ;
     if (p.parse(buf).error) throw p.parse(buf).error;
-    
-    for (auto i = 0; i < 1000; ++i) {
+
+    BENCHMARK("") {
         p.parse(buf);
-    }
+    };
 }
 
-void bench_heavy_chunked () {
+TEST_CASE("bench heavy chunked", "[.bench]") {
     RequestParser p;
     string buf =
         "POST http://alx3apps.appspot.com/jsonrpc_example/json_service/ HTTP/1.1\r\n"
@@ -179,12 +200,12 @@ void bench_heavy_chunked () {
     if (p.parse(buf).error) throw p.parse(buf).error;
     //warn("%d", p.parse(buf).request->headers.size());
 
-    for (auto i = 0; i < 1000; ++i) {
+    BENCHMARK("") {
         p.parse(buf);
-    }
+    };
 }
 
-void bench_heavy_cookies () {
+TEST_CASE("bench heavy cookies", "[.bench]") {
     RequestParser p;
     string buf =
         "GET / HTTP/1.1\r\n"
@@ -205,13 +226,13 @@ void bench_heavy_cookies () {
         "\r\n"
         ;
     if (p.parse(buf).error) throw p.parse(buf).error;
-    
-    for (auto i = 0; i < 1000; ++i) {
+
+    BENCHMARK("") {
         p.parse(buf);
-    }
+    };
 }
 
-void bench_res_heavy_headers () {
+TEST_CASE("bench response heavy headers", "[.bench]") {
     RequestSP req = new Request();
     ResponseParser p;
     p.set_context_request(req);
@@ -235,19 +256,18 @@ void bench_res_heavy_headers () {
         ;
     if (p.parse(buf).error) throw p.parse(buf).error;
     p.eof();
-    
-    for (auto i = 0; i < 1000; ++i) {
+
+    BENCHMARK("") {
         p.set_context_request(req);
         p.parse(buf);
         p.eof();
-    }
+    };
 }
 
 
-void bench_serialize_req_mid() {
-    string s;
+TEST_CASE("bench request serialize mid", "[.bench]") {
     URISP uri = new URI("http://alx3apps.appspot.com");
-    for (size_t i = 0; i < 1000; ++i) {
+    BENCHMARK("") {
         auto req = Request::Builder()
                 .uri(uri)
                 .headers(Headers()
@@ -258,19 +278,22 @@ void bench_serialize_req_mid() {
                .allow_compression(Compression::GZIP)
                .body("zzz")
                .build();
-        s += req->to_string();
-        s.length(0);
-    }
+        return req->to_string();
+    };
 }
 
-void bench_serialize_res_mid() {
-    string s;
-    auto req = Request::Builder().build();
+TEST_CASE("bench response serialize mid", "[.bench]") {
+    auto req = Request::Builder()
+            .headers(Headers()
+                .add("MyHeader", "my value")
+                .add("User-Agent", "Mozilla/5.0(Windows;U;WindowsNT6.1;en-GB;rv:1.9.2.13)Gecko/20101203Firefox/3.6.13")
+                .add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n")
+                .add("Accept-Language", "my value"))
+           .allow_compression(Compression::GZIP)
+           .body("zzz")
+           .build();
 
-    Response::Cookie coo1("v1");
-    Response::Cookie coo2("v1");
-
-    for (size_t i = 0; i < 1000; ++i) {
+    BENCHMARK("") {
         auto res = Response::Builder()
                 .headers(Headers()
                     .connection("keep-alive")
@@ -282,18 +305,6 @@ void bench_serialize_res_mid() {
                 .cookie("c2", Response::Cookie("defjgl").domain("crazypanda.ru").max_age(1000).path("/").http_only(true).secure(true))
                 .body("hello")
                 .build();
-        auto req = Request::Builder()
-                .headers(Headers()
-                    .add("MyHeader", "my value")
-                    .add("User-Agent", "Mozilla/5.0(Windows;U;WindowsNT6.1;en-GB;rv:1.9.2.13)Gecko/20101203Firefox/3.6.13")
-                    .add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n")
-                    .add("Accept-Language", "my value"))
-               .allow_compression(Compression::GZIP)
-               .body("zzz")
-               .build();
-        s += res->to_string(req);
-        s.length(0);
-    }
+        return res->to_string(req);
+    };
 }
-
-

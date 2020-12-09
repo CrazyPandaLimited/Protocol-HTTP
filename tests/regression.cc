@@ -1,4 +1,4 @@
-#include "lib/test.h"
+#include "test.h"
 #include <set>
 #include <fstream>
 #include <string.h>
@@ -7,7 +7,7 @@
 
 #define TEST(name) TEST_CASE("regression: " name, "[regression]")
 
-const string ROOT = "t/regression/";
+const string ROOT = "tests/regression/";
 
 #ifndef WIN32
 inline std::set<string> read_directory (const string& name = ".") {

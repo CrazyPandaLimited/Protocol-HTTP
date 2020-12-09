@@ -1,4 +1,4 @@
-#include "../lib/test.h"
+#include "../test.h"
 #include <regex>
 
 #define TEST(name) TEST_CASE("compile-form: " name, "[compile-form]")
@@ -18,8 +18,6 @@ static std::pair<string, string> canonize(const string& str) {
 }
 
 TEST("multipart/form-data (complete)") {
-    std::srand(123);
-
     string str_sample =
         "POST / HTTP/1.1\r\n"
         "Content-Length: 232\r\n"
@@ -62,7 +60,6 @@ TEST("multipart/form-data (complete)") {
         auto req = Request::Builder().form(std::move(form)).build();
         auto data = canonize(req->to_string()).first;
 
-        std::srand(123);
         string sample_str = string(
                 "POST / HTTP/1.1\r\n"
                 "Content-Length: 188\r\n"

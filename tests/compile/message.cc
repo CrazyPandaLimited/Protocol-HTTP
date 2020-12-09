@@ -1,4 +1,4 @@
-#include "../lib/test.h"
+#include "../test.h"
 
 #define TEST(name) TEST_CASE("compile-message: " name, "[compile-message]")
 
