@@ -4,30 +4,32 @@
 namespace panda { namespace protocol { namespace http {
 
 template <size_t PRERESERVE>
-struct GenericHeaders: Fields<string, false, 15> {
-    using Fields::Fields;
-    using Fields::operator=;
+struct GenericHeaders : Fields<string, false, PRERESERVE> {
+    using Super = Fields<string, false, PRERESERVE>;
+
+    using Super::Fields;
+    using Super::operator=;
 
     GenericHeaders& add (const string& key, const string& value) & {
-        Fields::add(key, value);
+        Super::add(key, value);
         return *this;
     }
 
     GenericHeaders&& add (const string& key, const string& value) && {
-        Fields::add(key, value);
+        Super::add(key, value);
         return std::move(*this);
     }
 
     uint32_t length () const {
         uint32_t ret = 0;
-        for (auto& field : fields) ret += field.name.length() + 2 + field.value.length() + 2;
+        for (auto& field : this->fields) ret += field.name.length() + 2 + field.value.length() + 2;
         return ret;
     }
 
-    string connection () const { return get("Connection", ""); }
-    string date       () const { return get("Date", ""); }
-    string host       () const { return get("Host", ""); }
-    string location   () const { return get("Location", ""); }
+    string connection () const { return this->get("Connection", ""); }
+    string date       () const { return this->get("Date", ""); }
+    string host       () const { return this->get("Host", ""); }
+    string location   () const { return this->get("Location", ""); }
 
     GenericHeaders&  connection      (const string& ctype) &     { return add("Connection", ctype); }
     GenericHeaders&& connection      (const string& ctype) &&    { return std::move(*this).add("Connection", ctype); }

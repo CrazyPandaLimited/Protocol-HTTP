@@ -39,6 +39,28 @@ TEST("multi") {
     CHECK(it == r.end());
 }
 
+TEST("ctor from ilist") {
+    auto h = Headers({
+        {"key", "val"},
+        {"a", "b"},
+    });
+
+    CHECK(h.get("key") == "val");
+    CHECK(h.get("a") == "b");
+}
+
+TEST("operator==") {
+    Headers h1, h2;
+    for (auto p : {&h1, &h2}) {
+        p->add("key", "hello");
+        p->add("Key", "world");
+        p->add("hi",  "there");
+    }
+
+    CHECK(h1 == h2);
+    CHECK(h1 == Headers{{"key", "hello"}, {"key", "world"}, {"hi", "there"}});
+}
+
 TEST("iequals") {
     CHECK(iequals("a", "A"));
     CHECK(iequals("aa", "aA"));
@@ -51,4 +73,9 @@ TEST("iequals") {
     CHECK(iequals("Aaaaaaaaa", "aaaaaaaaA"));
     CHECK_FALSE(iequals("a", "Transfer-Encoding"));
     CHECK_FALSE(iequals("a", "transfer-encoding"));
+}
+
+TEST("builder") {
+    auto h = Headers().add("key", "val").add("k", "v");
+    CHECK(h == Headers{{"key", "val"}, {"k", "v"}});
 }
