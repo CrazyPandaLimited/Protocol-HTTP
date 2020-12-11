@@ -1,4 +1,5 @@
 #pragma once
+#include <iosfwd>
 #include "Fields.h"
 
 namespace panda { namespace protocol { namespace http {
@@ -46,5 +47,10 @@ struct GenericHeaders : Fields<string, false, PRERESERVE> {
 };
 
 using Headers = GenericHeaders<15>;
+
+bool operator== (const Headers&, const Headers&);
+inline bool operator!= (const Headers& lhs, const Headers& rhs) { return !operator==(lhs, rhs); }
+
+std::ostream& operator<< (std::ostream&, const Headers::Field&);
 
 }}}

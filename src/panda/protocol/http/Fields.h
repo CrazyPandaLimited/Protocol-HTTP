@@ -61,6 +61,8 @@ struct Fields {
         Field (Field&&)                 = default;
         Field& operator= (const Field&) = default;
         Field& operator= (Field&&)      = default;
+
+        bool operator== (const Field& oth) const { return matches(oth.name) && value == oth.value; }
     };
     using Container = boost::container::small_vector<Field, PRERESERVE>;
 
@@ -151,20 +153,6 @@ struct Fields {
     typename Container::iterator       end    ()       { return fields.end(); }
     typename Container::const_iterator end    () const { return fields.cend(); }
     typename Container::const_iterator cend   () const { return fields.cend(); }
-
-    template <size_t PRERESERVE2>
-    bool operator== (const Fields<T,CASE_SENSITIVE,PRERESERVE2>& oth) const {
-        auto sz = fields.size();
-        if (sz != oth.fields.size()) return false;
-        for (decltype(sz) i = 0; i < sz; ++i) {
-            auto& lf = fields[i];
-            auto& rf = oth.fields[i];
-            if (!(CASE_SENSITIVE ? (lf.name == rf.name) : iequals(lf.name, rf.name))) return false;
-            if (lf.value != rf.value) return false;
-        }
-        return true;
-    }
-    template <size_t PRERESERVE2> bool operator!= (const Fields<T,CASE_SENSITIVE,PRERESERVE2>& oth) const { return !operator==(oth); }
 };
 
 

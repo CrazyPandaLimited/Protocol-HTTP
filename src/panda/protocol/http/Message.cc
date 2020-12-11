@@ -23,6 +23,26 @@ void Message::compress_body(compression::Compressor& compressor, const Body &src
     dst.parts.emplace_back(compressor.flush());
 }
 
+// not effective at all, but used only in tests
+bool operator== (const Headers& lhs, const Headers& _rhs) {
+    if (lhs.size() != _rhs.size()) return false;
+    auto rhs = _rhs; // copy
+    for (auto& field : lhs) {
+        bool found = false;
+        for (auto it = rhs.begin(); it != rhs.end(); ++it) {
+            if (!field.matches(it->name) || it->value != field.value) continue;
+            found = true;
+            rhs.fields.erase(it);
+            break;
+        }
+        if (!found) return false;
+    }
+    return true;
+}
 
+std::ostream& operator<< (std::ostream& os, const Headers::Field& f) {
+    os << "\"" << f.name << ": " << f.value << "\"";
+    return os;
+}
 
 }}}

@@ -59,6 +59,7 @@ TEST("operator==") {
 
     CHECK(h1 == h2);
     CHECK(h1 == Headers{{"key", "hello"}, {"key", "world"}, {"hi", "there"}});
+    CHECK(h1 != Headers{{"key1", "hello"}, {"key", "world"}, {"hi", "there"}});
 }
 
 TEST("iequals") {
