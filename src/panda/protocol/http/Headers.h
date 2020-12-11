@@ -8,7 +8,7 @@ template <size_t PRERESERVE>
 struct GenericHeaders : Fields<string, false, PRERESERVE> {
     using Super = Fields<string, false, PRERESERVE>;
 
-    using Super::Fields;
+    using Super::Super;
     using Super::operator=;
 
     GenericHeaders& add (const string& key, const string& value) & {
