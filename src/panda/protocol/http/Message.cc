@@ -1,5 +1,6 @@
 #include "Message.h"
 #include <algorithm>
+#include <ostream>
 
 namespace panda { namespace protocol { namespace http {
 
