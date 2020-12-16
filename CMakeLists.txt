@@ -9,11 +9,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
     $<INSTALL_INTERFACE:include>
 )
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    CXX_STANDARD 14
-    CXX_STANDARD_REQUIRED YES
-    CXX_EXTENSIONS NO
-)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_14)
 
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
 set_source_files_properties(src/panda/protocol/http/CookieParser.cc  PROPERTIES COMPILE_FLAGS -Wno-implicit-fallthrough)
@@ -36,7 +32,8 @@ find_package(Boost REQUIRED)
 find_package(range-v3 REQUIRED)
 find_package(panda-uri REQUIRED)
 find_package(panda-date REQUIRED)
-target_link_libraries(${PROJECT_NAME} panda-uri panda-date)
+find_package(ZLIB REQUIRED)
+target_link_libraries(${PROJECT_NAME} PUBLIC panda-uri panda-date ZLIB::ZLIB)
 
 ########################tests#######################################
 file(GLOB_RECURSE testSource RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "tests/*.cc")
