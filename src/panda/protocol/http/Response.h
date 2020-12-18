@@ -9,7 +9,7 @@ namespace panda { namespace protocol { namespace http {
 
 struct Request;
 
-extern const panda::time::Timezone* gmtz;
+extern panda::time::TimezoneSP gmtz;
 
 struct Response : Message, AllocatedObject<Response> {
     using Date = panda::date::Date;
