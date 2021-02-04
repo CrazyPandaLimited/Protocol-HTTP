@@ -1,6 +1,7 @@
 #pragma once
 #include <iosfwd>
 #include <panda/string.h>
+#include <range/v3/core.hpp>
 #include <range/v3/view/filter.hpp>
 #include <range/v3/view/transform.hpp>
 #include <boost/container/small_vector.hpp>
