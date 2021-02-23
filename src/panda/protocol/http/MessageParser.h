@@ -20,6 +20,7 @@ protected:
     State           state; // high-level state
     int             cs;    // ragel state
     bool            has_content_length;
+    bool            proto_relative_uri;
     uint64_t        content_length;
     std::error_code error;
 
@@ -37,6 +38,7 @@ protected:
         headers_so_far     = 0;
         headers_finished   = false;
         has_content_length = false;
+        proto_relative_uri = false;
         content_length     = 0;
         body_so_far        = 0;
         error.clear();

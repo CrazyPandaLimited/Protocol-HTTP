@@ -109,6 +109,9 @@
         string target;
         SAVE(target);
         request->uri = new URI(target);
+        if (target.length() >= 2 && target[0] == '/' && target[1] == '/') { // treat protocol-relative url as path
+            proto_relative_uri = true;
+        }
     }
 
     action push_compression {

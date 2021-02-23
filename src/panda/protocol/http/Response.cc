@@ -79,17 +79,17 @@ string Response::_http_header (SerializationContext &ctx) const {
         }
     }
 
-    auto out_mesasge = message ? message : message_for_code(tmp_code);
+    auto out_message = message ? message : message_for_code(tmp_code);
 
     string out_content_length;
-    if (!chunked && !headers.has("Content-Length")) {
+    if (!chunked && !headers.has("Content-Length") && code != 304) {
         out_content_length = panda::to_string(ctx.body->length());
     }
 
     auto out_content_encoding = _content_encoding(ctx);
 
     // part 2: summarize pieces size
-    size_t reserved = 5 + 4 + 4 + out_mesasge.length() + 2 + headers.length() + 2;
+    size_t reserved = 5 + 4 + 4 + out_message.length() + 2 + headers.length() + 2;
     if (out_connection)       reserved += 10 + 2 + out_connection.length()   + 2;
     if (out_content_length)   reserved += 14 + 2 + out_content_length.length()   + 2;
     if (out_content_encoding) reserved += 16 + 2 + out_content_encoding.length() + 2;
@@ -114,7 +114,7 @@ string Response::_http_header (SerializationContext &ctx) const {
     }
     s += panda::to_string(tmp_code);
     s += ' ';
-    s += out_mesasge;
+    s += out_message;
     s += "\r\n";
 
     if (out_connection)       { s += "Connection: "      ; s += out_connection      ; s += "\r\n" ;};

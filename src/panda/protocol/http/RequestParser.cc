@@ -26,8 +26,14 @@ RequestParser::Result RequestParser::parse (const string& buffer) {
     return ret;
 }
 
-bool RequestParser::on_headers    () {
+bool RequestParser::on_headers () {
+    if (proto_relative_uri) {
+        request->uri->path(string("//") + request->uri->host() + request->uri->path());
+        request->uri->host("");
+    }
+
     for (const auto& s : request->headers.get_multi("Cookie")) parse_cookie(s);
+
     return true;
 }
 

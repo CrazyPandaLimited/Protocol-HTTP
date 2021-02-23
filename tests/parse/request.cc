@@ -117,3 +117,21 @@ TEST("bad first line") {
         "\r\n";
     CHECK(p.parse(raw).error);
 }
+
+TEST("protocol-relative url parsed as path") {
+    RequestParser p;
+    string raw = "GET //my///path?a=b HTTP/1.0\r\n\r\n";
+    auto result = p.parse(raw);
+    auto req = result.request;
+    CHECK(result.state == State::done);
+    CHECK(req->uri->to_string() == "//my///path?a=b");
+    CHECK(req->uri->path() == "//my///path");
+
+    p.reset();
+    raw ="GET ///my//path?a=b HTTP/1.0\r\n\r\n";
+    result = p.parse(raw);
+    req = result.request;
+    CHECK(result.state == State::done);
+    CHECK(req->uri->to_string() == "///my//path?a=b");
+    CHECK(req->uri->path() == "///my//path");
+}

@@ -3,7 +3,7 @@
 #include "MessageParser.h"
 
 
-#line 188 "src/panda/protocol/http/MessageParser.rl"
+#line 191 "src/panda/protocol/http/MessageParser.rl"
 
 
 namespace panda { namespace protocol { namespace http {
@@ -21,7 +21,7 @@ static const int message_parser_en_request = 126;
 static const int message_parser_en_response = 1;
 
 
-#line 193 "src/panda/protocol/http/MessageParser.rl"
+#line 196 "src/panda/protocol/http/MessageParser.rl"
 
 #ifdef PARSER_DEFINITIONS_ONLY
 #undef PARSER_DEFINITIONS_ONLY
@@ -120,11 +120,11 @@ case 9:
 		goto tr10;
 	goto st0;
 tr10:
-#line 121 "src/panda/protocol/http/MessageParser.rl"
+#line 124 "src/panda/protocol/http/MessageParser.rl"
 	{message->http_version = 10;}
 	goto st10;
 tr129:
-#line 121 "src/panda/protocol/http/MessageParser.rl"
+#line 124 "src/panda/protocol/http/MessageParser.rl"
 	{message->http_version = 11;}
 	goto st10;
 st10:
@@ -136,7 +136,7 @@ case 10:
 		goto tr11;
 	goto st0;
 tr11:
-#line 182 "src/panda/protocol/http/MessageParser.rl"
+#line 185 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(response->code)}
 	goto st11;
 st11:
@@ -148,7 +148,7 @@ case 11:
 		goto tr12;
 	goto st0;
 tr12:
-#line 182 "src/panda/protocol/http/MessageParser.rl"
+#line 185 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(response->code)}
 	goto st12;
 st12:
@@ -160,7 +160,7 @@ case 12:
 		goto tr13;
 	goto st0;
 tr13:
-#line 182 "src/panda/protocol/http/MessageParser.rl"
+#line 185 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(response->code)}
 	goto st13;
 st13:
@@ -213,7 +213,7 @@ tr16:
         mark   = p - ps;
         marked = true;
     }
-#line 183 "src/panda/protocol/http/MessageParser.rl"
+#line 186 "src/panda/protocol/http/MessageParser.rl"
 	{SAVE(response->message)}
 #line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
@@ -221,7 +221,7 @@ tr16:
     }
 	goto st16;
 tr18:
-#line 183 "src/panda/protocol/http/MessageParser.rl"
+#line 186 "src/panda/protocol/http/MessageParser.rl"
 	{SAVE(response->message)}
 #line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
@@ -471,7 +471,7 @@ tr119:
     }
 	goto st16;
 tr127:
-#line 143 "src/panda/protocol/http/MessageParser.rl"
+#line 146 "src/panda/protocol/http/MessageParser.rl"
 	{message->chunked = true;                     }
 #line 29 "src/panda/protocol/http/MessageParser.rl"
 	{
@@ -1833,7 +1833,7 @@ tr96:
         }
         has_content_length = true;
     }
-#line 142 "src/panda/protocol/http/MessageParser.rl"
+#line 145 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(content_length)}
 #line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
@@ -1842,7 +1842,7 @@ tr96:
     }
 	goto st69;
 tr97:
-#line 142 "src/panda/protocol/http/MessageParser.rl"
+#line 145 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(content_length)}
 	goto st69;
 st69:
@@ -2547,7 +2547,7 @@ case 95:
 		goto st0;
 	goto st88;
 tr126:
-#line 143 "src/panda/protocol/http/MessageParser.rl"
+#line 146 "src/panda/protocol/http/MessageParser.rl"
 	{message->chunked = true;                     }
 	goto st96;
 st96:
@@ -2582,13 +2582,13 @@ case 98:
 		goto tr130;
 	goto st0;
 tr130:
-#line 156 "src/panda/protocol/http/MessageParser.rl"
+#line 159 "src/panda/protocol/http/MessageParser.rl"
 	{chunk_length = 0;}
-#line 156 "src/panda/protocol/http/MessageParser.rl"
+#line 159 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_XDIGIT(chunk_length)}
 	goto st99;
 tr132:
-#line 156 "src/panda/protocol/http/MessageParser.rl"
+#line 159 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_XDIGIT(chunk_length)}
 	goto st99;
 st99:
@@ -2802,13 +2802,13 @@ case 110:
 		goto tr143;
 	goto st0;
 tr143:
-#line 156 "src/panda/protocol/http/MessageParser.rl"
+#line 159 "src/panda/protocol/http/MessageParser.rl"
 	{chunk_length = 0;}
-#line 156 "src/panda/protocol/http/MessageParser.rl"
+#line 159 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_XDIGIT(chunk_length)}
 	goto st111;
 tr145:
-#line 156 "src/panda/protocol/http/MessageParser.rl"
+#line 159 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_XDIGIT(chunk_length)}
 	goto st111;
 st111:
@@ -3235,35 +3235,35 @@ case 133:
 		goto tr178;
 	goto st0;
 tr178:
-#line 173 "src/panda/protocol/http/MessageParser.rl"
+#line 176 "src/panda/protocol/http/MessageParser.rl"
 	{request->method_raw(Request::Method::Connect); }
 	goto st134;
 tr401:
-#line 171 "src/panda/protocol/http/MessageParser.rl"
+#line 174 "src/panda/protocol/http/MessageParser.rl"
 	{request->method_raw(Request::Method::Delete);  }
 	goto st134;
 tr404:
-#line 167 "src/panda/protocol/http/MessageParser.rl"
+#line 170 "src/panda/protocol/http/MessageParser.rl"
 	{request->method_raw(Request::Method::Get);     }
 	goto st134;
 tr408:
-#line 168 "src/panda/protocol/http/MessageParser.rl"
+#line 171 "src/panda/protocol/http/MessageParser.rl"
 	{request->method_raw(Request::Method::Head);    }
 	goto st134;
 tr415:
-#line 166 "src/panda/protocol/http/MessageParser.rl"
+#line 169 "src/panda/protocol/http/MessageParser.rl"
 	{request->method_raw(Request::Method::Options); }
 	goto st134;
 tr420:
-#line 169 "src/panda/protocol/http/MessageParser.rl"
+#line 172 "src/panda/protocol/http/MessageParser.rl"
 	{request->method_raw(Request::Method::Post);    }
 	goto st134;
 tr422:
-#line 170 "src/panda/protocol/http/MessageParser.rl"
+#line 173 "src/panda/protocol/http/MessageParser.rl"
 	{request->method_raw(Request::Method::Put);     }
 	goto st134;
 tr427:
-#line 172 "src/panda/protocol/http/MessageParser.rl"
+#line 175 "src/panda/protocol/http/MessageParser.rl"
 	{request->method_raw(Request::Method::Trace);   }
 	goto st134;
 st134:
@@ -3297,6 +3297,9 @@ tr180:
         string target;
         SAVE(target);
         request->uri = new URI(target);
+        if (target.length() >= 2 && target[0] == '/' && target[1] == '/') { // treat protocol-relative url as path
+            proto_relative_uri = true;
+        }
     }
 #line 12 "src/panda/protocol/http/MessageParser.rl"
 	{
@@ -3307,7 +3310,7 @@ st136:
 	if ( ++p == pe )
 		goto _test_eof136;
 case 136:
-#line 3311 "src/panda/protocol/http/MessageParser.cc"
+#line 3314 "src/panda/protocol/http/MessageParser.cc"
 	if ( (*p) == 72 )
 		goto st137;
 	goto st0;
@@ -3370,7 +3373,7 @@ case 144:
 		goto tr191;
 	goto st0;
 tr191:
-#line 121 "src/panda/protocol/http/MessageParser.rl"
+#line 124 "src/panda/protocol/http/MessageParser.rl"
 	{message->http_version = 10;}
 	goto st145;
 tr203:
@@ -3616,7 +3619,7 @@ tr385:
     }
 	goto st145;
 tr393:
-#line 143 "src/panda/protocol/http/MessageParser.rl"
+#line 146 "src/panda/protocol/http/MessageParser.rl"
 	{message->chunked = true;                     }
 #line 29 "src/panda/protocol/http/MessageParser.rl"
 	{
@@ -3633,13 +3636,13 @@ tr393:
     }
 	goto st145;
 tr395:
-#line 121 "src/panda/protocol/http/MessageParser.rl"
+#line 124 "src/panda/protocol/http/MessageParser.rl"
 	{message->http_version = 11;}
 	goto st145;
 tr229:
-#line 129 "src/panda/protocol/http/MessageParser.rl"
+#line 132 "src/panda/protocol/http/MessageParser.rl"
 	{compr = Compression::GZIP | Compression::DEFLATE; }
-#line 114 "src/panda/protocol/http/MessageParser.rl"
+#line 117 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(static_cast<Compression::Type>(compr));
@@ -3661,9 +3664,9 @@ tr229:
     }
 	goto st145;
 tr243:
-#line 126 "src/panda/protocol/http/MessageParser.rl"
+#line 129 "src/panda/protocol/http/MessageParser.rl"
 	{ compr = Compression::BROTLI;  }
-#line 114 "src/panda/protocol/http/MessageParser.rl"
+#line 117 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(static_cast<Compression::Type>(compr));
@@ -3685,9 +3688,9 @@ tr243:
     }
 	goto st145;
 tr251:
-#line 131 "src/panda/protocol/http/MessageParser.rl"
+#line 134 "src/panda/protocol/http/MessageParser.rl"
 	{ compr = 0; }
-#line 114 "src/panda/protocol/http/MessageParser.rl"
+#line 117 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(static_cast<Compression::Type>(compr));
@@ -3709,7 +3712,7 @@ tr251:
     }
 	goto st145;
 tr262:
-#line 114 "src/panda/protocol/http/MessageParser.rl"
+#line 117 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(static_cast<Compression::Type>(compr));
@@ -3731,9 +3734,9 @@ tr262:
     }
 	goto st145;
 tr282:
-#line 125 "src/panda/protocol/http/MessageParser.rl"
+#line 128 "src/panda/protocol/http/MessageParser.rl"
 	{ compr = Compression::DEFLATE;  }
-#line 114 "src/panda/protocol/http/MessageParser.rl"
+#line 117 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(static_cast<Compression::Type>(compr));
@@ -3755,9 +3758,9 @@ tr282:
     }
 	goto st145;
 tr289:
-#line 124 "src/panda/protocol/http/MessageParser.rl"
+#line 127 "src/panda/protocol/http/MessageParser.rl"
 	{ compr = Compression::GZIP;     }
-#line 114 "src/panda/protocol/http/MessageParser.rl"
+#line 117 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(static_cast<Compression::Type>(compr));
@@ -3782,7 +3785,7 @@ st145:
 	if ( ++p == pe )
 		goto _test_eof145;
 case 145:
-#line 3786 "src/panda/protocol/http/MessageParser.cc"
+#line 3789 "src/panda/protocol/http/MessageParser.cc"
 	if ( (*p) == 10 )
 		goto st146;
 	goto st0;
@@ -3837,7 +3840,7 @@ st325:
 	if ( ++p == pe )
 		goto _test_eof325;
 case 325:
-#line 3841 "src/panda/protocol/http/MessageParser.cc"
+#line 3844 "src/panda/protocol/http/MessageParser.cc"
 	goto st0;
 tr194:
 #line 7 "src/panda/protocol/http/MessageParser.rl"
@@ -3850,7 +3853,7 @@ st148:
 	if ( ++p == pe )
 		goto _test_eof148;
 case 148:
-#line 3854 "src/panda/protocol/http/MessageParser.cc"
+#line 3857 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 33: goto st148;
 		case 58: goto tr200;
@@ -3894,7 +3897,7 @@ st149:
 	if ( ++p == pe )
 		goto _test_eof149;
 case 149:
-#line 3898 "src/panda/protocol/http/MessageParser.cc"
+#line 3901 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st149;
 		case 13: goto tr203;
@@ -3915,7 +3918,7 @@ st150:
 	if ( ++p == pe )
 		goto _test_eof150;
 case 150:
-#line 3919 "src/panda/protocol/http/MessageParser.cc"
+#line 3922 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr205;
 		case 127: goto st0;
@@ -3937,7 +3940,7 @@ st151:
 	if ( ++p == pe )
 		goto _test_eof151;
 case 151:
-#line 3941 "src/panda/protocol/http/MessageParser.cc"
+#line 3944 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 33: goto st148;
 		case 58: goto tr200;
@@ -4398,7 +4401,7 @@ st166:
 	if ( ++p == pe )
 		goto _test_eof166;
 case 166:
-#line 4402 "src/panda/protocol/http/MessageParser.cc"
+#line 4405 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st166;
 		case 13: goto tr203;
@@ -4425,7 +4428,7 @@ st167:
 	if ( ++p == pe )
 		goto _test_eof167;
 case 167:
-#line 4429 "src/panda/protocol/http/MessageParser.cc"
+#line 4432 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto tr228;
 		case 13: goto tr229;
@@ -4438,9 +4441,9 @@ case 167:
 		goto st0;
 	goto st150;
 tr228:
-#line 129 "src/panda/protocol/http/MessageParser.rl"
+#line 132 "src/panda/protocol/http/MessageParser.rl"
 	{compr = Compression::GZIP | Compression::DEFLATE; }
-#line 114 "src/panda/protocol/http/MessageParser.rl"
+#line 117 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(static_cast<Compression::Type>(compr));
@@ -4449,9 +4452,9 @@ tr228:
     }
 	goto st168;
 tr242:
-#line 126 "src/panda/protocol/http/MessageParser.rl"
+#line 129 "src/panda/protocol/http/MessageParser.rl"
 	{ compr = Compression::BROTLI;  }
-#line 114 "src/panda/protocol/http/MessageParser.rl"
+#line 117 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(static_cast<Compression::Type>(compr));
@@ -4460,7 +4463,7 @@ tr242:
     }
 	goto st168;
 tr274:
-#line 114 "src/panda/protocol/http/MessageParser.rl"
+#line 117 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(static_cast<Compression::Type>(compr));
@@ -4469,9 +4472,9 @@ tr274:
     }
 	goto st168;
 tr281:
-#line 125 "src/panda/protocol/http/MessageParser.rl"
+#line 128 "src/panda/protocol/http/MessageParser.rl"
 	{ compr = Compression::DEFLATE;  }
-#line 114 "src/panda/protocol/http/MessageParser.rl"
+#line 117 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(static_cast<Compression::Type>(compr));
@@ -4480,9 +4483,9 @@ tr281:
     }
 	goto st168;
 tr288:
-#line 124 "src/panda/protocol/http/MessageParser.rl"
+#line 127 "src/panda/protocol/http/MessageParser.rl"
 	{ compr = Compression::GZIP;     }
-#line 114 "src/panda/protocol/http/MessageParser.rl"
+#line 117 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(static_cast<Compression::Type>(compr));
@@ -4494,7 +4497,7 @@ st168:
 	if ( ++p == pe )
 		goto _test_eof168;
 case 168:
-#line 4498 "src/panda/protocol/http/MessageParser.cc"
+#line 4501 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st168;
 		case 13: goto tr205;
@@ -4507,9 +4510,9 @@ case 168:
 		goto st0;
 	goto st150;
 tr230:
-#line 129 "src/panda/protocol/http/MessageParser.rl"
+#line 132 "src/panda/protocol/http/MessageParser.rl"
 	{compr = Compression::GZIP | Compression::DEFLATE; }
-#line 114 "src/panda/protocol/http/MessageParser.rl"
+#line 117 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(static_cast<Compression::Type>(compr));
@@ -4518,9 +4521,9 @@ tr230:
     }
 	goto st169;
 tr244:
-#line 126 "src/panda/protocol/http/MessageParser.rl"
+#line 129 "src/panda/protocol/http/MessageParser.rl"
 	{ compr = Compression::BROTLI;  }
-#line 114 "src/panda/protocol/http/MessageParser.rl"
+#line 117 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(static_cast<Compression::Type>(compr));
@@ -4529,9 +4532,9 @@ tr244:
     }
 	goto st169;
 tr252:
-#line 131 "src/panda/protocol/http/MessageParser.rl"
+#line 134 "src/panda/protocol/http/MessageParser.rl"
 	{ compr = 0; }
-#line 114 "src/panda/protocol/http/MessageParser.rl"
+#line 117 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(static_cast<Compression::Type>(compr));
@@ -4540,7 +4543,7 @@ tr252:
     }
 	goto st169;
 tr263:
-#line 114 "src/panda/protocol/http/MessageParser.rl"
+#line 117 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(static_cast<Compression::Type>(compr));
@@ -4549,9 +4552,9 @@ tr263:
     }
 	goto st169;
 tr283:
-#line 125 "src/panda/protocol/http/MessageParser.rl"
+#line 128 "src/panda/protocol/http/MessageParser.rl"
 	{ compr = Compression::DEFLATE;  }
-#line 114 "src/panda/protocol/http/MessageParser.rl"
+#line 117 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(static_cast<Compression::Type>(compr));
@@ -4560,9 +4563,9 @@ tr283:
     }
 	goto st169;
 tr290:
-#line 124 "src/panda/protocol/http/MessageParser.rl"
+#line 127 "src/panda/protocol/http/MessageParser.rl"
 	{ compr = Compression::GZIP;     }
-#line 114 "src/panda/protocol/http/MessageParser.rl"
+#line 117 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(static_cast<Compression::Type>(compr));
@@ -4574,7 +4577,7 @@ st169:
 	if ( ++p == pe )
 		goto _test_eof169;
 case 169:
-#line 4578 "src/panda/protocol/http/MessageParser.cc"
+#line 4581 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st169;
 		case 13: goto tr205;
@@ -4601,7 +4604,7 @@ st170:
 	if ( ++p == pe )
 		goto _test_eof170;
 case 170:
-#line 4605 "src/panda/protocol/http/MessageParser.cc"
+#line 4608 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr205;
 		case 114: goto st171;
@@ -4629,26 +4632,26 @@ case 171:
 		goto st0;
 	goto st150;
 tr231:
-#line 129 "src/panda/protocol/http/MessageParser.rl"
+#line 132 "src/panda/protocol/http/MessageParser.rl"
 	{compr = Compression::GZIP | Compression::DEFLATE; }
 	goto st172;
 tr245:
-#line 126 "src/panda/protocol/http/MessageParser.rl"
+#line 129 "src/panda/protocol/http/MessageParser.rl"
 	{ compr = Compression::BROTLI;  }
 	goto st172;
 tr284:
-#line 125 "src/panda/protocol/http/MessageParser.rl"
+#line 128 "src/panda/protocol/http/MessageParser.rl"
 	{ compr = Compression::DEFLATE;  }
 	goto st172;
 tr291:
-#line 124 "src/panda/protocol/http/MessageParser.rl"
+#line 127 "src/panda/protocol/http/MessageParser.rl"
 	{ compr = Compression::GZIP;     }
 	goto st172;
 st172:
 	if ( ++p == pe )
 		goto _test_eof172;
 case 172:
-#line 4652 "src/panda/protocol/http/MessageParser.cc"
+#line 4655 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st172;
 		case 13: goto tr205;
@@ -4706,9 +4709,9 @@ case 175:
 		goto st0;
 	goto st150;
 tr250:
-#line 131 "src/panda/protocol/http/MessageParser.rl"
+#line 134 "src/panda/protocol/http/MessageParser.rl"
 	{ compr = 0; }
-#line 114 "src/panda/protocol/http/MessageParser.rl"
+#line 117 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(static_cast<Compression::Type>(compr));
@@ -4717,7 +4720,7 @@ tr250:
     }
 	goto st176;
 tr261:
-#line 114 "src/panda/protocol/http/MessageParser.rl"
+#line 117 "src/panda/protocol/http/MessageParser.rl"
 	{
         if (compr) {
             request->allow_compression(static_cast<Compression::Type>(compr));
@@ -4729,7 +4732,7 @@ st176:
 	if ( ++p == pe )
 		goto _test_eof176;
 case 176:
-#line 4733 "src/panda/protocol/http/MessageParser.cc"
+#line 4736 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st176;
 		case 13: goto tr205;
@@ -4927,7 +4930,7 @@ st188:
 	if ( ++p == pe )
 		goto _test_eof188;
 case 188:
-#line 4931 "src/panda/protocol/http/MessageParser.cc"
+#line 4934 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr205;
 		case 111: goto st189;
@@ -5055,7 +5058,7 @@ st196:
 	if ( ++p == pe )
 		goto _test_eof196;
 case 196:
-#line 5059 "src/panda/protocol/http/MessageParser.cc"
+#line 5062 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr205;
 		case 101: goto st197;
@@ -5168,7 +5171,7 @@ st203:
 	if ( ++p == pe )
 		goto _test_eof203;
 case 203:
-#line 5172 "src/panda/protocol/http/MessageParser.cc"
+#line 5175 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr205;
 		case 122: goto st204;
@@ -5236,7 +5239,7 @@ st207:
 	if ( ++p == pe )
 		goto _test_eof207;
 case 207:
-#line 5240 "src/panda/protocol/http/MessageParser.cc"
+#line 5243 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr205;
 		case 100: goto st208;
@@ -5349,7 +5352,7 @@ st214:
 	if ( ++p == pe )
 		goto _test_eof214;
 case 214:
-#line 5353 "src/panda/protocol/http/MessageParser.cc"
+#line 5356 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 33: goto st148;
 		case 58: goto tr200;
@@ -5842,7 +5845,7 @@ st230:
 	if ( ++p == pe )
 		goto _test_eof230;
 case 230:
-#line 5846 "src/panda/protocol/http/MessageParser.cc"
+#line 5849 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st230;
 		case 13: goto tr203;
@@ -5867,7 +5870,7 @@ st231:
 	if ( ++p == pe )
 		goto _test_eof231;
 case 231:
-#line 5871 "src/panda/protocol/http/MessageParser.cc"
+#line 5874 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr322;
 		case 127: goto st0;
@@ -5889,7 +5892,7 @@ st232:
 	if ( ++p == pe )
 		goto _test_eof232;
 case 232:
-#line 5893 "src/panda/protocol/http/MessageParser.cc"
+#line 5896 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr322;
 		case 114: goto st233;
@@ -5958,7 +5961,7 @@ st234:
 	if ( ++p == pe )
 		goto _test_eof234;
 case 234:
-#line 5962 "src/panda/protocol/http/MessageParser.cc"
+#line 5965 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st234;
 		case 13: goto tr328;
@@ -6012,7 +6015,7 @@ st235:
 	if ( ++p == pe )
 		goto _test_eof235;
 case 235:
-#line 6016 "src/panda/protocol/http/MessageParser.cc"
+#line 6019 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st235;
 		case 13: goto tr322;
@@ -6037,7 +6040,7 @@ st236:
 	if ( ++p == pe )
 		goto _test_eof236;
 case 236:
-#line 6041 "src/panda/protocol/http/MessageParser.cc"
+#line 6044 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr322;
 		case 101: goto st237;
@@ -6149,7 +6152,7 @@ st243:
 	if ( ++p == pe )
 		goto _test_eof243;
 case 243:
-#line 6153 "src/panda/protocol/http/MessageParser.cc"
+#line 6156 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr322;
 		case 122: goto st244;
@@ -6216,7 +6219,7 @@ st247:
 	if ( ++p == pe )
 		goto _test_eof247;
 case 247:
-#line 6220 "src/panda/protocol/http/MessageParser.cc"
+#line 6223 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr322;
 		case 100: goto st248;
@@ -6515,7 +6518,7 @@ st260:
 	if ( ++p == pe )
 		goto _test_eof260;
 case 260:
-#line 6519 "src/panda/protocol/http/MessageParser.cc"
+#line 6522 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st260;
 		case 13: goto tr203;
@@ -6538,7 +6541,7 @@ tr362:
         }
         has_content_length = true;
     }
-#line 142 "src/panda/protocol/http/MessageParser.rl"
+#line 145 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(content_length)}
 #line 7 "src/panda/protocol/http/MessageParser.rl"
 	{
@@ -6547,14 +6550,14 @@ tr362:
     }
 	goto st261;
 tr363:
-#line 142 "src/panda/protocol/http/MessageParser.rl"
+#line 145 "src/panda/protocol/http/MessageParser.rl"
 	{ADD_DIGIT(content_length)}
 	goto st261;
 st261:
 	if ( ++p == pe )
 		goto _test_eof261;
 case 261:
-#line 6558 "src/panda/protocol/http/MessageParser.cc"
+#line 6561 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr205;
 		case 127: goto st0;
@@ -6579,7 +6582,7 @@ st262:
 	if ( ++p == pe )
 		goto _test_eof262;
 case 262:
-#line 6583 "src/panda/protocol/http/MessageParser.cc"
+#line 6586 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 33: goto st148;
 		case 58: goto tr200;
@@ -7100,7 +7103,7 @@ st279:
 	if ( ++p == pe )
 		goto _test_eof279;
 case 279:
-#line 7104 "src/panda/protocol/http/MessageParser.cc"
+#line 7107 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st279;
 		case 13: goto tr203;
@@ -7123,7 +7126,7 @@ st280:
 	if ( ++p == pe )
 		goto _test_eof280;
 case 280:
-#line 7127 "src/panda/protocol/http/MessageParser.cc"
+#line 7130 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr385;
 		case 127: goto st0;
@@ -7145,7 +7148,7 @@ st281:
 	if ( ++p == pe )
 		goto _test_eof281;
 case 281:
-#line 7149 "src/panda/protocol/http/MessageParser.cc"
+#line 7152 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 13: goto tr385;
 		case 72: goto st282;
@@ -7252,14 +7255,14 @@ case 287:
 		goto st0;
 	goto st280;
 tr392:
-#line 143 "src/panda/protocol/http/MessageParser.rl"
+#line 146 "src/panda/protocol/http/MessageParser.rl"
 	{message->chunked = true;                     }
 	goto st288;
 st288:
 	if ( ++p == pe )
 		goto _test_eof288;
 case 288:
-#line 7263 "src/panda/protocol/http/MessageParser.cc"
+#line 7266 "src/panda/protocol/http/MessageParser.cc"
 	switch( (*p) ) {
 		case 9: goto st288;
 		case 13: goto tr205;
@@ -7822,7 +7825,7 @@ case 320:
 	_out: {}
 	}
 
-#line 219 "src/panda/protocol/http/MessageParser.rl"
+#line 222 "src/panda/protocol/http/MessageParser.rl"
     return p - ps;
 }
 
