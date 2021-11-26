@@ -54,7 +54,7 @@ target_link_libraries(${PROJECT_NAME}-tests PUBLIC Catch2::Catch2)
 enable_testing()
 add_executable(${PROJECT_NAME}-runtests ${EXCLUDE_TEST} ${testSource} "tests/main.cc")
 target_link_libraries(${PROJECT_NAME}-runtests ${PROJECT_NAME}-tests Catch2::Catch2WithMain)
-add_test(NAME test-all COMMAND ${PROJECT_NAME}-runtests WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME}-runtests WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 ########################install#####################################
 install(DIRECTORY src/ DESTINATION include FILES_MATCHING PATTERN "*.h")
