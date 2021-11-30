@@ -39,7 +39,7 @@ find_package(range-v3 REQUIRED)
 find_package(panda-uri REQUIRED)
 find_package(panda-date REQUIRED)
 find_package(ZLIB REQUIRED)
-target_link_libraries(${PROJECT_NAME} PUBLIC panda-uri panda-date ZLIB::ZLIB)
+target_link_libraries(${PROJECT_NAME} PUBLIC range-v3::range-v3 panda-uri panda-date ZLIB::ZLIB)
 
 ########################tests#######################################
 file(GLOB_RECURSE testSource RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "tests/*.cc")
