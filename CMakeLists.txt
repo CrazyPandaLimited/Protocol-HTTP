@@ -17,6 +17,10 @@ else()
     set(EXCLUDE_TEST EXCLUDE_FROM_ALL)
 endif()
 
+if (${PROTOCOL_HTTP_FETCH_DEPS})
+    include(FetchDeps.cmake)
+endif()
+
 file(GLOB_RECURSE libSource RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "src/panda/*.cc")
 LIST(APPEND libSource "src/panda/protocol/http/CookieParser.cc" "src/panda/protocol/http/CookieStorage.cc" "src/panda/protocol/http/MessageParser.cc")
 add_library(${PROJECT_NAME} ${LIB_TYPE} ${libSource})
@@ -69,7 +73,9 @@ file(GLOB_RECURSE testSource RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "tests/*.cc")
 add_library(${PROJECT_NAME}-tests STATIC EXCLUDE_FROM_ALL ${testSource})
 target_link_libraries(${PROJECT_NAME}-tests PUBLIC ${PROJECT_NAME})
 
-find_package(Catch2)
+if (NOT TARGET Catch2::Catch2)
+    find_package(Catch2)
+endif()
 target_link_libraries(${PROJECT_NAME}-tests PUBLIC Catch2::Catch2)
 
 ########################ctests######################################
