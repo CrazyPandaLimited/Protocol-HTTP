@@ -20,14 +20,12 @@ if (${PROTOCOL_HTTP_TESTS})
 endif()
 
 foreach(dep ${deps})
-    if (NOT ${dep}_POPULATED)
-        if (NOT DEFINED ${${dep}_repository_tag})
-            set (${${dep}_repository_tag} master)
-        endif()
-        FetchContent_Declare(${dep}
-            GIT_REPOSITORY ${${dep}_repository}
-            GIT_TAG ${${dep}_repository_tag}
-        )
-        FetchContent_MakeAvailable(${dep})
-    endif ()
+    if (NOT DEFINED ${${dep}_repository_tag})
+        set (${${dep}_repository_tag} master)
+    endif()
+    FetchContent_Declare(${dep}
+        GIT_REPOSITORY ${${dep}_repository}
+        GIT_TAG ${${dep}_repository_tag}
+    )
 endforeach()
+FetchContent_MakeAvailable(${deps})
